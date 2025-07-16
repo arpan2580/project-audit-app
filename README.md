@@ -1,4 +1,4 @@
-# jnk_app
+# audit_app_project
 
 A new Flutter project.
 
