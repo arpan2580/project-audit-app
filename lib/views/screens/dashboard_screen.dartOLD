@@ -1,0 +1,204 @@
+import 'package:dotted_border/dotted_border.dart';
+import 'package:flutter/material.dart';
+import 'package:jnk_app/consts/app_constants.dart';
+import 'package:jnk_app/utils/custom/faded_divider.dart';
+import 'package:jnk_app/views/screens/tab_screen.dart';
+import 'package:jnk_app/views/widgets/auditor_info_widget.dart';
+
+class DashboardScreen extends StatelessWidget {
+  const DashboardScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // final scrollController = ScrollController();
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      extendBody: true,
+      appBar: AppBar(
+        title: const Text('Dashboard'),
+        centerTitle: true,
+        // title: Image(
+        //   image: AssetImage(
+        //     'assets/images/logo.png',
+        //   ),
+        //   height: 50.h,
+        // ),
+      ),
+      body: Container(
+        height: MediaQuery.of(context).size.height,
+        width: MediaQuery.of(context).size.width,
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage(AppConstants.dashboardCardBg),
+            fit: BoxFit.cover,
+          ),
+        ),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.center,
+              colors: [
+                AppConstants.primaryColor.withValues(alpha: 0.5),
+                AppConstants.logoBlueColor.withValues(alpha: 0.5),
+              ],
+            ),
+          ),
+
+          child: SafeArea(
+            child: Column(
+              mainAxisSize: MainAxisSize.max,
+              // controller: scrollController,
+              // shrinkWrap: true,
+              // physics: const NeverScrollableScrollPhysics(),
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(top: 3.0, left: 10, right: 5),
+                  child: Row(
+                    children: [
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(height: 7.0),
+                          DottedBorder(
+                            options: CircularDottedBorderOptions(
+                              // color: AppConstants.logoBlueColor,
+                              color: AppConstants.accentColor,
+                              // color: AppConstants.backgroundColor,
+                              strokeWidth: 2.5,
+                              dashPattern: const [7, 5, 7, 5, 7, 5],
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(5.0),
+                              child: CircleAvatar(
+                                radius: 40,
+                                backgroundImage: AssetImage(
+                                  AppConstants.profilePlaceholder,
+                                ),
+                                backgroundColor: Colors.transparent,
+                              ),
+                            ),
+                          ),
+                          SizedBox(height: 10.0),
+                          SizedBox(
+                            width: 50,
+                            height: 30,
+                            child: ElevatedButton(
+                              onPressed: () {},
+                              style: ElevatedButton.styleFrom(
+                                padding: EdgeInsets.all(0.0),
+                                backgroundColor: AppConstants.backgroundColor,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(20),
+                                ),
+                              ),
+                              child: Image.asset(
+                                'assets/icons/attendance-icon.png',
+                                height: 20,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 10),
+                      Container(
+                        height: 150,
+                        width: MediaQuery.of(context).size.width - 125,
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: AppConstants.backgroundColor,
+                            width: 1.0,
+                          ),
+                          borderRadius: const BorderRadius.all(
+                            Radius.circular(20),
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.only(
+                            left: 15.0,
+                            right: 15.0,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              AuditorInfoWidget(
+                                title: 'Auditor ID',
+                                value: 'JNK12345',
+                              ),
+                              AuditorInfoWidget(
+                                title: 'Name',
+                                value: 'John Doe',
+                              ),
+                              AuditorInfoWidget(
+                                title: 'Attendance Details',
+                                value: '03-07-2025 10:30:01',
+                              ),
+                              AuditorInfoWidget(
+                                title: 'Manager',
+                                value: 'Rahul Sharma',
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 15),
+                Row(
+                  children: [
+                    Expanded(
+                      child: FadedDivider(
+                        color: AppConstants.logoBlueColor,
+                        height: 3.0,
+                        begin: Alignment.centerLeft,
+                        end: Alignment.centerRight,
+                      ),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      child: Text(
+                        "Audit Dashboard",
+                        style: TextStyle(
+                          color: AppConstants.backgroundColor,
+                          fontWeight: FontWeight.w500,
+                          fontSize: 16.0,
+                        ),
+                      ),
+                    ),
+                    Expanded(
+                      child: FadedDivider(
+                        color: AppConstants.logoBlueColor,
+                        height: 3.0,
+                        begin: Alignment.centerRight,
+                        end: Alignment.centerLeft,
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 15.0),
+                Container(
+                  decoration: BoxDecoration(
+                    color: AppConstants.backgroundColor,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(40),
+                      topRight: Radius.circular(40),
+                    ),
+                  ),
+                  child: TabScreen(
+                    labels: ['Present Day', 'Current Month'],
+                    tabBgColor: AppConstants.primaryColor,
+                    tabFgColor: Colors.black,
+                    tabActiveBgColor: AppConstants.logoBlueColor,
+                    tabActiveFgColor: AppConstants.backgroundColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

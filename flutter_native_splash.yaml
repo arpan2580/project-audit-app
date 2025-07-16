@@ -1,0 +1,16 @@
+flutter_native_splash:
+  android: true
+  ios: true
+  web: false
+  
+  color: "#FFFFFF"
+  image: assets/animations/logo_animation_loop1.gif
+
+  # From Android 12 onwards, the splash screen is handled differently than in previous versions.
+  # Please visit https://developer.android.com/guide/topics/ui/splash-screen
+  # Following are specific parameters for Android 12+.
+  android_12:
+
+    # Splash screen background color.
+    color: "#FFFFFF"
+    image: assets/animations/logo_animation_loop1.gif
