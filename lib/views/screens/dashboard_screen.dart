@@ -1,6 +1,10 @@
+import 'dart:io';
+
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:image_cropper/image_cropper.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:jnk_app/consts/app_constants.dart';
 import 'package:jnk_app/controllers/base_controller.dart';
@@ -14,6 +18,7 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final ImagePicker picker = ImagePicker();
     // final scrollController = ScrollController();
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -139,13 +144,26 @@ class DashboardScreen extends StatelessWidget {
                                                             .isLunchBreak
                                                             .value ==
                                                         false) {
-                                                      BaseController
-                                                              .isLunchBreak
-                                                              .value =
-                                                          true;
-                                                      DialogHelper.showInfoToast(
-                                                        description:
-                                                            'Lunch Break Started',
+                                                      DialogHelper.showAlertDialog(
+                                                        context: context,
+                                                        title:
+                                                            "Start Lunch Break",
+                                                        content: Text(
+                                                          "Please click on Confirm, if you want to start lunch break",
+                                                        ),
+                                                        confirmText: "Confirm",
+                                                        onConfirm: () {
+                                                          BaseController
+                                                                  .isLunchBreak
+                                                                  .value =
+                                                              true;
+                                                          Get.back();
+                                                          DialogHelper.showInfoToast(
+                                                            description:
+                                                                'Lunch Break Started',
+                                                          );
+                                                        },
+                                                        cancelText: "Cancel",
                                                       );
                                                     }
                                                   },
@@ -187,13 +205,26 @@ class DashboardScreen extends StatelessWidget {
                                                             .isLunchBreak
                                                             .value ==
                                                         true) {
-                                                      BaseController
-                                                              .isLunchBreak
-                                                              .value =
-                                                          false;
-                                                      DialogHelper.showInfoToast(
-                                                        description:
-                                                            'Lunch Break Ended',
+                                                      DialogHelper.showAlertDialog(
+                                                        context: context,
+                                                        title:
+                                                            "End Lunch Break",
+                                                        content: Text(
+                                                          "Please click on Confirm, if you want to end lunch break",
+                                                        ),
+                                                        confirmText: "Confirm",
+                                                        onConfirm: () {
+                                                          BaseController
+                                                                  .isLunchBreak
+                                                                  .value =
+                                                              false;
+                                                          Get.back();
+                                                          DialogHelper.showInfoToast(
+                                                            description:
+                                                                'Lunch Break Ended',
+                                                          );
+                                                        },
+                                                        cancelText: "Cancel",
                                                       );
                                                     }
                                                   },
@@ -229,22 +260,32 @@ class DashboardScreen extends StatelessWidget {
                                                             .isPresent
                                                             .value ==
                                                         false) {
-                                                      BaseController
-                                                              .isPresent
-                                                              .value =
-                                                          true;
-                                                      DialogHelper.showInfoToast(
-                                                        description:
-                                                            'Attendance Marked',
+                                                      takePhoto(
+                                                        ImageSource.camera,
+                                                        picker,
+                                                        context,
                                                       );
                                                     } else {
-                                                      BaseController
-                                                              .isPresent
-                                                              .value =
-                                                          false;
-                                                      DialogHelper.showInfoToast(
-                                                        description:
-                                                            'Attendance Closed',
+                                                      DialogHelper.showAlertDialog(
+                                                        context: context,
+                                                        title:
+                                                            "Close Attendance",
+                                                        content: Text(
+                                                          "Please click on Confirm, if you want to close attendance",
+                                                        ),
+                                                        confirmText: "Confirm",
+                                                        onConfirm: () {
+                                                          BaseController
+                                                                  .isPresent
+                                                                  .value =
+                                                              false;
+                                                          Get.back();
+                                                          DialogHelper.showInfoToast(
+                                                            description:
+                                                                'Attendance Closed',
+                                                          );
+                                                        },
+                                                        cancelText: "Cancel",
                                                       );
                                                     }
                                                   },
@@ -403,5 +444,64 @@ class DashboardScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  void takePhoto(ImageSource source, picker, context) async {
+    final pickedFile = await picker.pickImage(
+      source: source,
+      preferredCameraDevice: CameraDevice.front,
+    );
+
+    if (pickedFile != null) {
+      CroppedFile? croppedImage = await ImageCropper().cropImage(
+        sourcePath: pickedFile.path,
+        compressFormat: ImageCompressFormat.jpg,
+        compressQuality: 30,
+        uiSettings: [
+          AndroidUiSettings(
+            hideBottomControls: true,
+            lockAspectRatio: true,
+            initAspectRatio: CropAspectRatioPreset.square,
+          ),
+          IOSUiSettings(hidesNavigationBar: true, aspectRatioLockEnabled: true),
+        ],
+      );
+
+      if (croppedImage != null) {
+        final path = croppedImage.path;
+        BaseController.imageFile.value = File(path);
+        DialogHelper.showAlertDialog(
+          context: context,
+          title: "Mark Attendance",
+          content: Image.file(
+            BaseController.imageFile.value,
+            height: 150,
+            width: 150,
+            fit: BoxFit.cover,
+          ),
+          confirmText: "Confirm",
+          onConfirm: () {
+            BaseController.isPresent.value = true;
+            Get.back();
+            DialogHelper.showInfoToast(description: 'Attendance Marked');
+          },
+          cancelText: "Cancel",
+        );
+        // print("Cropped File =========> ${BaseController.imageFile.value.path}");
+        // Get the file size in bytes using length() (asynchronously)
+        int sizeInBytes = await BaseController.imageFile.value.length();
+        double sizeInKb = sizeInBytes / 1024;
+        double sizeInMb = sizeInKb / 1024;
+        print('File size in KB: ${sizeInKb.toStringAsFixed(2)} KB');
+        print('File size in MB: ${sizeInMb.toStringAsFixed(2)} MB');
+        // widget.controller.updateProfileImage(imageFile);
+      }
+      // BaseController.showReload.value = false;
+      // widget.controller.updateProfileImage(File(pickedFile.path));
+    } else {
+      DialogHelper.showInfoToast(
+        description: 'No image clicked, please try again',
+      );
+    }
   }
 }

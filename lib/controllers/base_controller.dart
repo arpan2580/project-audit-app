@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:jnk_app/services/base_client.dart';
 import 'package:jnk_app/views/dialogs/dialog_helper.dart';
@@ -18,6 +19,7 @@ class BaseController {
   static RxBool isPresent = false.obs;
   static RxBool isLunchBreak = false.obs;
   static RxBool showOptions = false.obs;
+  static Rx<File> imageFile = Rx<File>(File(''));
   // static dynamic unreadNotification = 0.obs;
   // static dynamic assignedPosts = 0.obs;
   // static RxBool commentReload = false.obs;

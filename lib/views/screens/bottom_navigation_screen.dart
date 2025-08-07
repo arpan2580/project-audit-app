@@ -46,7 +46,7 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
             //     : MediaQuery.of(context).size.height >= 850
             //     ? 95
             //     : 90,
-            bottom: 80, // Adjusted for better visibility
+            bottom: 90, // Adjusted for better visibility
             left: MediaQuery.of(context).size.width / 2 - 70, // Centered
             child: Obx(
               () => AnimatedSlide(
@@ -141,69 +141,71 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
         child: SvgPicture.asset('assets/icons/Chat-icon.svg', height: 28.0),
       ),
 
-      bottomNavigationBar: Container(
-        height: 60.0,
-        padding: const EdgeInsets.only(left: 20.0, right: 20.0),
-        decoration: BoxDecoration(
-          color: AppConstants.logoBlueColor,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(30.0),
-            topRight: Radius.circular(30.0),
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          height: 60.0,
+          padding: const EdgeInsets.only(left: 20.0, right: 20.0),
+          decoration: BoxDecoration(
+            color: AppConstants.logoBlueColor,
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(30.0),
+              topRight: Radius.circular(30.0),
+            ),
           ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            IconButton(
-              icon: SvgPicture.asset(
-                'assets/icons/Home.svg',
-                height: 28,
-                width: 28.0,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                icon: SvgPicture.asset(
+                  'assets/icons/Home.svg',
+                  height: 28,
+                  width: 28.0,
+                ),
+                onPressed: () {
+                  BaseController.showOptions.value = false;
+                  selectedIndex = 0;
+                  pageController.jumpToPage(0);
+                },
               ),
-              onPressed: () {
-                BaseController.showOptions.value = false;
-                selectedIndex = 0;
-                pageController.jumpToPage(0);
-              },
-            ),
-            IconButton(
-              icon: SvgPicture.asset(
-                'assets/icons/BitPlan.svg',
-                height: 28,
-                width: 28.0,
+              IconButton(
+                icon: SvgPicture.asset(
+                  'assets/icons/BitPlan.svg',
+                  height: 28,
+                  width: 28.0,
+                ),
+                onPressed: () {
+                  BaseController.showOptions.value = false;
+                  selectedIndex = 1;
+                  pageController.jumpToPage(1);
+                },
               ),
-              onPressed: () {
-                BaseController.showOptions.value = false;
-                selectedIndex = 1;
-                pageController.jumpToPage(1);
-              },
-            ),
-            const SizedBox(width: 40), // space for FAB
-            IconButton(
-              icon: SvgPicture.asset(
-                'assets/icons/Attendance.svg',
-                height: 28,
-                width: 28.0,
+              const SizedBox(width: 40), // space for FAB
+              IconButton(
+                icon: SvgPicture.asset(
+                  'assets/icons/Attendance.svg',
+                  height: 28,
+                  width: 28.0,
+                ),
+                onPressed: () {
+                  BaseController.showOptions.value = false;
+                  selectedIndex = 2;
+                  pageController.jumpToPage(2);
+                },
               ),
-              onPressed: () {
-                BaseController.showOptions.value = false;
-                selectedIndex = 2;
-                pageController.jumpToPage(2);
-              },
-            ),
-            IconButton(
-              icon: SvgPicture.asset(
-                'assets/icons/Profile.svg',
-                height: 28,
-                width: 28.0,
+              IconButton(
+                icon: SvgPicture.asset(
+                  'assets/icons/Profile.svg',
+                  height: 28,
+                  width: 28.0,
+                ),
+                onPressed: () {
+                  BaseController.showOptions.value = false;
+                  selectedIndex = 3;
+                  pageController.jumpToPage(3);
+                },
               ),
-              onPressed: () {
-                BaseController.showOptions.value = false;
-                selectedIndex = 3;
-                pageController.jumpToPage(3);
-              },
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

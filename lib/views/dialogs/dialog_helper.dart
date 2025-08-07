@@ -124,4 +124,44 @@ class DialogHelper {
       maxWidth: 300,
     );
   }
+
+  static void showAlertDialog({
+    required BuildContext context,
+    required String title,
+    required Widget content,
+    String? confirmText,
+    String? cancelText,
+    VoidCallback? onConfirm,
+    VoidCallback? onCancel,
+  }) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+          backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+          title: Text(title),
+          content: content,
+          actions: [
+            if (cancelText != null)
+              TextButton(
+                onPressed: onCancel ?? () => Get.back(),
+                child: Text(cancelText),
+              ),
+            if (confirmText != null)
+              TextButton(
+                onPressed: onConfirm ?? () => Get.back(),
+                style: ButtonStyle(
+                  backgroundColor: WidgetStateProperty.all(Colors.blue),
+                  foregroundColor: WidgetStateProperty.all(Colors.white),
+                ),
+                child: Text(confirmText),
+              ),
+          ],
+        );
+      },
+    );
+  }
 }

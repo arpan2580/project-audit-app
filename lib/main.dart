@@ -4,8 +4,14 @@ import 'package:jnk_app/views/screens/animated_splash_screen.dart';
 // import 'package:jnk_app/views/screens/login_screen.dart';
 import 'package:jnk_app/theme/app_theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]);
   runApp(const MyApp());
 }
 

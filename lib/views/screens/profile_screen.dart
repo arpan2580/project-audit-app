@@ -373,6 +373,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         context: context,
                         builder: (builder) {
                           return AlertDialog(
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10.0),
+                            ),
                             backgroundColor: Theme.of(
                               context,
                             ).scaffoldBackgroundColor,
@@ -548,7 +551,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       CroppedFile? croppedImage = await ImageCropper().cropImage(
         sourcePath: pickedFile.path,
         compressFormat: ImageCompressFormat.jpg,
-        compressQuality: 50,
+        compressQuality: 30,
         uiSettings: [
           AndroidUiSettings(
             hideBottomControls: true,
@@ -564,6 +567,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
         setState(() {
           imageFile = File(path);
         });
+        int? sizeInBytes = await imageFile?.length();
+        double sizeInKb = sizeInBytes! / 1024;
+        double sizeInMb = sizeInKb / 1024;
+        print('File size in KB: ${sizeInKb.toStringAsFixed(2)} KB');
+        print('File size in MB: ${sizeInMb.toStringAsFixed(2)} MB');
         // print("Cropped File =========> ${_imageFile!.path}");
 
         // widget.controller.updateProfileImage(imageFile);
