@@ -12,6 +12,24 @@ class LoginController extends GetxController {
   TextEditingController txtEmail = TextEditingController();
   TextEditingController txtPassword = TextEditingController();
   final otpKey = GetStorage();
+
+  // @override
+  // void onInit(BuildContext context) {
+  //   super.onInit();
+  //   if (BaseController.timeNotSetToAutomatic.value) {
+  //     DialogHelper.showNonDismissibleDialog(
+  //       context: context,
+  //       title: "Configuration Error",
+  //       content: Text("Time is NOT set to automatic. Please enable it in settings to proceed."),
+  //       confirmText: "Open Settings",
+  //       onConfirm: () {
+  //         TimeSettingsService.openTimeSettings();
+  //         Navigator.pop(context);
+  //       },
+  //     );
+  //   }
+  // }
+
   Future<void> login() async {
     if (txtEmail.text == 'test@gmail.in' && txtPassword.text == '123456') {
       DialogHelper.showSuccessToast(description: "Logged in successfully.");

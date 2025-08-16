@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:geolocator/geolocator.dart';
 import 'package:jnk_app/services/base_client.dart';
 import 'package:jnk_app/views/dialogs/dialog_helper.dart';
 import 'package:jnk_app/views/screens/login_screen.dart';
@@ -20,6 +21,25 @@ class BaseController {
   static RxBool isLunchBreak = false.obs;
   static RxBool showOptions = false.obs;
   static Rx<File> imageFile = Rx<File>(File(''));
+  static RxBool timeNotSetToAutomatic = false.obs;
+  static RxBool timeZoneNotSetToAutomatic = false.obs;
+  static RxBool gpsEnabled = false.obs;
+  static RxBool locationEnabled = false.obs;
+  static RxBool locationPermission = false.obs;
+  static RxBool locationMocked = false.obs;
+  static Rx<Position> currentLocation = Position(
+    latitude: 0.0,
+    longitude: 0.0,
+    timestamp: DateTime.now(),
+    accuracy: 0.0,
+    altitude: 0.0,
+    speed: 0.0,
+    speedAccuracy: 0.0,
+    heading: 0.0,
+    floor: null,
+    altitudeAccuracy: 0.0,
+    headingAccuracy: 0.0,
+  ).obs;
   // static dynamic unreadNotification = 0.obs;
   // static dynamic assignedPosts = 0.obs;
   // static RxBool commentReload = false.obs;

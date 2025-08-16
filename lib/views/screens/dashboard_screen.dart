@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:jnk_app/consts/app_constants.dart';
 import 'package:jnk_app/controllers/base_controller.dart';
+import 'package:jnk_app/services/location_service.dart';
 import 'package:jnk_app/utils/custom/faded_divider.dart';
 import 'package:jnk_app/views/dialogs/dialog_helper.dart';
 import 'package:jnk_app/views/screens/tab_screen.dart';
@@ -447,61 +448,109 @@ class DashboardScreen extends StatelessWidget {
   }
 
   void takePhoto(ImageSource source, picker, context) async {
-    final pickedFile = await picker.pickImage(
-      source: source,
-      preferredCameraDevice: CameraDevice.front,
+    LocationService.instance.checkLocation();
+    DialogHelper.showAlertDialog(
+      context: context,
+      title: "Capturing GPS",
+      content: Image.asset(
+        'assets/animations/gps_capture.gif',
+        height: 120,
+        width: 120,
+        fit: BoxFit.scaleDown,
+      ),
+      confirmText: null,
+      onConfirm: () {},
+      cancelText: null,
     );
-
-    if (pickedFile != null) {
-      CroppedFile? croppedImage = await ImageCropper().cropImage(
-        sourcePath: pickedFile.path,
-        compressFormat: ImageCompressFormat.jpg,
-        compressQuality: 30,
-        uiSettings: [
-          AndroidUiSettings(
-            hideBottomControls: true,
-            lockAspectRatio: true,
-            initAspectRatio: CropAspectRatioPreset.square,
-          ),
-          IOSUiSettings(hidesNavigationBar: true, aspectRatioLockEnabled: true),
-        ],
+    Future.delayed(const Duration(seconds: 3), () async {
+      Get.back(); // Close the GPS dialog
+      final pickedFile = await picker.pickImage(
+        source: source,
+        preferredCameraDevice: CameraDevice.front,
       );
 
-      if (croppedImage != null) {
-        final path = croppedImage.path;
-        BaseController.imageFile.value = File(path);
-        DialogHelper.showAlertDialog(
-          context: context,
-          title: "Mark Attendance",
-          content: Image.file(
-            BaseController.imageFile.value,
-            height: 150,
-            width: 150,
-            fit: BoxFit.cover,
-          ),
-          confirmText: "Confirm",
-          onConfirm: () {
-            BaseController.isPresent.value = true;
-            Get.back();
-            DialogHelper.showInfoToast(description: 'Attendance Marked');
-          },
-          cancelText: "Cancel",
+      if (pickedFile != null) {
+        CroppedFile? croppedImage = await ImageCropper().cropImage(
+          sourcePath: pickedFile.path,
+          compressFormat: ImageCompressFormat.jpg,
+          compressQuality: 30,
+          uiSettings: [
+            AndroidUiSettings(
+              hideBottomControls: true,
+              lockAspectRatio: true,
+              initAspectRatio: CropAspectRatioPreset.square,
+            ),
+            IOSUiSettings(
+              hidesNavigationBar: true,
+              aspectRatioLockEnabled: true,
+            ),
+          ],
         );
-        // print("Cropped File =========> ${BaseController.imageFile.value.path}");
-        // Get the file size in bytes using length() (asynchronously)
-        int sizeInBytes = await BaseController.imageFile.value.length();
-        double sizeInKb = sizeInBytes / 1024;
-        double sizeInMb = sizeInKb / 1024;
-        print('File size in KB: ${sizeInKb.toStringAsFixed(2)} KB');
-        print('File size in MB: ${sizeInMb.toStringAsFixed(2)} MB');
-        // widget.controller.updateProfileImage(imageFile);
+
+        if (croppedImage != null) {
+          final path = croppedImage.path;
+          BaseController.imageFile.value = File(path);
+          DialogHelper.showAlertDialog(
+            context: context,
+            title: "Mark Attendance",
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.file(
+                  BaseController.imageFile.value,
+                  height: 400,
+                  width: 300,
+                  fit: BoxFit.cover,
+                ),
+                SizedBox(height: 7.0),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.location_on,
+                          color: AppConstants.accentColor,
+                        ),
+                        SizedBox(width: 5.0),
+                        Text(
+                          "Lat: ${BaseController.currentLocation.value.latitude.toStringAsFixed(6)}",
+                          style: TextStyle(fontSize: 16.0),
+                        ),
+                      ],
+                    ),
+                    Text(
+                      "Long: ${BaseController.currentLocation.value.longitude.toStringAsFixed(6)}",
+                      style: TextStyle(fontSize: 16.0),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            confirmText: "Confirm",
+            onConfirm: () {
+              BaseController.isPresent.value = true;
+              Get.back();
+              DialogHelper.showInfoToast(description: 'Attendance Marked');
+            },
+            cancelText: "Cancel",
+          );
+          // print("Cropped File =========> ${BaseController.imageFile.value.path}");
+          // Get the file size in bytes using length() (asynchronously)
+          int sizeInBytes = await BaseController.imageFile.value.length();
+          double sizeInKb = sizeInBytes / 1024;
+          double sizeInMb = sizeInKb / 1024;
+          print('File size in KB: ${sizeInKb.toStringAsFixed(2)} KB');
+          print('File size in MB: ${sizeInMb.toStringAsFixed(2)} MB');
+          // widget.controller.updateProfileImage(imageFile);
+        }
+        // BaseController.showReload.value = false;
+        // widget.controller.updateProfileImage(File(pickedFile.path));
+      } else {
+        DialogHelper.showInfoToast(
+          description: 'No image clicked, please try again',
+        );
       }
-      // BaseController.showReload.value = false;
-      // widget.controller.updateProfileImage(File(pickedFile.path));
-    } else {
-      DialogHelper.showInfoToast(
-        description: 'No image clicked, please try again',
-      );
-    }
+    });
   }
 }
