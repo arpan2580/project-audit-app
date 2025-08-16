@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:jnk_app/services/base_client.dart';
 import 'package:jnk_app/views/dialogs/dialog_helper.dart';
@@ -8,6 +9,8 @@ import 'package:jnk_app/views/screens/login_screen.dart';
 import 'package:get/get_rx/get_rx.dart';
 import 'package:get/route_manager.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 
 class BaseController {
   static const baseUrl = 'https://premierclub.itc.in/EmPulseQA/public/api/v1';
@@ -186,5 +189,30 @@ class BaseController {
 
   static void timerStop() {
     _timer.cancel();
+  }
+
+  /// Helper function to compress image manually (when not cropping)
+  static Future<File> compressImage(File file, int quality) async {
+    try {
+      final dir = await getTemporaryDirectory();
+      final targetPath = path.join(
+        dir.path,
+        "${DateTime.now().millisecondsSinceEpoch}.jpg",
+      );
+
+      final compressedFile =
+          await FlutterImageCompress.compressAndGetFile(
+                file.absolute.path,
+                targetPath,
+                quality: quality, // adjust as needed
+                format: CompressFormat.jpeg,
+              )
+              as File?;
+
+      return compressedFile ?? file;
+    } catch (e) {
+      print("Compression not supported on this platform: $e");
+      return file; // fallback to original
+    } // fallback to original if compression fails
   }
 }

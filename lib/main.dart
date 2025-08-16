@@ -38,7 +38,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     // Check time settings when the app starts
     checkTimeSettings();
-    LocationService.instance.checkLocation();
+    // LocationService.instance.checkLocation();
+    LocationService.checkLocation();
   }
 
   @override
@@ -57,7 +58,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     if (isBackground || isClosed) {}
     if (isResumed) {
       checkTimeSettings();
-      LocationService.instance.checkLocation();
+      // LocationService.instance.checkLocation();
     }
   }
 
@@ -104,8 +105,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                     TimeSettingsService.openTimeSettings();
                   },
                 );
-              } else if (!BaseController.gpsEnabled.value ||
-                  !BaseController.locationPermission.value) {
+              } else if (BaseController.gpsEnabled.value == false ||
+                  BaseController.locationPermission.value == false) {
                 return NonDismissibleWidget(
                   icon: Icons.location_off,
                   title: "Location Services Required",
@@ -121,6 +122,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                       );
                     }
                   },
+                  retryText: "Retry",
+                  onRefresh: () => LocationService.checkLocation(),
                 );
               } else if (BaseController.locationMocked.value) {
                 return NonDismissibleWidget(
@@ -132,6 +135,8 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                   onConfirm: () {
                     AppSettings.openAppSettings(asAnotherTask: true);
                   },
+                  retryText: "Retry",
+                  onRefresh: () => LocationService.checkLocation(),
                 );
               } else {
                 return const SizedBox.shrink();

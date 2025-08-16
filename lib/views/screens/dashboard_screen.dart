@@ -448,7 +448,6 @@ class DashboardScreen extends StatelessWidget {
   }
 
   void takePhoto(ImageSource source, picker, context) async {
-    LocationService.instance.checkLocation();
     DialogHelper.showAlertDialog(
       context: context,
       title: "Capturing GPS",
@@ -462,32 +461,23 @@ class DashboardScreen extends StatelessWidget {
       onConfirm: () {},
       cancelText: null,
     );
+    LocationService.checkLocation();
     Future.delayed(const Duration(seconds: 3), () async {
-      Get.back(); // Close the GPS dialog
-      final pickedFile = await picker.pickImage(
-        source: source,
-        preferredCameraDevice: CameraDevice.front,
-      );
-
-      if (pickedFile != null) {
-        CroppedFile? croppedImage = await ImageCropper().cropImage(
-          sourcePath: pickedFile.path,
-          compressFormat: ImageCompressFormat.jpg,
-          compressQuality: 30,
-          uiSettings: [
-            AndroidUiSettings(
-              hideBottomControls: true,
-              lockAspectRatio: true,
-              initAspectRatio: CropAspectRatioPreset.square,
-            ),
-            IOSUiSettings(
-              hidesNavigationBar: true,
-              aspectRatioLockEnabled: true,
-            ),
-          ],
+      Get.back(closeOverlays: true); // Close the GPS dialog
+      if (BaseController.gpsEnabled.value != false &&
+          BaseController.locationPermission.value != false &&
+          BaseController.locationMocked.value != true) {
+        final pickedFile = await picker.pickImage(
+          source: source,
+          preferredCameraDevice: CameraDevice.front,
         );
 
-        if (croppedImage != null) {
+        if (pickedFile != null) {
+          File croppedImage = await BaseController.compressImage(
+            File(pickedFile.path),
+            10,
+          );
+
           final path = croppedImage.path;
           BaseController.imageFile.value = File(path);
           DialogHelper.showAlertDialog(
@@ -525,6 +515,10 @@ class DashboardScreen extends StatelessWidget {
                     ),
                   ],
                 ),
+                Text(
+                  "Date: ${DateFormat('dd-MM-yyyy hh:mm:ss a').format(DateTime.now())}",
+                  style: TextStyle(fontSize: 16.0),
+                ),
               ],
             ),
             confirmText: "Confirm",
@@ -543,13 +537,13 @@ class DashboardScreen extends StatelessWidget {
           print('File size in KB: ${sizeInKb.toStringAsFixed(2)} KB');
           print('File size in MB: ${sizeInMb.toStringAsFixed(2)} MB');
           // widget.controller.updateProfileImage(imageFile);
+          // BaseController.showReload.value = false;
+          // widget.controller.updateProfileImage(File(pickedFile.path));
+        } else {
+          DialogHelper.showInfoToast(
+            description: 'No image clicked, please try again',
+          );
         }
-        // BaseController.showReload.value = false;
-        // widget.controller.updateProfileImage(File(pickedFile.path));
-      } else {
-        DialogHelper.showInfoToast(
-          description: 'No image clicked, please try again',
-        );
       }
     });
   }

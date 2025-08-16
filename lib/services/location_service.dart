@@ -4,17 +4,17 @@ import 'package:jnk_app/views/dialogs/dialog_helper.dart';
 
 class LocationService {
   // Singleton pattern
-  LocationService._();
-  static final LocationService instance = LocationService._();
+  // LocationService._();
+  // static final LocationService instance = LocationService._();
 
-  bool _permissionDialogShown = false;
-  bool _gpsDialogShown = false;
+  static bool _permissionDialogShown = false;
+  static bool _gpsDialogShown = false;
 
   /// Main function to check GPS, permission and mock status
-  Future<void> checkLocation() async {
+  static Future<void> checkLocation() async {
     // 1. Check if GPS is enabled
     final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
+    if (serviceEnabled == false) {
       BaseController.gpsEnabled.value = false;
       if (!_gpsDialogShown) {
         _gpsDialogShown = true;

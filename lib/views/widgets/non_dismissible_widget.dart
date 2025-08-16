@@ -7,6 +7,8 @@ class NonDismissibleWidget extends StatelessWidget {
   final String content;
   final String confirmText;
   final VoidCallback onConfirm;
+  final VoidCallback? onRefresh;
+  final String? retryText;
 
   const NonDismissibleWidget({
     super.key,
@@ -15,6 +17,8 @@ class NonDismissibleWidget extends StatelessWidget {
     required this.content,
     required this.confirmText,
     required this.onConfirm,
+    this.onRefresh,
+    this.retryText,
   });
 
   @override
@@ -44,19 +48,49 @@ class NonDismissibleWidget extends StatelessWidget {
                   const SizedBox(height: 10),
                   Text(content, textAlign: TextAlign.center),
                   const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: () {
-                      onConfirm();
-                    },
-                    child: Text(
-                      confirmText,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          onConfirm();
+                        },
+                        child: Text(
+                          confirmText,
 
-                      style: TextStyle(
-                        color: AppConstants.backgroundColor,
-                        fontSize: AppConstants.fontRegular,
+                          style: TextStyle(
+                            color: AppConstants.backgroundColor,
+                            fontSize: AppConstants.fontRegular,
+                          ),
+                        ),
                       ),
-                    ),
+                      if (onRefresh != null) SizedBox(width: 15),
+                      ElevatedButton(
+                        onPressed: onRefresh,
+                        child: Text(
+                          retryText ?? "Retry",
+                          style: TextStyle(
+                            color: AppConstants.backgroundColor,
+                            fontSize: AppConstants.fontRegular,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
+
+                  // ElevatedButton(
+                  //   onPressed: () {
+                  //     onConfirm();
+                  //   },
+                  //   child: Text(
+                  //     confirmText,
+
+                  //     style: TextStyle(
+                  //       color: AppConstants.backgroundColor,
+                  //       fontSize: AppConstants.fontRegular,
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               ),
             ),
