@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:jnk_app/consts/app_constants.dart';
+import 'package:jnk_app/controllers/base_controller.dart';
 import 'package:jnk_app/controllers/login_controller.dart';
 import 'package:jnk_app/utils/custom/custom_color.dart';
 import 'package:jnk_app/views/dialogs/dialog_helper.dart';
@@ -16,7 +17,8 @@ class LoginScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final customTxtColors = Theme.of(context).extension<CustomColor>();
     final GlobalKey<FormState> formKey = GlobalKey<FormState>();
-    final loginController = Get.put(LoginController());
+    final LoginController loginController = Get.find();
+    Rx<bool> isPassVisible = true.obs;
 
     return Scaffold(
       body: SafeArea(
@@ -55,7 +57,7 @@ class LoginScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
 
-                const Text("Your Email"),
+                const Text("Your Username"),
                 const SizedBox(height: 6),
                 TextFormField(
                   controller: loginController.txtEmail,
@@ -64,16 +66,18 @@ class LoginScreen extends StatelessWidget {
                       Icons.email_outlined,
                       color: Color.fromARGB(255, 109, 109, 109),
                     ),
-                    hintText: "test@gmail.com",
+                    hintText: "johndoe",
                   ),
                   validator: (value) {
                     loginController.txtEmail.text = value?.trim() ?? '';
                     if (loginController.txtEmail.text.isEmpty) {
-                      return "Email ID is required for login";
-                    } else if (!loginController.txtEmail.text.contains('@') ||
-                        !loginController.txtEmail.text.contains('.in')) {
-                      return "Email id is not valid";
-                    } else {
+                      return "Username is required for login";
+                    }
+                    // else if (!loginController.txtEmail.text.contains('@') ||
+                    //     !loginController.txtEmail.text.contains('.in')) {
+                    //   return "Email id is not valid";
+                    // }
+                    else {
                       return null;
                     }
                   },
@@ -82,28 +86,38 @@ class LoginScreen extends StatelessWidget {
                 const SizedBox(height: 16),
                 const Text("Password"),
                 const SizedBox(height: 6),
-                TextFormField(
-                  controller: loginController.txtPassword,
-                  obscureText: true,
-                  decoration: const InputDecoration(
-                    prefixIcon: Icon(
-                      Icons.lock_outline,
-                      color: Color.fromARGB(255, 109, 109, 109),
+                Obx(
+                  () => TextFormField(
+                    controller: loginController.txtPassword,
+                    obscureText: isPassVisible.value,
+                    decoration: InputDecoration(
+                      prefixIcon: Icon(
+                        Icons.lock_outline,
+                        color: Color.fromARGB(255, 109, 109, 109),
+                      ),
+                      suffixIcon: IconButton(
+                        onPressed: () =>
+                            isPassVisible.value = !isPassVisible.value,
+                        icon: Icon(
+                          isPassVisible.value
+                              ? Icons.visibility
+                              : Icons.visibility_off,
+                          color: Color.fromARGB(255, 109, 109, 109),
+                        ),
+                      ),
+                      hintText: "xxxxxxx",
                     ),
-                    suffixIcon: Icon(
-                      Icons.visibility_off,
-                      color: Color.fromARGB(255, 109, 109, 109),
-                    ),
-                    hintText: "xxxxxxx",
+                    validator: (value) {
+                      loginController.txtPassword.text = value?.trim() ?? '';
+                      if (loginController.txtPassword.text.isEmpty) {
+                        return "Password is required for login";
+                      } else if (loginController.txtPassword.text.length < 6) {
+                        return 'Password must be 6 characters long';
+                      } else {
+                        return null;
+                      }
+                    },
                   ),
-                  validator: (value) {
-                    loginController.txtPassword.text = value?.trim() ?? '';
-                    if (loginController.txtPassword.text.isEmpty) {
-                      return "Password is required for login";
-                    } else {
-                      return null;
-                    }
-                  },
                 ),
                 // const SizedBox(height: 8),
                 // Align(
@@ -129,6 +143,9 @@ class LoginScreen extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () {
                       if (formKey.currentState?.validate() ?? false) {
+                        BaseController.showLoading(
+                          'Please wait while we verify',
+                        );
                         loginController.login();
                       } else {
                         DialogHelper.showErrorToast(

@@ -112,14 +112,33 @@ class DashboardScreen extends StatelessWidget {
                                           ),
                                           child: Padding(
                                             padding: const EdgeInsets.all(5.0),
-                                            child: CircleAvatar(
-                                              radius: 40,
-                                              backgroundImage: AssetImage(
-                                                AppConstants.profilePlaceholder,
-                                              ),
-                                              backgroundColor:
-                                                  Colors.transparent,
-                                            ),
+                                            child:
+                                                BaseController
+                                                        .user
+                                                        .value!
+                                                        .avatar ==
+                                                    ''
+                                                ? CircleAvatar(
+                                                    radius: 40,
+                                                    backgroundImage: AssetImage(
+                                                      AppConstants
+                                                          .profilePlaceholder,
+                                                    ),
+                                                    backgroundColor:
+                                                        Colors.transparent,
+                                                  )
+                                                : CircleAvatar(
+                                                    radius: 40,
+                                                    backgroundImage:
+                                                        NetworkImage(
+                                                          BaseController
+                                                              .user
+                                                              .value!
+                                                              .avatar,
+                                                        ),
+                                                    backgroundColor:
+                                                        Colors.transparent,
+                                                  ),
                                           ),
                                         ),
                                       ),
@@ -344,12 +363,18 @@ class DashboardScreen extends StatelessWidget {
                                           children: [
                                             AuditorInfoWidget(
                                               title: 'Emp ID',
-                                              value: 'JNK12345',
+                                              value: BaseController
+                                                  .user
+                                                  .value!
+                                                  .empCode,
                                               scroll: true,
                                             ),
                                             AuditorInfoWidget(
                                               title: 'Emp Name',
-                                              value: 'Arpan Das',
+                                              value: BaseController
+                                                  .user
+                                                  .value!
+                                                  .name,
                                               scroll: true,
                                             ),
                                             AuditorInfoWidget(
@@ -364,7 +389,11 @@ class DashboardScreen extends StatelessWidget {
                                             ),
                                             AuditorInfoWidget(
                                               title: 'Manager',
-                                              value: 'Rahul Sharma',
+                                              value: BaseController
+                                                  .user
+                                                  .value!
+                                                  .manager!
+                                                  .name,
                                               scroll: true,
                                             ),
                                             AuditorInfoWidget(

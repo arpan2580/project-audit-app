@@ -11,7 +11,6 @@ import 'package:jnk_app/utils/custom/faded_divider.dart';
 import 'package:jnk_app/views/dialogs/custom_about_dialog.dart';
 import 'package:jnk_app/views/dialogs/custom_privacy_dialog.dart';
 import 'package:jnk_app/views/screens/change_pass_screen.dart';
-import 'package:jnk_app/views/screens/login_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -78,13 +77,24 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 child:
                                     imageFile == null ||
                                         imageFile.toString() == ''
-                                    ? CircleAvatar(
-                                        radius: 80,
-                                        backgroundImage: AssetImage(
-                                          AppConstants.profilePlaceholder,
-                                        ),
-                                        backgroundColor: Colors.transparent,
-                                      )
+                                    ? BaseController.user.value!.avatar == ''
+                                          ? CircleAvatar(
+                                              radius: 80,
+                                              backgroundImage: AssetImage(
+                                                AppConstants.profilePlaceholder,
+                                              ),
+                                              backgroundColor:
+                                                  Colors.transparent,
+                                            )
+                                          : CircleAvatar(
+                                              radius: 80,
+                                              backgroundImage: NetworkImage(
+                                                BaseController
+                                                    .user
+                                                    .value!
+                                                    .avatar,
+                                              ),
+                                            )
                                     : CircleAvatar(
                                         radius: 80,
                                         backgroundImage: FileImage(imageFile!),
@@ -117,7 +127,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                       SizedBox(height: 15.0),
                       Text(
-                        "Arpan Das",
+                        BaseController.user.value!.name,
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -126,7 +136,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         textAlign: TextAlign.center,
                       ),
                       Text(
-                        "JNK12345, arpan.das@test.com, +91 12345 67890, Kolkata, India",
+                        "${BaseController.user.value!.empCode}, arpan.das@test.com, +91 12345 67890, Kolkata, India",
                         style: TextStyle(
                           fontSize: 16,
                           color: AppConstants.backgroundColor.withAlpha(240),
@@ -394,9 +404,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             actions: [
                               TextButton(
                                 onPressed: () {
-                                  // widget.controller.logout();
-                                  // setState(() {});
-                                  Get.offAll(() => LoginScreen());
+                                  BaseController.logout();
                                 },
                                 style: ButtonStyle(
                                   backgroundColor: WidgetStateProperty.all(

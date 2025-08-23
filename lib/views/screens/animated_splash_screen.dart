@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:jnk_app/controllers/base_controller.dart';
+import 'package:jnk_app/views/screens/bottom_navigation_screen.dart';
 import 'package:jnk_app/views/screens/login_screen.dart';
 
 class AnimatedSplashScreen extends StatefulWidget {
@@ -14,7 +16,16 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen> {
     super.initState();
     Future.delayed(const Duration(seconds: 4), () {
       if (mounted) {
-        Navigator.of(context).pushReplacement(createRoute(LoginScreen()));
+        if ((BaseController.storeToken.read('token') != null ||
+                BaseController.storeToken.read('token') != '') &&
+            (BaseController.storeToken.read('refreshToken') != null ||
+                BaseController.storeToken.read('refreshToken') != '')) {
+          Navigator.of(
+            context,
+          ).pushReplacement(createRoute(BottomNavigationScreen()));
+        } else {
+          Navigator.of(context).pushReplacement(createRoute(LoginScreen()));
+        }
       }
     });
   }

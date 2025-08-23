@@ -1,6 +1,8 @@
 import 'package:dio/dio.dart';
+import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:jnk_app/services/dio_exceptions.dart';
+import 'package:jnk_app/views/screens/login_screen.dart';
 
 import '../controllers/base_controller.dart';
 import '../views/dialogs/dialog_helper.dart';
@@ -38,35 +40,59 @@ class AuthorizationInterceptor extends Interceptor {
   void onError(DioException err, handler) async {
     dynamic token;
     Dio dio = Dio();
-    if (err.response?.statusCode == 401 || err.response?.statusCode == 403) {
-      try {
-        await BaseController.tokenGeneration().then((value) async {
-          if (value) {
-            token = isLoggedIn.read('token');
+    //  || err.response?.statusCode == 403
+    // print(err.response?.statusCode);
+    // print(err.response?.data);
+    if (err.response != null && err.response?.statusCode == 400) {
+      if (err.response?.data['status'] == false) {
+        BaseController.hideLoading();
+        DialogHelper.showErrorToast(
+          description: err.response!.data['message'].toString(),
+        );
+        return;
+      }
+    } else if (err.response?.statusCode == 401 &&
+        (err.response?.data['detail'] != null ||
+            err.response?.data['detail'] != '')) {
+      if ((err.response?.data['code'] != null ||
+              err.response?.data['code'] != '') &&
+          (err.response?.data['code'] == 'token_not_valid')) {
+        if (err.response?.data['detail'] == 'Token is invalid') {
+          BaseController.logout();
+          return;
+        }
+        try {
+          await BaseController.tokenGeneration().then((value) async {
+            if (value) {
+              token = isLoggedIn.read('token');
 
-            err.requestOptions.headers["Authorization"] = 'Bearer $token';
+              err.requestOptions.headers["Authorization"] = 'Bearer $token';
 
-            final opts = Options(
-              method: err.requestOptions.method,
-              headers: err.requestOptions.headers,
-            );
+              final opts = Options(
+                method: err.requestOptions.method,
+                headers: err.requestOptions.headers,
+              );
 
-            final cloneReq = await dio.request(
-              BaseController.baseUrl + err.requestOptions.path,
-              options: opts,
-              data: err.requestOptions.data,
-            );
-            return handler.resolve(cloneReq);
-          }
-        });
-        // return _dio;
+              final cloneReq = await dio.request(
+                BaseController.baseUrl + err.requestOptions.path,
+                options: opts,
+                data: err.requestOptions.data,
+              );
+              return handler.resolve(cloneReq);
+            }
+          });
+          // return _dio;
 
-        // } catch (e) {
-        //   print('test: ' + e.toString());
-        // }
-      } on DioException catch (e) {
-        final errorMessage = DioExceptions.fromDioError(e).toString();
-        print(errorMessage.toString());
+          // } catch (e) {
+          //   print('test: ' + e.toString());
+          // }
+        } on DioException catch (e) {
+          final errorMessage = DioExceptions.fromDioError(e).toString();
+          print(errorMessage.toString());
+        }
+      } else {
+        BaseController.hideLoading();
+        DialogHelper.showErrorToast(description: err.response?.data['detail']);
       }
     } else {
       final errorMessage = DioExceptions.fromDioError(err).toString();

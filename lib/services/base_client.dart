@@ -46,7 +46,8 @@ class BaseClient {
     dynamic payload, [
     bool isRefresh = false,
   ]) async {
-    final dynamic response, responseJson;
+    dynamic response;
+    dynamic responseJson;
     try {
       if (isRefresh) {
         response = await _dio.post(
@@ -60,14 +61,24 @@ class BaseClient {
         response = await _dio.post(
           api,
           data: payload,
-          options: Options(headers: {'Accept': 'application/json'}),
+          options: Options(
+            headers: {
+              'Accept': 'application/json',
+              'Content-Type': 'application/json',
+            },
+          ),
         );
       }
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         responseJson = json.decode(response.toString());
         return responseJson;
       }
     } on DioException catch (err) {
+      if (response != null && response.statusCode == 400) {
+        responseJson = json.decode(response.toString());
+        return responseJson;
+      }
       DialogHelper.showErrorToast(description: err.toString());
     } catch (e) {
       DialogHelper.showErrorToast(description: e.toString());

@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:jnk_app/models/user_model.dart';
 import 'package:jnk_app/services/base_client.dart';
 import 'package:jnk_app/views/dialogs/dialog_helper.dart';
 import 'package:jnk_app/views/screens/login_screen.dart';
@@ -13,12 +15,12 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 
 class BaseController {
-  static const baseUrl = 'https://premierclub.itc.in/EmPulseQA/public/api/v1';
+  static const baseUrl = 'https://jnkundu.com/api/v1';
   static var baseImgUrl = '';
   // https://premierclub.itc.in/empulse/public/storage/
   static RxString deviceId = ''.obs;
-  static const captchaUrl =
-      'https://premierclub.itc.in/EmPulseQA/public/captcha';
+  // static const captchaUrl =
+  //     'https://premierclub.itc.in/EmPulseQA/public/captcha';
   static int expiryTime = 0;
   static RxBool isPresent = false.obs;
   static RxBool isLunchBreak = false.obs;
@@ -43,6 +45,7 @@ class BaseController {
     altitudeAccuracy: 0.0,
     headingAccuracy: 0.0,
   ).obs;
+  static Rxn<UserModel> user = Rxn<UserModel>();
   // static dynamic unreadNotification = 0.obs;
   // static dynamic assignedPosts = 0.obs;
   // static RxBool commentReload = false.obs;
@@ -85,11 +88,15 @@ class BaseController {
     // print('refresh: ' + refreshToken.toString());
 
     if (refreshToken != null && refreshToken != '') {
-      var response = await BaseClient().dioPost('/refresh-token', null, true);
+      var response = await BaseClient().dioPost(
+        '/refresh-token',
+        json.encode({"refresh": refreshToken}),
+        true,
+      );
       if (response != null) {
         if (response['success']) {
-          storeToken.write("token", response['token']);
-          storeToken.write("refreshToken", response['refresh_token']);
+          storeToken.write("token", response['access']);
+          storeToken.write("refreshToken", response['refresh']);
           return true;
         } else {
           storeToken.remove("token");
@@ -131,6 +138,17 @@ class BaseController {
 
       return false;
     }
+  }
+
+  static void logout() {
+    storeToken.remove("token");
+    storeToken.remove("refreshToken");
+    storeToken.remove("forcePasswordReset");
+    storeToken.erase();
+    Get.offAll(() => const LoginScreen());
+    DialogHelper.showErrorToast(
+      description: 'Your session is expired. Please login again to continue.',
+    );
   }
 
   static getinitials(name) {

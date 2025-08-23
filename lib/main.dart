@@ -5,6 +5,7 @@ import 'package:jnk_app/consts/app_constants.dart';
 import 'package:jnk_app/controllers/base_controller.dart';
 import 'package:jnk_app/services/location_service.dart';
 import 'package:jnk_app/services/time_settings_service.dart';
+import 'package:jnk_app/utils/app_bindings.dart';
 import 'package:jnk_app/views/dialogs/dialog_helper.dart';
 import 'package:jnk_app/views/screens/animated_splash_screen.dart';
 // import 'package:jnk_app/views/screens/login_screen.dart';
@@ -38,7 +39,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     // Check time settings when the app starts
     checkTimeSettings();
-    // LocationService.instance.checkLocation();
     LocationService.checkLocation();
   }
 
@@ -86,6 +86,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.light,
+      initialBinding: AppBindings(),
       // home: const ChangePassScreen(),
       home: const AnimatedSplashScreen(),
       builder: (context, child) {

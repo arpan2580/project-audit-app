@@ -1,3 +1,4 @@
+import 'package:jnk_app/models/change_pass_model.dart';
 import 'package:jnk_app/models/login_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
@@ -12,43 +13,33 @@ import 'package:jnk_app/views/screens/change_pass_screen.dart';
 class ChangePassController extends GetxController {
   TextEditingController txtCurrentPassword = TextEditingController();
   TextEditingController txtNewPassword = TextEditingController();
+  TextEditingController txtConfirmPassword = TextEditingController();
+
   final otpKey = GetStorage();
-  Future<void> login() async {
+  Future<void> changePassword() async {
     if (txtCurrentPassword.text == txtNewPassword.text) {
       DialogHelper.showErrorToast(
         description: "New password cannot be the same as current password.",
       );
       return;
-    }
-    if (txtCurrentPassword.text == '123456' &&
-        txtNewPassword.text == '1234567') {
-      DialogHelper.showSuccessToast(
-        description: "Password changed successfully.",
-      );
-      Get.to(() => BottomNavigationScreen());
-      return;
     } else {
-      LoginModel loginModel = LoginModel(
-        email: txtCurrentPassword.text.trim(),
-        password: txtNewPassword.text.trim(),
+      ChangePassModel changePassModel = ChangePassModel(
+        oldPass: txtCurrentPassword.text.trim(),
+        newPass: txtNewPassword.text.trim(),
       );
       BaseController.showLoading('Please wait while we verify');
 
       var response = await BaseClient().dioPost(
-        '/login',
-        loginModelToJson(loginModel),
+        '/user/change-password/',
+        changePassModelToJson(changePassModel),
       );
       BaseController.hideLoading();
       if (response != null) {
-        if (response['success']) {
+        if (response['status']) {
           DialogHelper.showSuccessToast(description: response['message']);
-
-          // otpKey.write("otpKey", response['resend_otp_token'].toString());
-          Get.to(() => ChangePassScreen());
+          Get.offAll(() => BottomNavigationScreen());
         } else {
-          DialogHelper.showErrorToast(
-            description: "Please enter valid mail and password",
-          );
+          DialogHelper.showErrorToast(description: response['message']);
         }
       } else {
         // ToastMsg().warningToast(response['message']);
