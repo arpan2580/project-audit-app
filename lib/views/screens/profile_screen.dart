@@ -7,6 +7,7 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:jnk_app/consts/app_constants.dart';
 import 'package:jnk_app/controllers/base_controller.dart';
+import 'package:jnk_app/controllers/dashboard_controller.dart';
 import 'package:jnk_app/utils/custom/faded_divider.dart';
 import 'package:jnk_app/views/dialogs/custom_about_dialog.dart';
 import 'package:jnk_app/views/dialogs/custom_privacy_dialog.dart';
@@ -22,432 +23,499 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   File? imageFile;
   final ImagePicker picker = ImagePicker();
+  RxBool isLoading = false.obs;
+
+  @override
+  void initState() {
+    super.initState();
+    isLoading.value = true;
+    DashboardController.fetchUserData().then((value) {
+      isLoading.value = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      extendBody: true,
-      appBar: AppBar(title: const Text('Profile'), centerTitle: true),
-      body: GestureDetector(
-        onTap: () {
-          BaseController.showOptions.value = false;
-        },
-        child: Column(
-          children: [
-            Container(
-              height: 440,
-              width: MediaQuery.of(context).size.width,
-              decoration: BoxDecoration(
-                image: DecorationImage(
-                  image: AssetImage(AppConstants.dashboardCardBg),
-                  fit: BoxFit.cover,
-                ),
-              ),
-              child: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      AppConstants.primaryColor.withValues(alpha: 0.5),
-                      AppConstants.logoBlueColor.withValues(alpha: 0.5),
-                    ],
-                  ),
-                ),
-                child: SafeArea(
-                  left: false,
-                  right: false,
-                  bottom: false,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Center(
-                        child: Stack(
-                          alignment: Alignment.bottomRight,
-                          children: [
-                            DottedBorder(
-                              options: CircularDottedBorderOptions(
-                                color: AppConstants.accentColor,
-                                strokeWidth: 2.5,
-                                dashPattern: const [7, 5, 7, 5, 7, 5],
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(5.0),
-                                child:
-                                    imageFile == null ||
-                                        imageFile.toString() == ''
-                                    ? BaseController.user.value!.avatar == ''
-                                          ? CircleAvatar(
-                                              radius: 80,
-                                              backgroundImage: AssetImage(
-                                                AppConstants.profilePlaceholder,
-                                              ),
-                                              backgroundColor:
-                                                  Colors.transparent,
-                                            )
-                                          : CircleAvatar(
-                                              radius: 80,
-                                              backgroundImage: NetworkImage(
-                                                BaseController
-                                                    .user
-                                                    .value!
-                                                    .avatar,
-                                              ),
-                                            )
-                                    : CircleAvatar(
-                                        radius: 80,
-                                        backgroundImage: FileImage(imageFile!),
+    return Obx(
+      () => isLoading.value
+          ? Scaffold(
+              extendBodyBehindAppBar: true,
+              extendBody: true,
+              body: const Center(child: CircularProgressIndicator.adaptive()),
+            )
+          : Scaffold(
+              extendBodyBehindAppBar: true,
+              extendBody: true,
+              appBar: AppBar(title: const Text('Profile'), centerTitle: true),
+              body: GestureDetector(
+                onTap: () {
+                  BaseController.showOptions.value = false;
+                },
+                child: Column(
+                  children: [
+                    Container(
+                      height: 440,
+                      width: MediaQuery.of(context).size.width,
+                      decoration: BoxDecoration(
+                        image: DecorationImage(
+                          image: AssetImage(AppConstants.dashboardCardBg),
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              AppConstants.primaryColor.withValues(alpha: 0.5),
+                              AppConstants.logoBlueColor.withValues(alpha: 0.5),
+                            ],
+                          ),
+                        ),
+                        child: SafeArea(
+                          left: false,
+                          right: false,
+                          bottom: false,
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Obx(
+                                () => Center(
+                                  child: Stack(
+                                    alignment: Alignment.bottomRight,
+                                    children: [
+                                      DottedBorder(
+                                        options: CircularDottedBorderOptions(
+                                          color: AppConstants.accentColor,
+                                          strokeWidth: 2.5,
+                                          dashPattern: const [7, 5, 7, 5, 7, 5],
+                                        ),
+                                        child: Padding(
+                                          padding: const EdgeInsets.all(5.0),
+                                          child:
+                                              imageFile == null ||
+                                                  imageFile.toString() == ''
+                                              ? BaseController
+                                                            .user
+                                                            .value!
+                                                            .avatar ==
+                                                        ''
+                                                    ? CircleAvatar(
+                                                        radius: 80,
+                                                        backgroundImage: AssetImage(
+                                                          AppConstants
+                                                              .profilePlaceholder,
+                                                        ),
+                                                        backgroundColor:
+                                                            Colors.transparent,
+                                                      )
+                                                    : CircleAvatar(
+                                                        radius: 80,
+                                                        backgroundImage:
+                                                            NetworkImage(
+                                                              BaseController
+                                                                  .user
+                                                                  .value!
+                                                                  .avatar,
+                                                            ),
+                                                        backgroundColor:
+                                                            Colors.transparent,
+                                                      )
+                                              : CircleAvatar(
+                                                  radius: 80,
+                                                  backgroundImage: FileImage(
+                                                    imageFile!,
+                                                  ),
+                                                ),
+                                        ),
                                       ),
-                              ),
-                            ),
-                            GestureDetector(
-                              onTap: () {
-                                BaseController.showOptions.value = false;
-                                showModalBottomSheet(
-                                  backgroundColor: Theme.of(
-                                    context,
-                                  ).scaffoldBackgroundColor,
-                                  context: context,
-                                  builder: ((builder) => openImage(context)),
-                                );
-                              },
-                              child: const CircleAvatar(
-                                radius: 30,
-                                backgroundColor: AppConstants.logoBlueColor,
-                                child: Icon(
-                                  Icons.camera_alt_rounded,
-                                  size: 35,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      SizedBox(height: 15.0),
-                      Text(
-                        BaseController.user.value!.name,
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: AppConstants.backgroundColor,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                      Text(
-                        "${BaseController.user.value!.empCode}, arpan.das@test.com, +91 12345 67890, Kolkata, India",
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: AppConstants.backgroundColor.withAlpha(240),
-                          fontStyle: FontStyle.italic,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-
-            // SizedBox(height: 35.0),
-            // Center(
-            //   child: Stack(
-            //     alignment: Alignment.bottomRight,
-            //     children: [
-            //       DottedBorder(
-            //         options: CircularDottedBorderOptions(
-            //           color: AppConstants.primaryColor,
-            //           strokeWidth: 2.5,
-            //           dashPattern: const [7, 5, 7, 5, 7, 5],
-            //         ),
-            //         child: Padding(
-            //           padding: const EdgeInsets.all(5.0),
-            //           child: imageFile == null || imageFile.toString() == ''
-            //               ? CircleAvatar(
-            //                   radius: 80,
-            //                   backgroundImage: AssetImage(
-            //                     AppConstants.profilePlaceholder,
-            //                   ),
-            //                   backgroundColor: Colors.transparent,
-            //                 )
-            //               : CircleAvatar(
-            //                   radius: 80,
-            //                   backgroundImage: FileImage(imageFile!),
-            //                 ),
-            //         ),
-            //       ),
-            //       GestureDetector(
-            //         onTap: () {
-            //           showModalBottomSheet(
-            //             backgroundColor: Theme.of(
-            //               context,
-            //             ).scaffoldBackgroundColor,
-            //             context: context,
-            //             builder: ((builder) => openImage(context)),
-            //           );
-            //         },
-            //         child: const CircleAvatar(
-            //           radius: 30,
-            //           backgroundColor: AppConstants.logoBlueColor,
-            //           child: Icon(
-            //             Icons.camera_alt_rounded,
-            //             size: 35,
-            //             color: Colors.white,
-            //           ),
-            //         ),
-            //       ),
-            //     ],
-            //   ),
-            // ),
-            // SizedBox(height: 15.0),
-            // Text(
-            //   "Arpan Das",
-            //   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            //   textAlign: TextAlign.center,
-            // ),
-            // Text(
-            //   "JNK12345, arpan.das@test.com, +91 12345 67890, Kolkata, India",
-            //   style: TextStyle(
-            //     fontSize: 16,
-            //     color: AppConstants.secondaryColor,
-            //     fontStyle: FontStyle.italic,
-            //   ),
-            //   textAlign: TextAlign.center,
-            // ),
-            SizedBox(height: 30),
-
-            Row(
-              children: [
-                Expanded(
-                  child: FadedDivider(
-                    color: AppConstants.primaryColor,
-                    height: 3.0,
-                    begin: Alignment.centerLeft,
-                    end: Alignment.centerRight,
-                  ),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 10),
-                  child: Text(
-                    "Options",
-                    style: TextStyle(
-                      fontWeight: FontWeight.w500,
-                      fontSize: 16.0,
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: FadedDivider(
-                    color: AppConstants.primaryColor,
-                    height: 3.0,
-                    begin: Alignment.centerRight,
-                    end: Alignment.centerLeft,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 30.0),
-
-            Expanded(
-              child: ListView(
-                shrinkWrap: true,
-                padding: EdgeInsets.only(bottom: 100.0),
-                children: [
-                  customBtn(
-                    context,
-                    () {
-                      BaseController.showOptions.value = false;
-                      showGeneralDialog(
-                        context: context,
-                        barrierDismissible: true,
-                        barrierLabel: MaterialLocalizations.of(
-                          context,
-                        ).modalBarrierDismissLabel,
-                        barrierColor: Colors.black54,
-                        transitionDuration: const Duration(milliseconds: 200),
-                        pageBuilder:
-                            (
-                              BuildContext buildContext,
-                              Animation animation,
-                              Animation secondaryAnimation,
-                            ) {
-                              return Center(
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(9.0),
-                                    color: Theme.of(
-                                      context,
-                                    ).scaffoldBackgroundColor,
-                                  ),
-                                  width: MediaQuery.of(context).size.width - 20,
-                                  height:
-                                      MediaQuery.of(context).size.height - 230,
-                                  padding: const EdgeInsets.all(2),
-                                  child: CustomPrivacyDialog(),
-                                ),
-                              );
-                            },
-                      );
-                    },
-                    Padding(
-                      padding: const EdgeInsets.only(left: 3.5),
-                      child: Image.asset(
-                        'assets/images/aboutAppIcon.png',
-                        height: 20,
-                        width: 20,
-                      ),
-                    ),
-                    "PRIVACY & POLICY",
-                    null,
-                  ),
-                  Divider(
-                    thickness: 0.5,
-                    color: AppConstants.primaryColor.withValues(alpha: 0.2),
-                  ),
-                  customBtn(
-                    context,
-                    () {
-                      BaseController.showOptions.value = false;
-                      showGeneralDialog(
-                        context: context,
-                        barrierDismissible: true,
-                        barrierLabel: MaterialLocalizations.of(
-                          context,
-                        ).modalBarrierDismissLabel,
-                        barrierColor: Colors.black54,
-                        transitionDuration: const Duration(milliseconds: 200),
-                        pageBuilder:
-                            (
-                              BuildContext buildContext,
-                              Animation animation,
-                              Animation secondaryAnimation,
-                            ) {
-                              return Center(
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(9.0),
-                                    color: Theme.of(
-                                      context,
-                                    ).scaffoldBackgroundColor,
-                                  ),
-                                  width: MediaQuery.of(context).size.width - 20,
-                                  height:
-                                      MediaQuery.of(context).size.height - 230,
-                                  padding: const EdgeInsets.all(2),
-                                  child: CustomAboutDialog(),
-                                ),
-                              );
-                            },
-                      );
-                    },
-                    Padding(
-                      padding: const EdgeInsets.only(left: 3.5),
-                      child: Image.asset(
-                        'assets/images/aboutAppIcon.png',
-                        height: 20,
-                        width: 20,
-                      ),
-                    ),
-                    "APP INFO",
-                    null,
-                  ),
-                  Divider(
-                    thickness: 0.5,
-                    color: AppConstants.primaryColor.withValues(alpha: 0.2),
-                  ),
-                  customBtn(
-                    context,
-                    () {
-                      BaseController.showOptions.value = false;
-                      Get.to(() => ChangePassScreen());
-                    },
-                    Image.asset(
-                      'assets/icons/change-password.png',
-                      height: 22,
-                      width: 22,
-                    ),
-                    "CHANGE PASSWORD",
-                    null,
-                  ),
-                  Divider(
-                    thickness: 0.5,
-                    color: AppConstants.primaryColor.withValues(alpha: 0.2),
-                  ),
-                  customBtn(
-                    context,
-                    () {
-                      BaseController.showOptions.value = false;
-                      showDialog(
-                        barrierDismissible: false,
-                        context: context,
-                        builder: (builder) {
-                          return AlertDialog(
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10.0),
-                            ),
-                            backgroundColor: Theme.of(
-                              context,
-                            ).scaffoldBackgroundColor,
-                            title: Text(
-                              "Confirm Logout",
-                              style: TextStyle(
-                                color: Theme.of(context).primaryColor,
-                              ),
-                            ),
-                            content: Text(
-                              "Please click on Confirm, if you want to logout",
-                              style: TextStyle(
-                                color: Theme.of(context).primaryColor,
-                              ),
-                            ),
-                            actions: [
-                              TextButton(
-                                onPressed: () {
-                                  BaseController.logout();
-                                },
-                                style: ButtonStyle(
-                                  backgroundColor: WidgetStateProperty.all(
-                                    Colors.blue,
-                                  ),
-                                  foregroundColor: WidgetStateProperty.all(
-                                    Colors.white,
+                                      GestureDetector(
+                                        onTap: () {
+                                          BaseController.showOptions.value =
+                                              false;
+                                          showModalBottomSheet(
+                                            backgroundColor: Theme.of(
+                                              context,
+                                            ).scaffoldBackgroundColor,
+                                            context: context,
+                                            builder: ((builder) =>
+                                                openImage(context)),
+                                          );
+                                        },
+                                        child: const CircleAvatar(
+                                          radius: 30,
+                                          backgroundColor:
+                                              AppConstants.logoBlueColor,
+                                          child: Icon(
+                                            Icons.camera_alt_rounded,
+                                            size: 35,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                                child: const Text("Confirm"),
                               ),
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                },
-                                child: const Text(
-                                  "No",
-                                  style: TextStyle(color: Colors.cyan),
+                              SizedBox(height: 15.0),
+                              Text(
+                                BaseController.user.value!.name,
+                                style: TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppConstants.backgroundColor,
                                 ),
+                                textAlign: TextAlign.center,
+                              ),
+                              Text(
+                                "${BaseController.user.value!.empCode}, arpan.das@test.com, +91 12345 67890, Kolkata, India",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: AppConstants.backgroundColor.withAlpha(
+                                    240,
+                                  ),
+                                  fontStyle: FontStyle.italic,
+                                ),
+                                textAlign: TextAlign.center,
                               ),
                             ],
-                          );
-                        },
-                      );
-                    },
-                    SvgPicture.asset(
-                      'assets/icons/logout.svg',
-                      height: 30,
-                      width: 30,
+                          ),
+                        ),
+                      ),
                     ),
-                    "LOGOUT",
-                    null,
-                  ),
-                  Divider(
-                    thickness: 0.5,
-                    color: AppConstants.primaryColor.withValues(alpha: 0.2),
-                  ),
-                ],
+
+                    // SizedBox(height: 35.0),
+                    // Center(
+                    //   child: Stack(
+                    //     alignment: Alignment.bottomRight,
+                    //     children: [
+                    //       DottedBorder(
+                    //         options: CircularDottedBorderOptions(
+                    //           color: AppConstants.primaryColor,
+                    //           strokeWidth: 2.5,
+                    //           dashPattern: const [7, 5, 7, 5, 7, 5],
+                    //         ),
+                    //         child: Padding(
+                    //           padding: const EdgeInsets.all(5.0),
+                    //           child: imageFile == null || imageFile.toString() == ''
+                    //               ? CircleAvatar(
+                    //                   radius: 80,
+                    //                   backgroundImage: AssetImage(
+                    //                     AppConstants.profilePlaceholder,
+                    //                   ),
+                    //                   backgroundColor: Colors.transparent,
+                    //                 )
+                    //               : CircleAvatar(
+                    //                   radius: 80,
+                    //                   backgroundImage: FileImage(imageFile!),
+                    //                 ),
+                    //         ),
+                    //       ),
+                    //       GestureDetector(
+                    //         onTap: () {
+                    //           showModalBottomSheet(
+                    //             backgroundColor: Theme.of(
+                    //               context,
+                    //             ).scaffoldBackgroundColor,
+                    //             context: context,
+                    //             builder: ((builder) => openImage(context)),
+                    //           );
+                    //         },
+                    //         child: const CircleAvatar(
+                    //           radius: 30,
+                    //           backgroundColor: AppConstants.logoBlueColor,
+                    //           child: Icon(
+                    //             Icons.camera_alt_rounded,
+                    //             size: 35,
+                    //             color: Colors.white,
+                    //           ),
+                    //         ),
+                    //       ),
+                    //     ],
+                    //   ),
+                    // ),
+                    // SizedBox(height: 15.0),
+                    // Text(
+                    //   "Arpan Das",
+                    //   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    //   textAlign: TextAlign.center,
+                    // ),
+                    // Text(
+                    //   "JNK12345, arpan.das@test.com, +91 12345 67890, Kolkata, India",
+                    //   style: TextStyle(
+                    //     fontSize: 16,
+                    //     color: AppConstants.secondaryColor,
+                    //     fontStyle: FontStyle.italic,
+                    //   ),
+                    //   textAlign: TextAlign.center,
+                    // ),
+                    SizedBox(height: 30),
+
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FadedDivider(
+                            color: AppConstants.primaryColor,
+                            height: 3.0,
+                            begin: Alignment.centerLeft,
+                            end: Alignment.centerRight,
+                          ),
+                        ),
+                        Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 10),
+                          child: Text(
+                            "Options",
+                            style: TextStyle(
+                              fontWeight: FontWeight.w500,
+                              fontSize: 16.0,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: FadedDivider(
+                            color: AppConstants.primaryColor,
+                            height: 3.0,
+                            begin: Alignment.centerRight,
+                            end: Alignment.centerLeft,
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 30.0),
+
+                    Expanded(
+                      child: ListView(
+                        shrinkWrap: true,
+                        padding: EdgeInsets.only(bottom: 100.0),
+                        children: [
+                          customBtn(
+                            context,
+                            () {
+                              BaseController.showOptions.value = false;
+                              showGeneralDialog(
+                                context: context,
+                                barrierDismissible: true,
+                                barrierLabel: MaterialLocalizations.of(
+                                  context,
+                                ).modalBarrierDismissLabel,
+                                barrierColor: Colors.black54,
+                                transitionDuration: const Duration(
+                                  milliseconds: 200,
+                                ),
+                                pageBuilder:
+                                    (
+                                      BuildContext buildContext,
+                                      Animation animation,
+                                      Animation secondaryAnimation,
+                                    ) {
+                                      return Center(
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(
+                                              9.0,
+                                            ),
+                                            color: Theme.of(
+                                              context,
+                                            ).scaffoldBackgroundColor,
+                                          ),
+                                          width:
+                                              MediaQuery.of(
+                                                context,
+                                              ).size.width -
+                                              20,
+                                          height:
+                                              MediaQuery.of(
+                                                context,
+                                              ).size.height -
+                                              230,
+                                          padding: const EdgeInsets.all(2),
+                                          child: CustomPrivacyDialog(),
+                                        ),
+                                      );
+                                    },
+                              );
+                            },
+                            Padding(
+                              padding: const EdgeInsets.only(left: 3.5),
+                              child: Image.asset(
+                                'assets/images/aboutAppIcon.png',
+                                height: 20,
+                                width: 20,
+                              ),
+                            ),
+                            "PRIVACY & POLICY",
+                            null,
+                          ),
+                          Divider(
+                            thickness: 0.5,
+                            color: AppConstants.primaryColor.withValues(
+                              alpha: 0.2,
+                            ),
+                          ),
+                          customBtn(
+                            context,
+                            () {
+                              BaseController.showOptions.value = false;
+                              showGeneralDialog(
+                                context: context,
+                                barrierDismissible: true,
+                                barrierLabel: MaterialLocalizations.of(
+                                  context,
+                                ).modalBarrierDismissLabel,
+                                barrierColor: Colors.black54,
+                                transitionDuration: const Duration(
+                                  milliseconds: 200,
+                                ),
+                                pageBuilder:
+                                    (
+                                      BuildContext buildContext,
+                                      Animation animation,
+                                      Animation secondaryAnimation,
+                                    ) {
+                                      return Center(
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(
+                                              9.0,
+                                            ),
+                                            color: Theme.of(
+                                              context,
+                                            ).scaffoldBackgroundColor,
+                                          ),
+                                          width:
+                                              MediaQuery.of(
+                                                context,
+                                              ).size.width -
+                                              20,
+                                          height:
+                                              MediaQuery.of(
+                                                context,
+                                              ).size.height -
+                                              230,
+                                          padding: const EdgeInsets.all(2),
+                                          child: CustomAboutDialog(),
+                                        ),
+                                      );
+                                    },
+                              );
+                            },
+                            Padding(
+                              padding: const EdgeInsets.only(left: 3.5),
+                              child: Image.asset(
+                                'assets/images/aboutAppIcon.png',
+                                height: 20,
+                                width: 20,
+                              ),
+                            ),
+                            "APP INFO",
+                            null,
+                          ),
+                          Divider(
+                            thickness: 0.5,
+                            color: AppConstants.primaryColor.withValues(
+                              alpha: 0.2,
+                            ),
+                          ),
+                          customBtn(
+                            context,
+                            () {
+                              BaseController.showOptions.value = false;
+                              Get.to(() => ChangePassScreen());
+                            },
+                            Image.asset(
+                              'assets/icons/change-password.png',
+                              height: 22,
+                              width: 22,
+                            ),
+                            "CHANGE PASSWORD",
+                            null,
+                          ),
+                          Divider(
+                            thickness: 0.5,
+                            color: AppConstants.primaryColor.withValues(
+                              alpha: 0.2,
+                            ),
+                          ),
+                          customBtn(
+                            context,
+                            () {
+                              BaseController.showOptions.value = false;
+                              showDialog(
+                                barrierDismissible: false,
+                                context: context,
+                                builder: (builder) {
+                                  return AlertDialog(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10.0),
+                                    ),
+                                    backgroundColor: Theme.of(
+                                      context,
+                                    ).scaffoldBackgroundColor,
+                                    title: Text(
+                                      "Confirm Logout",
+                                      style: TextStyle(
+                                        color: Theme.of(context).primaryColor,
+                                      ),
+                                    ),
+                                    content: Text(
+                                      "Please click on Confirm, if you want to logout",
+                                      style: TextStyle(
+                                        color: Theme.of(context).primaryColor,
+                                      ),
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () {
+                                          BaseController.logout();
+                                        },
+                                        style: ButtonStyle(
+                                          backgroundColor:
+                                              WidgetStateProperty.all(
+                                                Colors.blue,
+                                              ),
+                                          foregroundColor:
+                                              WidgetStateProperty.all(
+                                                Colors.white,
+                                              ),
+                                        ),
+                                        child: const Text("Confirm"),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                        },
+                                        child: const Text(
+                                          "No",
+                                          style: TextStyle(color: Colors.cyan),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
+                            SvgPicture.asset(
+                              'assets/icons/logout.svg',
+                              height: 30,
+                              width: 30,
+                            ),
+                            "LOGOUT",
+                            null,
+                          ),
+                          Divider(
+                            thickness: 0.5,
+                            color: AppConstants.primaryColor.withValues(
+                              alpha: 0.2,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -575,6 +643,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         setState(() {
           imageFile = File(path);
         });
+        DashboardController().uploadProfilePic(imageFile!);
         int? sizeInBytes = await imageFile?.length();
         double sizeInKb = sizeInBytes! / 1024;
         double sizeInMb = sizeInKb / 1024;

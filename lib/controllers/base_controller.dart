@@ -46,6 +46,7 @@ class BaseController {
     headingAccuracy: 0.0,
   ).obs;
   static Rxn<UserModel> user = Rxn<UserModel>();
+
   // static dynamic unreadNotification = 0.obs;
   // static dynamic assignedPosts = 0.obs;
   // static RxBool commentReload = false.obs;
@@ -89,34 +90,17 @@ class BaseController {
 
     if (refreshToken != null && refreshToken != '') {
       var response = await BaseClient().dioPost(
-        '/refresh-token',
+        '/refresh-token/',
         json.encode({"refresh": refreshToken}),
         true,
       );
       if (response != null) {
-        if (response['success']) {
+        if (response['access'] != null && response['access'] != "") {
           storeToken.write("token", response['access']);
-          storeToken.write("refreshToken", response['refresh']);
+          // storeToken.write("refreshToken", response['refresh']);
           return true;
         } else {
-          storeToken.remove("token");
-          storeToken.remove("refreshToken");
-          // storeToken.remove("unreadNotification");
-          // storeToken.remove("assignedPost");
-          // storeToken.remove("company");
-          // storeToken.remove("genre");
-          // // storeToken.remove("baseImgUrl");
-          // storeToken.remove("aboutAppUrl");
-          // storeToken.remove("defaultBio");
-          // storeToken.remove("baseVersionAppUrl");
-          // storeToken.remove("privacyUrl");
-          // storeToken.remove("supportUrl");
-
-          Get.offAll(() => const LoginScreen());
-          DialogHelper.showErrorToast(
-            description:
-                'Your session is expired. Please login again to continue.',
-          );
+          sessionExpired();
           return false;
         }
       } else {
@@ -125,6 +109,10 @@ class BaseController {
     } else {
       storeToken.remove("token");
       storeToken.remove("refreshToken");
+      storeToken.remove("forcePasswordReset");
+      storeToken.remove("user_data");
+      storeToken.remove("day_status");
+      storeToken.erase();
       // storeToken.remove("unreadNotification");
       // storeToken.remove("assignedPost");
       // storeToken.remove("company");
@@ -140,14 +128,44 @@ class BaseController {
     }
   }
 
-  static void logout() {
+  static void logout() async {
+    var refreshToken = storeToken.read('refreshToken');
+    BaseController.showLoading('Logging out...');
+    var response = await BaseClient().dioPost(
+      '/log-out/',
+      json.encode({"refresh": refreshToken}),
+    );
+    if (response != null) {
+      print("{LOGOUT DATA: ${response.toString()}}");
+      if (response['status']) {
+        storeToken.remove("token");
+        storeToken.remove("refreshToken");
+        storeToken.remove("forcePasswordReset");
+        storeToken.remove("user_data");
+        storeToken.remove("day_status");
+        storeToken.erase();
+        Get.offAll(() => const LoginScreen());
+        DialogHelper.showSuccessToast(description: "Logged out successfully.");
+      } else {
+        DialogHelper.showErrorToast(description: response['message']);
+      }
+    } else {
+      DialogHelper.showErrorToast(
+        description: "Failed to log out. Please try again.",
+      );
+    }
+  }
+
+  static void sessionExpired() {
     storeToken.remove("token");
     storeToken.remove("refreshToken");
     storeToken.remove("forcePasswordReset");
+    storeToken.remove("user_data");
+    storeToken.remove("day_status");
     storeToken.erase();
     Get.offAll(() => const LoginScreen());
     DialogHelper.showErrorToast(
-      description: 'Your session is expired. Please login again to continue.',
+      description: 'Your session has expired. Please log in again.',
     );
   }
 

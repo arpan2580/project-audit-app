@@ -6,13 +6,16 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:jnk_app/consts/app_constants.dart';
 import 'package:jnk_app/controllers/base_controller.dart';
+import 'package:jnk_app/controllers/bit_plan_controller.dart';
 import 'package:jnk_app/controllers/outlet_controller.dart';
+import 'package:jnk_app/models/bit_plan_model.dart';
 import 'package:jnk_app/services/location_service.dart';
 import 'package:jnk_app/utils/custom/faded_divider.dart';
 import 'package:jnk_app/views/dialogs/dialog_helper.dart';
 
 class OutletDetailsScreen extends StatelessWidget {
-  const OutletDetailsScreen({super.key});
+  final BitPlanModel outletDetails;
+  const OutletDetailsScreen({super.key, required this.outletDetails});
 
   @override
   Widget build(BuildContext context) {
@@ -80,7 +83,7 @@ class OutletDetailsScreen extends StatelessWidget {
                                   color: AppConstants.backgroundColor,
                                 ),
                                 Text(
-                                  "Outlet Id: JNK123456",
+                                  "Outlet Id: ${outletDetails.olCode}",
                                   style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
@@ -98,7 +101,7 @@ class OutletDetailsScreen extends StatelessWidget {
                               ),
                             ),
                             Text(
-                              "Colins Variety Store PVT. LTD.",
+                              outletDetails.olName,
                               style: TextStyle(
                                 fontSize: 28,
                                 fontWeight: FontWeight.bold,
@@ -145,7 +148,13 @@ class OutletDetailsScreen extends StatelessWidget {
                                 ),
                                 SizedBox(width: 8.0),
                                 Text(
-                                  "08/08/2025",
+                                  outletDetails.lastVisitDate != null
+                                      ? DateFormat('dd-MM-yyyy').format(
+                                          DateTime.parse(
+                                            outletDetails.lastVisitDate!,
+                                          ),
+                                        )
+                                      : "N/A",
                                   style: TextStyle(
                                     fontSize: 18,
                                     color: AppConstants.accentColor,
@@ -181,7 +190,20 @@ class OutletDetailsScreen extends StatelessWidget {
                                 child:
                                     imageFile.value == null ||
                                         imageFile.value.toString() == ''
-                                    ? CircleAvatar(
+                                    ?
+                                      // outletDetails.lastVisit!.photo != null ||
+                                      //           outletDetails.lastVisit!.photo !=
+                                      //               ''
+                                      //       ? CircleAvatar(
+                                      //           radius: 130,
+                                      //           backgroundImage: NetworkImage(
+                                      //             outletDetails.lastVisit!.photo!,
+                                      //           ),
+                                      //           backgroundColor:
+                                      //               Colors.transparent,
+                                      //         )
+                                      //       :
+                                      CircleAvatar(
                                         radius: 130,
                                         backgroundImage: AssetImage(
                                           'assets/images/shop-exterior.jpg',
@@ -212,7 +234,20 @@ class OutletDetailsScreen extends StatelessWidget {
                                     ),
                                     SizedBox(width: 8.0),
                                     Text(
-                                      "12:35:01",
+                                      outletDetails.lastVisit != null &&
+                                              outletDetails
+                                                      .lastVisit!
+                                                      .startTime !=
+                                                  null
+                                          ? DateFormat('hh:mm:ss a').format(
+                                              DateTime.parse(
+                                                outletDetails
+                                                        .lastVisit!
+                                                        .startTime ??
+                                                    '',
+                                              ),
+                                            )
+                                          : "N/A",
                                       style: TextStyle(
                                         fontSize: 18,
                                         color: AppConstants.accentColor,
@@ -232,7 +267,20 @@ class OutletDetailsScreen extends StatelessWidget {
                                     ),
                                     SizedBox(width: 8.0),
                                     Text(
-                                      "13:55:45",
+                                      outletDetails.lastVisit != null &&
+                                              outletDetails
+                                                      .lastVisit!
+                                                      .endTime !=
+                                                  null
+                                          ? DateFormat('hh:mm:ss a').format(
+                                              DateTime.parse(
+                                                outletDetails
+                                                        .lastVisit!
+                                                        .endTime ??
+                                                    '',
+                                              ),
+                                            )
+                                          : "N/A",
                                       style: TextStyle(
                                         fontSize: 18,
                                         color: AppConstants.accentColor,

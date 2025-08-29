@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:jnk_app/controllers/base_controller.dart';
+import 'package:jnk_app/controllers/dashboard_controller.dart';
 import 'package:jnk_app/views/screens/bar_chart_screen.dart';
 
 class TabScreen extends HookWidget {
@@ -44,15 +45,55 @@ class TabScreen extends HookWidget {
               BarChartScreen(
                 type: 'daily',
                 data: [
-                  DataModel(key: 'planned', value: 20),
-                  DataModel(key: 'achieved', value: 12),
+                  DataModel(
+                    key: 'planned',
+                    value:
+                        DashboardController
+                            .dashboard
+                            .value
+                            ?.dailyCount
+                            ?.planCount
+                            .toDouble() ??
+                        0.0,
+                  ),
+                  DataModel(
+                    key: 'achieved',
+                    value:
+                        DashboardController
+                            .dashboard
+                            .value
+                            ?.dailyCount
+                            ?.achieveCount
+                            .toDouble() ??
+                        0.0,
+                  ),
                 ],
               ),
               BarChartScreen(
                 type: 'monthly',
                 data: [
-                  DataModel(key: 'planned', value: 1200),
-                  DataModel(key: 'achieved', value: 700),
+                  DataModel(
+                    key: 'planned',
+                    value:
+                        DashboardController
+                            .dashboard
+                            .value
+                            ?.monthlyCount
+                            ?.planCount
+                            .toDouble() ??
+                        0.0,
+                  ),
+                  DataModel(
+                    key: 'achieved',
+                    value:
+                        DashboardController
+                            .dashboard
+                            .value
+                            ?.monthlyCount
+                            ?.achieveCount
+                            .toDouble() ??
+                        0.0,
+                  ),
                 ],
               ),
             ],

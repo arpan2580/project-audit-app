@@ -58,7 +58,7 @@ class AuthorizationInterceptor extends Interceptor {
               err.response?.data['code'] != '') &&
           (err.response?.data['code'] == 'token_not_valid')) {
         if (err.response?.data['detail'] == 'Token is invalid') {
-          BaseController.logout();
+          BaseController.sessionExpired();
           return;
         }
         try {

@@ -63,6 +63,12 @@ class DioExceptions implements Exception {
         return 'Too many requests.';
       case 500:
         return 'Internal server error.';
+      case 301:
+        return 'The requested resource has been permanently moved to a new URL.';
+      case 302:
+        return 'The requested resource has been temporarily moved to a different URL.';
+      case 503:
+        return 'The server is currently unavailable (overloaded or down).';
       default:
         return 'Oops something went wrong!';
     }
