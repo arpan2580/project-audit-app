@@ -26,107 +26,111 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
     return Scaffold(
       extendBody: true,
       extendBodyBehindAppBar: true,
-      body: Stack(
-        children: [
-          PageView(
-            controller: pageController,
-            physics: const NeverScrollableScrollPhysics(),
-            children: const <Widget>[
-              DashboardScreen(),
-              BitPlanScreen(),
-              AttendanceScreen(),
-              ProfileScreen(),
-            ],
-          ),
+      body: SafeArea(
+        bottom: true,
+        top: false,
+        child: Stack(
+          children: [
+            PageView(
+              controller: pageController,
+              physics: const NeverScrollableScrollPhysics(),
+              children: const <Widget>[
+                DashboardScreen(),
+                BitPlanScreen(),
+                AttendanceScreen(),
+                ProfileScreen(),
+              ],
+            ),
 
-          // Additional FAB Options Positioned Above FAB
-          Positioned(
-            // bottom: MediaQuery.of(context).size.height >= 900
-            //     ? 125
-            //     : MediaQuery.of(context).size.height >= 850
-            //     ? 95
-            //     : 90,
-            bottom: 90, // Adjusted for better visibility
-            left: MediaQuery.of(context).size.width / 2 - 70, // Centered
-            child: Obx(
-              () => AnimatedSlide(
-                offset: BaseController.showOptions.value
-                    ? Offset(0, 0)
-                    : Offset(0, 0.7),
-                duration: Duration(milliseconds: 300),
-                curve: Curves.easeOut,
-                child: AnimatedOpacity(
-                  opacity: BaseController.showOptions.value ? 1.0 : 0.0,
+            // Additional FAB Options Positioned Above FAB
+            Positioned(
+              // bottom: MediaQuery.of(context).size.height >= 900
+              //     ? 125
+              //     : MediaQuery.of(context).size.height >= 850
+              //     ? 95
+              //     : 90,
+              bottom: 50, // Adjusted for better visibility
+              left: MediaQuery.of(context).size.width / 2 - 70, // Centered
+              child: Obx(
+                () => AnimatedSlide(
+                  offset: BaseController.showOptions.value
+                      ? Offset(0, 0)
+                      : Offset(0, 0.7),
                   duration: Duration(milliseconds: 300),
                   curve: Curves.easeOut,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 5,
-                    ),
-                    // decoration: BoxDecoration(
-                    //   border: Border.all(
-                    //     color: AppConstants.primaryColor,
-                    //     width: 1.0,
-                    //   ),
-                    //   borderRadius: const BorderRadius.all(Radius.circular(15)),
-                    //   gradient: LinearGradient(
-                    //     begin: Alignment.topCenter,
-                    //     end: Alignment.bottomCenter,
-                    //     colors: [
-                    //       AppConstants.backgroundColor.withValues(alpha: 0.5),
-                    //       AppConstants.backgroundColor.withValues(alpha: 0.7),
-                    //     ],
-                    //   ),
-                    // ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        FloatingActionButton(
-                          heroTag: 'individual_chat',
-                          onPressed: () {
-                            BaseController.showOptions.value =
-                                !BaseController.showOptions.value;
-                            Get.to(
-                              () => IndividualChatScreen(
-                                name: 'Rahul Sharma',
-                                profilePicUrl: 'profile_pic_url',
-                              ),
-                            );
-                          },
-                          tooltip: 'Chat with Admin',
-                          backgroundColor: AppConstants.logoBlueColor,
-                          shape: CircleBorder(),
-                          child: SvgPicture.asset(
-                            'assets/icons/Admin-chat.svg',
-                            height: 23.0,
+                  child: AnimatedOpacity(
+                    opacity: BaseController.showOptions.value ? 1.0 : 0.0,
+                    duration: Duration(milliseconds: 300),
+                    curve: Curves.easeOut,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
+                      // decoration: BoxDecoration(
+                      //   border: Border.all(
+                      //     color: AppConstants.primaryColor,
+                      //     width: 1.0,
+                      //   ),
+                      //   borderRadius: const BorderRadius.all(Radius.circular(15)),
+                      //   gradient: LinearGradient(
+                      //     begin: Alignment.topCenter,
+                      //     end: Alignment.bottomCenter,
+                      //     colors: [
+                      //       AppConstants.backgroundColor.withValues(alpha: 0.5),
+                      //       AppConstants.backgroundColor.withValues(alpha: 0.7),
+                      //     ],
+                      //   ),
+                      // ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          FloatingActionButton(
+                            heroTag: 'individual_chat',
+                            onPressed: () {
+                              BaseController.showOptions.value =
+                                  !BaseController.showOptions.value;
+                              Get.to(
+                                () => IndividualChatScreen(
+                                  name: 'Rahul Sharma',
+                                  profilePicUrl: 'profile_pic_url',
+                                ),
+                              );
+                            },
+                            tooltip: 'Chat with Admin',
+                            backgroundColor: AppConstants.logoBlueColor,
+                            shape: CircleBorder(),
+                            child: SvgPicture.asset(
+                              'assets/icons/Admin-chat.svg',
+                              height: 23.0,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 7.0),
-                        FloatingActionButton(
-                          heroTag: 'agent_chat',
-                          onPressed: () {
-                            BaseController.showOptions.value =
-                                !BaseController.showOptions.value;
-                            Get.to(() => AgentsChatScreen());
-                          },
-                          tooltip: 'Chat with Agents',
-                          backgroundColor: AppConstants.logoBlueColor,
-                          shape: CircleBorder(),
-                          child: SvgPicture.asset(
-                            'assets/icons/Agent-chat.svg',
-                            height: 20.0,
+                          const SizedBox(width: 7.0),
+                          FloatingActionButton(
+                            heroTag: 'agent_chat',
+                            onPressed: () {
+                              BaseController.showOptions.value =
+                                  !BaseController.showOptions.value;
+                              Get.to(() => AgentsChatScreen());
+                            },
+                            tooltip: 'Chat with Agents',
+                            backgroundColor: AppConstants.logoBlueColor,
+                            shape: CircleBorder(),
+                            child: SvgPicture.asset(
+                              'assets/icons/Agent-chat.svg',
+                              height: 20.0,
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
+                // : const SizedBox.shrink(),
               ),
-              // : const SizedBox.shrink(),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
 
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,

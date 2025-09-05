@@ -467,6 +467,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     actions: [
                                       TextButton(
                                         onPressed: () {
+                                          Navigator.pop(context);
                                           BaseController.logout();
                                         },
                                         style: ButtonStyle(
@@ -561,61 +562,64 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget openImage(BuildContext context) {
-    return Container(
-      height: 150.0,
-      width: MediaQuery.of(context).size.width,
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            "Choose Image Source",
-            style: TextStyle(
-              fontSize: 18.0,
-              color: Theme.of(context).primaryColor,
+    return SafeArea(
+      bottom: true,
+      child: Container(
+        height: 150.0,
+        width: MediaQuery.of(context).size.width,
+        margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              "Choose Image Source",
+              style: TextStyle(
+                fontSize: 18.0,
+                color: Theme.of(context).primaryColor,
+              ),
             ),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Column(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.camera_alt_rounded, size: 30.0),
-                    onPressed: () {
-                      // BaseController.showReload.value = false;
-                      Navigator.of(context).pop();
-                      takePhoto(ImageSource.camera);
-                    },
-                    color: Theme.of(context).primaryColor,
-                  ),
-                  Text(
-                    "Camera",
-                    style: TextStyle(color: Theme.of(context).primaryColor),
-                  ),
-                ],
-              ),
-              Column(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.image_rounded, size: 30.0),
-                    onPressed: () {
-                      // BaseController.showReload.value = false;
-                      Navigator.of(context).pop();
-                      takePhoto(ImageSource.gallery);
-                    },
-                    color: Theme.of(context).primaryColor,
-                  ),
-                  Text(
-                    "Gallery",
-                    style: TextStyle(color: Theme.of(context).primaryColor),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ],
+            const SizedBox(height: 10),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Column(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.camera_alt_rounded, size: 30.0),
+                      onPressed: () {
+                        // BaseController.showReload.value = false;
+                        Navigator.of(context).pop();
+                        takePhoto(ImageSource.camera);
+                      },
+                      color: Theme.of(context).primaryColor,
+                    ),
+                    Text(
+                      "Camera",
+                      style: TextStyle(color: Theme.of(context).primaryColor),
+                    ),
+                  ],
+                ),
+                Column(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.image_rounded, size: 30.0),
+                      onPressed: () {
+                        // BaseController.showReload.value = false;
+                        Navigator.of(context).pop();
+                        takePhoto(ImageSource.gallery);
+                      },
+                      color: Theme.of(context).primaryColor,
+                    ),
+                    Text(
+                      "Gallery",
+                      style: TextStyle(color: Theme.of(context).primaryColor),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

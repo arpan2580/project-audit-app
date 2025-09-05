@@ -54,129 +54,187 @@ class BitPlanScreen extends StatelessWidget {
                           left: false,
                           right: false,
                           bottom: false,
-                          child: Center(child: SearchOutletWidget()),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: SearchOutletWidget(
+                                  controller: bitPlanController,
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(right: 8.0),
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    BitPlanController.isViewAll.value =
+                                        !BitPlanController.isViewAll.value;
+                                    BitPlanController.isSearch.value = false;
+                                    bitPlanController.clearSearch();
+                                  },
+                                  child: Text(
+                                    BitPlanController.isViewAll.value
+                                        ? "Todays Bit"
+                                        : "View All",
+                                    style: TextStyle(
+                                      color: AppConstants.backgroundColor,
+                                      fontSize: AppConstants.fontLarge,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                    Expanded(
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        padding: EdgeInsets.only(bottom: 100.0),
-                        itemCount: bitPlanController.bitPlan.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          final record = bitPlanController.bitPlan[index];
-                          DateTime visitDate = DateTime(1900);
-                          DateTime today = DateTime.now();
-                          if (record.lastVisitDate != null) {
-                            today = DateTime.now();
-                            DateTime.parse(record.lastVisitDate!);
-                          }
-                          return Card(
-                            margin: EdgeInsets.only(
-                              left: 5.0,
-                              top: 8.0,
-                              right: 5.0,
-                              // bottom: 5.0,
-                            ),
-                            elevation: 2.0,
-                            color: Colors.transparent,
-                            child: GestureDetector(
-                              onTap: () {
-                                Get.to(
-                                  () => OutletDetailsScreen(
-                                    outletDetails: record,
-                                  ),
-                                );
-                              },
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  border: Border.all(
-                                    color: AppConstants.logoBlueColor,
-                                    width: 1.0,
-                                  ),
-                                  borderRadius: const BorderRadius.all(
-                                    Radius.circular(10),
-                                  ),
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topCenter,
-                                    end: Alignment.bottomCenter,
-                                    colors: [
-                                      AppConstants.backgroundColor.withValues(
-                                        alpha: 0.8,
-                                      ),
-                                      AppConstants.backgroundColor.withValues(
-                                        alpha: 0.7,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                child: ListTile(
-                                  leading: CircleAvatar(
-                                    radius: 30,
-                                    backgroundColor: index / 2 == 0
-                                        ? AppConstants.primaryColor
-                                        : const Color.fromARGB(
-                                            255,
-                                            34,
-                                            106,
-                                            36,
-                                          ),
-                                    child: SvgPicture.asset(
-                                      'assets/icons/outlet-icon.svg',
-                                    ),
-                                  ),
-                                  title: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        record.olCode,
-                                        style: TextStyle(fontSize: 16.0),
-                                      ),
-                                      Text(
-                                        record.olName,
-                                        style: TextStyle(fontSize: 18.0),
-                                      ),
-                                      Text(
-                                        record.isInBitPlan
-                                            ? "In Today's bit"
-                                            : "Not in Today's bit",
-                                        style: TextStyle(
-                                          fontSize: 16.0,
-                                          fontWeight: FontWeight.w500,
-                                          color: record.isInBitPlan
-                                              ? const Color.fromARGB(
-                                                  255,
-                                                  34,
-                                                  106,
-                                                  36,
-                                                )
-                                              : AppConstants.primaryColor,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  trailing:
-                                      (visitDate.year == today.year &&
-                                          visitDate.month == today.month &&
-                                          visitDate.day == today.day)
-                                      ? SvgPicture.asset(
-                                          'assets/icons/green-check.svg',
-                                          height: 18,
-                                          width: 8.0,
-                                        )
-                                      : SvgPicture.asset(
-                                          'assets/icons/red-cross-line.svg',
-                                          height: 18,
-                                          width: 8.0,
-                                        ),
+                    bitPlanController.filteredBit.isEmpty
+                        ? const Center(
+                            child: Padding(
+                              padding: EdgeInsets.only(top: 270.0),
+                              child: Text(
+                                "No Bit Plan Found",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
-                          );
-                        },
-                      ),
-                    ),
+                          )
+                        : Expanded(
+                            child: RefreshIndicator(
+                              onRefresh: () async {
+                                await bitPlanController.fetchBitPlanData();
+                              },
+                              child: ListView.builder(
+                                shrinkWrap: true,
+                                padding: EdgeInsets.only(bottom: 100.0),
+                                // itemCount: isViewAll.value
+                                //     ? bitPlanController.bitPlan.length
+                                //     : bitPlanController.todaysBitPlan.length,
+                                itemCount: bitPlanController.filteredBit.length,
+                                itemBuilder: (BuildContext context, int index) {
+                                  // final record = isViewAll.value
+                                  //     ? bitPlanController.bitPlan[index]
+                                  //     : bitPlanController.todaysBitPlan[index];
+                                  final record =
+                                      bitPlanController.filteredBit[index];
+                                  DateTime visitDate = DateTime(1900);
+                                  DateTime today = DateTime.now();
+                                  if (record.lastVisitDate != null) {
+                                    today = DateTime.now();
+                                    DateTime.parse(record.lastVisitDate!);
+                                  }
+                                  return Card(
+                                    margin: EdgeInsets.only(
+                                      left: 5.0,
+                                      top: 8.0,
+                                      right: 5.0,
+                                      // bottom: 5.0,
+                                    ),
+                                    elevation: 2.0,
+                                    color: Colors.transparent,
+                                    child: GestureDetector(
+                                      onTap: () {
+                                        Get.to(
+                                          () => OutletDetailsScreen(
+                                            outletDetails: record,
+                                          ),
+                                        );
+                                      },
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          border: Border.all(
+                                            color: AppConstants.logoBlueColor,
+                                            width: 1.0,
+                                          ),
+                                          borderRadius: const BorderRadius.all(
+                                            Radius.circular(10),
+                                          ),
+                                          gradient: LinearGradient(
+                                            begin: Alignment.topCenter,
+                                            end: Alignment.bottomCenter,
+                                            colors: [
+                                              AppConstants.backgroundColor
+                                                  .withValues(alpha: 0.8),
+                                              AppConstants.backgroundColor
+                                                  .withValues(alpha: 0.7),
+                                            ],
+                                          ),
+                                        ),
+                                        child: ListTile(
+                                          leading: CircleAvatar(
+                                            radius: 30,
+                                            backgroundColor: index / 2 == 0
+                                                ? AppConstants.primaryColor
+                                                : const Color.fromARGB(
+                                                    255,
+                                                    34,
+                                                    106,
+                                                    36,
+                                                  ),
+                                            child: SvgPicture.asset(
+                                              'assets/icons/outlet-icon.svg',
+                                            ),
+                                          ),
+                                          title: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                record.olCode,
+                                                style: TextStyle(
+                                                  fontSize: 16.0,
+                                                ),
+                                              ),
+                                              Text(
+                                                record.olName,
+                                                style: TextStyle(
+                                                  fontSize: 18.0,
+                                                ),
+                                              ),
+                                              Text(
+                                                record.isInBitPlan
+                                                    ? "In Today's bit"
+                                                    : "Not in Today's bit",
+                                                style: TextStyle(
+                                                  fontSize: 16.0,
+                                                  fontWeight: FontWeight.w500,
+                                                  color: record.isInBitPlan
+                                                      ? const Color.fromARGB(
+                                                          255,
+                                                          34,
+                                                          106,
+                                                          36,
+                                                        )
+                                                      : AppConstants
+                                                            .primaryColor,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          trailing:
+                                              (visitDate.year == today.year &&
+                                                  visitDate.month ==
+                                                      today.month &&
+                                                  visitDate.day == today.day)
+                                              ? SvgPicture.asset(
+                                                  'assets/icons/green-check.svg',
+                                                  height: 18,
+                                                  width: 8.0,
+                                                )
+                                              : SvgPicture.asset(
+                                                  'assets/icons/red-cross-line.svg',
+                                                  height: 18,
+                                                  width: 8.0,
+                                                ),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
                   ],
                 ),
               ),

@@ -13,7 +13,7 @@ class UserModel {
   final String twilioUserSid;
   final String twilioConversationSid;
   final Manager? manager;
-  final dynamic managersUsers; // Keep dynamic if it's null or varying
+  final List<Agent>? managersUsers; // Keep dynamic if it's null or varying
 
   UserModel({
     required this.id,
@@ -52,7 +52,11 @@ class UserModel {
       manager: json['manager'] != null
           ? Manager.fromJson(json['manager'])
           : null,
-      managersUsers: json['managers_users'],
+      managersUsers: json['managers_users'] != null
+          ? List<Agent>.from(
+              json['managers_users'].map((user) => Agent.fromJson(user)),
+            )
+          : null,
     );
   }
 
@@ -73,7 +77,7 @@ class UserModel {
       "twilio_user_sid": twilioUserSid,
       "twilio_conversation_sid": twilioConversationSid,
       "manager": manager?.toJson(),
-      "managers_users": managersUsers,
+      "managers_users": managersUsers?.map((user) => user.toJson()).toList(),
     };
   }
 }
@@ -103,4 +107,57 @@ class Manager {
   Map<String, dynamic> toJson() {
     return {"id": id, "name": name, "agency": agency, "role": role};
   }
+}
+
+class Agent {
+  final int id;
+  final String name;
+  final String agency;
+  final String role;
+  final String empCode;
+  final String avatar;
+  final String twilioUserSid;
+  final String twilioConversationSid;
+
+  Agent({
+    required this.id,
+    required this.name,
+    required this.agency,
+    required this.role,
+    required this.empCode,
+    required this.avatar,
+    required this.twilioUserSid,
+    required this.twilioConversationSid,
+  });
+
+  factory Agent.fromJson(Map<String, dynamic> json) {
+    return Agent(
+      id: json['id'] ?? 0,
+      name: json['name'] ?? '',
+      agency: json['agency'] ?? '',
+      role: json['role'] ?? '',
+      empCode: json['emp_code'] ?? '',
+      avatar: json['avatar'] ?? '',
+      twilioUserSid: json['twilio_user_sid'] ?? '',
+      twilioConversationSid: json['twilio_conversation_sid'] ?? '',
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      "id": id,
+      "name": name,
+      "agency": agency,
+      "role": role,
+      "emp_code": empCode,
+      "avatar": avatar,
+      "twilio_user_sid": twilioUserSid,
+      "twilio_conversation_sid": twilioConversationSid,
+    };
+  }
+
+  /// Helper method to parse a list of attendance records from JSON
+  // static List<Agent> fromJsonList(List<dynamic> jsonList) {
+  //   return jsonList.map((json) => Agent.fromJson(json)).toList();
+  // }
 }

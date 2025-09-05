@@ -17,12 +17,10 @@ class DashboardController extends GetxController {
   void onInit() async {
     super.onInit();
     isLoading.value = true;
-    BaseController.user.value = UserModel.fromJson(
-      BaseController.storeToken.read("user_data"),
-    );
-    if (BaseController.user.value == null) {
-      fetchUserData();
-    }
+
+    // BaseController.user.value = UserModel.fromJson(
+    //   BaseController.storeToken.read("user_data"),
+    // );
     fetchDashboardData().then((value) {
       isLoading.value = false;
     });
@@ -45,6 +43,9 @@ class DashboardController extends GetxController {
   }
 
   static Future<void> fetchDashboardData() async {
+    if (BaseController.user.value == null) {
+      fetchUserData();
+    }
     var response = await BaseClient().dioPost('/dashboard/', null);
     if (response != null) {
       if (response['status']) {
@@ -80,7 +81,8 @@ class DashboardController extends GetxController {
         if (status == "start") {
           BaseController.isLunchBreak.value = true;
         } else {
-          BaseController.isLunchBreak.value = false;
+          fetchDashboardData();
+          // BaseController.isLunchBreak.value = false;
         }
         DialogHelper.showSuccessToast(description: response['message']);
       } else {
@@ -108,7 +110,8 @@ class DashboardController extends GetxController {
       if (response != null) {
         print("{ATTENDANCE DATA: ${response.toString()}}");
         if (response['status']) {
-          BaseController.isPresent.value = true;
+          // BaseController.isPresent.value = true;
+          fetchDashboardData();
           DialogHelper.showSuccessToast(description: response['message']);
         } else {
           DialogHelper.showErrorToast(description: response['messages']);

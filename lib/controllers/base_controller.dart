@@ -137,18 +137,14 @@ class BaseController {
     );
     if (response != null) {
       print("{LOGOUT DATA: ${response.toString()}}");
-      if (response['status']) {
-        storeToken.remove("token");
-        storeToken.remove("refreshToken");
-        storeToken.remove("forcePasswordReset");
-        storeToken.remove("user_data");
-        storeToken.remove("day_status");
-        storeToken.erase();
-        Get.offAll(() => const LoginScreen());
-        DialogHelper.showSuccessToast(description: "Logged out successfully.");
-      } else {
-        DialogHelper.showErrorToast(description: response['message']);
-      }
+      storeToken.remove("token");
+      storeToken.remove("refreshToken");
+      storeToken.remove("forcePasswordReset");
+      storeToken.remove("user_data");
+      storeToken.remove("day_status");
+      storeToken.erase();
+      Get.offAll(() => const LoginScreen());
+      DialogHelper.showSuccessToast(description: "Logged out successfully.");
     } else {
       DialogHelper.showErrorToast(
         description: "Failed to log out. Please try again.",
@@ -164,9 +160,9 @@ class BaseController {
     storeToken.remove("day_status");
     storeToken.erase();
     Get.offAll(() => const LoginScreen());
-    DialogHelper.showErrorToast(
-      description: 'Your session has expired. Please log in again.',
-    );
+    // DialogHelper.showErrorToast(
+    //   description: 'Your session has expired. Please log in again.',
+    // );
   }
 
   static getinitials(name) {

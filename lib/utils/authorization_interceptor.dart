@@ -57,7 +57,9 @@ class AuthorizationInterceptor extends Interceptor {
       if ((err.response?.data['code'] != null ||
               err.response?.data['code'] != '') &&
           (err.response?.data['code'] == 'token_not_valid')) {
-        if (err.response?.data['detail'] == 'Token is invalid') {
+        if (err.response?.data['detail'] == 'Token is invalid' ||
+            err.response?.data['detail'] == 'Token is blacklisted' ||
+            err.response?.data['detail'] == 'Token is expired') {
           BaseController.sessionExpired();
           return;
         }

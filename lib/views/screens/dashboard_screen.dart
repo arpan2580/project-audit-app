@@ -168,25 +168,25 @@ class DashboardScreen extends StatelessWidget {
                                                 ),
                                               ),
                                               SizedBox(height: 10.0),
-                                              SizedBox(
-                                                width:
-                                                    BaseController.storeToken
-                                                            .read(
-                                                              "day_status",
-                                                            ) ==
-                                                        "completed"
-                                                    ? 0
-                                                    : 50,
-                                                height:
-                                                    BaseController.storeToken
-                                                            .read(
-                                                              "day_status",
-                                                            ) ==
-                                                        "completed"
-                                                    ? 0
-                                                    : 30,
-                                                child: Obx(
-                                                  () =>
+                                              Obx(
+                                                () => SizedBox(
+                                                  width:
+                                                      BaseController.storeToken
+                                                              .read(
+                                                                "day_status",
+                                                              ) ==
+                                                          "completed"
+                                                      ? 0
+                                                      : 50,
+                                                  height:
+                                                      BaseController.storeToken
+                                                              .read(
+                                                                "day_status",
+                                                              ) ==
+                                                          "completed"
+                                                      ? 0
+                                                      : 30,
+                                                  child:
                                                       BaseController
                                                                   .isPresent
                                                                   .value ==
@@ -509,11 +509,18 @@ class DashboardScreen extends StatelessWidget {
                                                     ),
                                                     AuditorInfoWidget(
                                                       title: 'Manager',
-                                                      value: BaseController
-                                                          .user
-                                                          .value!
-                                                          .manager!
-                                                          .name,
+                                                      value:
+                                                          BaseController
+                                                                  .user
+                                                                  .value!
+                                                                  .manager !=
+                                                              null
+                                                          ? BaseController
+                                                                .user
+                                                                .value!
+                                                                .manager!
+                                                                .name
+                                                          : '----',
                                                       scroll: true,
                                                     ),
                                                     AuditorInfoWidget(

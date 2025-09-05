@@ -21,9 +21,8 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen> {
       print(storage.read('token'));
       print(storage.read('refreshToken'));
       if (mounted) {
-        if ((storage.read('token') != null || storage.read('token') != '') &&
-            (storage.read('refreshToken') != null ||
-                storage.read('refreshToken') != '')) {
+        if ((storage.read('token') != null) &&
+            (storage.read('refreshToken') != null)) {
           Navigator.of(
             context,
           ).pushReplacement(createRoute(BottomNavigationScreen()));
