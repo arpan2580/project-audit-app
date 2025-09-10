@@ -47,6 +47,13 @@ class BaseController {
   ).obs;
   static Rxn<UserModel> user = Rxn<UserModel>();
 
+  static Rx<String> startTime = ''.obs;
+  static Rx<String> endTime = ''.obs;
+  static Rx<String> latitude = ''.obs;
+  static Rx<String> longitude = ''.obs;
+  static RxBool isAuditStarted = false.obs;
+  static Rx<int> currAuditOutletId = 0.obs;
+
   // static dynamic unreadNotification = 0.obs;
   // static dynamic assignedPosts = 0.obs;
   // static RxBool commentReload = false.obs;
@@ -112,6 +119,7 @@ class BaseController {
       storeToken.remove("forcePasswordReset");
       storeToken.remove("user_data");
       storeToken.remove("day_status");
+      storeToken.remove("currentAudit");
       storeToken.erase();
       // storeToken.remove("unreadNotification");
       // storeToken.remove("assignedPost");
@@ -142,6 +150,7 @@ class BaseController {
       storeToken.remove("forcePasswordReset");
       storeToken.remove("user_data");
       storeToken.remove("day_status");
+      storeToken.remove("currentAudit");
       storeToken.erase();
       Get.offAll(() => const LoginScreen());
       DialogHelper.showSuccessToast(description: "Logged out successfully.");
@@ -158,6 +167,7 @@ class BaseController {
     storeToken.remove("forcePasswordReset");
     storeToken.remove("user_data");
     storeToken.remove("day_status");
+    storeToken.remove("currentAudit");
     storeToken.erase();
     Get.offAll(() => const LoginScreen());
     // DialogHelper.showErrorToast(

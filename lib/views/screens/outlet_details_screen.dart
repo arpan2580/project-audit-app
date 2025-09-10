@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -6,7 +7,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:jnk_app/consts/app_constants.dart';
 import 'package:jnk_app/controllers/base_controller.dart';
-import 'package:jnk_app/controllers/bit_plan_controller.dart';
 import 'package:jnk_app/controllers/outlet_controller.dart';
 import 'package:jnk_app/models/bit_plan_model.dart';
 import 'package:jnk_app/services/location_service.dart';
@@ -20,9 +20,10 @@ class OutletDetailsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ImagePicker picker = ImagePicker();
-    // File? imageFile;
     Rx<File?> imageFile = Rx<File?>(null);
-    // final outletController = Get.put(OutletController());
+    final OutletController outletController = Get.find();
+    String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    print("DATETIME - $today");
     // final startTime;
     Rx<String> startTime = ''.obs;
     Rx<String> endTime = ''.obs;
@@ -214,27 +215,33 @@ class OutletDetailsScreen extends StatelessWidget {
                                               imageFile.value == null ||
                                                   imageFile.value.toString() ==
                                                       ''
-                                              ?
-                                                // outletDetails.lastVisit!.photo != null ||
-                                                //           outletDetails.lastVisit!.photo !=
-                                                //               ''
-                                                //       ? CircleAvatar(
-                                                //           radius: 150,
-                                                //           backgroundImage: NetworkImage(
-                                                //             outletDetails.lastVisit!.photo!,
-                                                //           ),
-                                                //           backgroundColor:
-                                                //               Colors.transparent,
-                                                //         )
-                                                //       :
-                                                CircleAvatar(
-                                                  radius: 150,
-                                                  backgroundImage: AssetImage(
-                                                    'assets/images/shop-exterior.jpg',
-                                                  ),
-                                                  backgroundColor:
-                                                      Colors.transparent,
-                                                )
+                                              ? outletDetails
+                                                                .lastVisit!
+                                                                .photo !=
+                                                            null ||
+                                                        outletDetails
+                                                                .lastVisit!
+                                                                .photo !=
+                                                            ''
+                                                    ? CircleAvatar(
+                                                        radius: 150,
+                                                        backgroundImage:
+                                                            NetworkImage(
+                                                              outletDetails
+                                                                  .lastVisit!
+                                                                  .photo!,
+                                                            ),
+                                                        backgroundColor:
+                                                            Colors.transparent,
+                                                      )
+                                                    : CircleAvatar(
+                                                        radius: 150,
+                                                        backgroundImage: AssetImage(
+                                                          'assets/images/shop-exterior.jpg',
+                                                        ),
+                                                        backgroundColor:
+                                                            Colors.transparent,
+                                                      )
                                               : CircleAvatar(
                                                   radius: 150,
                                                   backgroundImage: FileImage(
@@ -382,12 +389,28 @@ class OutletDetailsScreen extends StatelessWidget {
                                               SizedBox(width: 8.0),
                                               Obx(
                                                 () =>
-                                                    (startTime.value != '' &&
-                                                        startTime
+                                                    (BaseController
+                                                                .startTime
+                                                                .value !=
+                                                            '' &&
+                                                        BaseController
+                                                            .startTime
                                                             .value
-                                                            .isNotEmpty)
+                                                            .isNotEmpty &&
+                                                        outletDetails.id ==
+                                                            BaseController
+                                                                .currAuditOutletId
+                                                                .value)
                                                     ? Text(
-                                                        startTime.value,
+                                                        DateFormat(
+                                                          'hh:mm:ss a',
+                                                        ).format(
+                                                          DateTime.parse(
+                                                            BaseController
+                                                                .startTime
+                                                                .value,
+                                                          ),
+                                                        ),
                                                         style: TextStyle(
                                                           fontSize: 18,
                                                           color: AppConstants
@@ -419,12 +442,25 @@ class OutletDetailsScreen extends StatelessWidget {
                                               SizedBox(width: 8.0),
                                               Obx(
                                                 () =>
-                                                    (endTime.value != '' &&
-                                                        endTime
+                                                    (BaseController
+                                                                .endTime
+                                                                .value !=
+                                                            '' &&
+                                                        BaseController
+                                                            .endTime
                                                             .value
                                                             .isNotEmpty)
                                                     ? Text(
-                                                        endTime.value,
+                                                        DateFormat(
+                                                          'hh:mm:ss a',
+                                                        ).format(
+                                                          DateTime.parse(
+                                                            outletDetails
+                                                                    .lastVisit!
+                                                                    .endTime ??
+                                                                '',
+                                                          ),
+                                                        ),
                                                         style: TextStyle(
                                                           fontSize: 18,
                                                           color: AppConstants
@@ -469,10 +505,20 @@ class OutletDetailsScreen extends StatelessWidget {
                                           ),
                                           Obx(
                                             () =>
-                                                (latitude.value != '' &&
-                                                    latitude.value.isNotEmpty)
+                                                (BaseController
+                                                            .latitude
+                                                            .value !=
+                                                        '' &&
+                                                    BaseController
+                                                        .latitude
+                                                        .value
+                                                        .isNotEmpty &&
+                                                    outletDetails.id ==
+                                                        BaseController
+                                                            .currAuditOutletId
+                                                            .value)
                                                 ? Text(
-                                                    "Lat: ${latitude.value}",
+                                                    "Lat: ${BaseController.latitude.value}",
                                                     style: TextStyle(
                                                       fontSize: 18,
                                                       color: AppConstants
@@ -494,10 +540,20 @@ class OutletDetailsScreen extends StatelessWidget {
                                           // ),
                                           Obx(
                                             () =>
-                                                (longitude.value != '' &&
-                                                    longitude.value.isNotEmpty)
+                                                (BaseController
+                                                            .longitude
+                                                            .value !=
+                                                        '' &&
+                                                    BaseController
+                                                        .longitude
+                                                        .value
+                                                        .isNotEmpty &&
+                                                    outletDetails.id ==
+                                                        BaseController
+                                                            .currAuditOutletId
+                                                            .value)
                                                 ? Text(
-                                                    "Long: ${longitude.value}",
+                                                    "Long: ${BaseController.longitude.value}",
                                                     style: TextStyle(
                                                       fontSize: 18,
                                                       color: AppConstants
@@ -528,59 +584,145 @@ class OutletDetailsScreen extends StatelessWidget {
                                           bottom: 20.0,
                                         ),
                                         child: SizedBox(
-                                          width: double.infinity,
-                                          height: 55,
+                                          width:
+                                              outletDetails.lastVisitDate !=
+                                                      null &&
+                                                  outletDetails
+                                                          .inBitVisitStatus !=
+                                                      'completed'
+                                              // && outletDetails.lastVisitDate !=
+                                              // today
+                                              ? double.infinity
+                                              : 0,
+                                          height:
+                                              outletDetails.lastVisitDate !=
+                                                      null &&
+                                                  outletDetails
+                                                          .inBitVisitStatus !=
+                                                      'completed'
+                                              // && outletDetails.lastVisitDate !=
+                                              // today
+                                              ? 55
+                                              : 0,
                                           child: Obx(
-                                            () => (isAuditStarted.value)
+                                            () =>
+                                                (BaseController
+                                                        .isAuditStarted
+                                                        .value &&
+                                                    outletDetails.id ==
+                                                        BaseController
+                                                            .currAuditOutletId
+                                                            .value)
                                                 ? ElevatedButton(
                                                     onPressed: () {
-                                                      DialogHelper.showAlertDialog(
-                                                        context: context,
-                                                        title: "Capturing GPS",
-                                                        content: Image.asset(
-                                                          'assets/animations/gps_capture.gif',
-                                                          height: 120,
-                                                          width: 120,
-                                                          fit: BoxFit.scaleDown,
-                                                        ),
-                                                        confirmText: null,
-                                                        onConfirm: () {},
-                                                        cancelText: null,
-                                                      );
-                                                      LocationService.checkLocation();
-                                                      Future.delayed(
-                                                        const Duration(
-                                                          seconds: 3,
-                                                        ),
-                                                        () async {
-                                                          Get.back(
-                                                            closeOverlays: true,
-                                                          ); // Close the GPS dialog
+                                                      if (BaseController
+                                                              .isPresent
+                                                              .value ==
+                                                          false) {
+                                                        DialogHelper.showInfoToast(
+                                                          description:
+                                                              'Please mark your attendance first.',
+                                                        );
+                                                      } else if (BaseController
+                                                              .isLunchBreak
+                                                              .value ==
+                                                          true) {
+                                                        DialogHelper.showInfoToast(
+                                                          description:
+                                                              'Audit cannot be closed while you are in a lunch break.',
+                                                        );
+                                                      } else {
+                                                        DialogHelper.showAlertDialog(
+                                                          context: context,
+                                                          title:
+                                                              "Capturing GPS",
+                                                          content: Image.asset(
+                                                            'assets/animations/gps_capture.gif',
+                                                            height: 120,
+                                                            width: 120,
+                                                            fit: BoxFit
+                                                                .scaleDown,
+                                                          ),
+                                                          confirmText: null,
+                                                          onConfirm: () {},
+                                                          cancelText: null,
+                                                        );
+                                                        LocationService.checkLocation();
+                                                        Future.delayed(
+                                                          const Duration(
+                                                            seconds: 3,
+                                                          ),
+                                                          () async {
+                                                            Get.back(
+                                                              closeOverlays:
+                                                                  true,
+                                                            ); // Close the GPS dialog
 
-                                                          if (BaseController
-                                                                      .gpsEnabled
-                                                                      .value !=
-                                                                  false &&
-                                                              BaseController
-                                                                      .locationPermission
-                                                                      .value !=
-                                                                  false &&
-                                                              BaseController
-                                                                      .locationMocked
-                                                                      .value !=
-                                                                  true) {
-                                                            isAuditStarted
-                                                                    .value =
-                                                                false;
-                                                            endTime.value =
-                                                                DateFormat(
-                                                                  'hh:mm:ss a',
-                                                                ).format(
-                                                                  DateTime.now(),
+                                                            if (BaseController
+                                                                        .gpsEnabled
+                                                                        .value !=
+                                                                    false &&
+                                                                BaseController
+                                                                        .locationPermission
+                                                                        .value !=
+                                                                    false &&
+                                                                BaseController
+                                                                        .locationMocked
+                                                                        .value !=
+                                                                    true) {
+                                                              // BaseController
+                                                              //         .isAuditStarted
+                                                              //         .value =
+                                                              //     false;
+                                                              // endTime.value =
+                                                              //     DateFormat(
+                                                              //       'hh:mm:ss a',
+                                                              //     ).format(
+                                                              //       DateTime.now(),
+                                                              //     );
+                                                              final String?
+                                                              storedAudit =
+                                                                  BaseController
+                                                                      .storeToken
+                                                                      .read(
+                                                                        'currentAudit',
+                                                                      );
+
+                                                              if (storedAudit !=
+                                                                      null &&
+                                                                  storedAudit
+                                                                      .isNotEmpty) {
+                                                                // Decode JSON to a Map
+                                                                final Map<
+                                                                  String,
+                                                                  dynamic
+                                                                >
+                                                                auditData = json
+                                                                    .decode(
+                                                                      storedAudit,
+                                                                    );
+                                                                outletController.endAudit(
+                                                                  BaseController
+                                                                      .currentLocation
+                                                                      .value
+                                                                      .latitude
+                                                                      .toStringAsFixed(
+                                                                        6,
+                                                                      ),
+                                                                  BaseController
+                                                                      .currentLocation
+                                                                      .value
+                                                                      .longitude
+                                                                      .toStringAsFixed(
+                                                                        6,
+                                                                      ),
+                                                                  auditData['visitId'],
                                                                 );
-                                                          }
-                                                        },
-                                                      );
+                                                              }
+                                                            }
+                                                          },
+                                                        );
+                                                      }
                                                     },
                                                     child: Text(
                                                       "End Audit",
@@ -594,127 +736,171 @@ class OutletDetailsScreen extends StatelessWidget {
                                                   )
                                                 : ElevatedButton(
                                                     onPressed: () {
-                                                      DialogHelper.showAlertDialog(
-                                                        context: context,
-                                                        title: "Capturing GPS",
-                                                        content: Image.asset(
-                                                          'assets/animations/gps_capture.gif',
-                                                          height: 120,
-                                                          width: 120,
-                                                          fit: BoxFit.scaleDown,
-                                                        ),
-                                                        confirmText: null,
-                                                        onConfirm: () {},
-                                                        cancelText: null,
-                                                      );
-                                                      LocationService.checkLocation();
-                                                      Future.delayed(
-                                                        const Duration(
-                                                          seconds: 3,
-                                                        ),
-                                                        () async {
-                                                          Get.back(
-                                                            closeOverlays: true,
-                                                          ); // Close the GPS dialog
-                                                          // print("GPS Enabled: ${BaseController.gpsEnabled.value}");
-                                                          // print(
-                                                          //   "LOCATION Permission: ${BaseController.locationPermission.value}",
-                                                          // );
-                                                          // print(
-                                                          //   "MOCKED Location: ${BaseController.locationMocked.value}",
-                                                          // );
-                                                          if (BaseController
-                                                                      .gpsEnabled
-                                                                      .value !=
-                                                                  false &&
-                                                              BaseController
-                                                                      .locationPermission
-                                                                      .value !=
-                                                                  false &&
-                                                              BaseController
-                                                                      .locationMocked
-                                                                      .value !=
-                                                                  true) {
-                                                            final pickedFile =
-                                                                await picker.pickImage(
-                                                                  source:
-                                                                      ImageSource
-                                                                          .camera,
+                                                      if (BaseController
+                                                              .isPresent
+                                                              .value ==
+                                                          false) {
+                                                        DialogHelper.showInfoToast(
+                                                          description:
+                                                              'Please mark your attendance first.',
+                                                        );
+                                                      } else if (BaseController
+                                                              .isLunchBreak
+                                                              .value ==
+                                                          true) {
+                                                        DialogHelper.showInfoToast(
+                                                          description:
+                                                              'Audit cannot be started while you are in a lunch break.',
+                                                        );
+                                                      } else if (BaseController
+                                                              .isAuditStarted
+                                                              .value ==
+                                                          true) {
+                                                        DialogHelper.showInfoToast(
+                                                          description:
+                                                              'Audit cannot be started while another audit is ongoing.',
+                                                        );
+                                                      } else {
+                                                        DialogHelper.showAlertDialog(
+                                                          context: context,
+                                                          title:
+                                                              "Capturing GPS",
+                                                          content: Image.asset(
+                                                            'assets/animations/gps_capture.gif',
+                                                            height: 120,
+                                                            width: 120,
+                                                            fit: BoxFit
+                                                                .scaleDown,
+                                                          ),
+                                                          confirmText: null,
+                                                          onConfirm: () {},
+                                                          cancelText: null,
+                                                        );
+                                                        LocationService.checkLocation();
+                                                        Future.delayed(
+                                                          const Duration(
+                                                            seconds: 3,
+                                                          ),
+                                                          () async {
+                                                            Get.back(
+                                                              closeOverlays:
+                                                                  true,
+                                                            ); // Close the GPS dialog
+                                                            // print("GPS Enabled: ${BaseController.gpsEnabled.value}");
+                                                            // print(
+                                                            //   "LOCATION Permission: ${BaseController.locationPermission.value}",
+                                                            // );
+                                                            // print(
+                                                            //   "MOCKED Location: ${BaseController.locationMocked.value}",
+                                                            // );
+                                                            if (BaseController
+                                                                        .gpsEnabled
+                                                                        .value !=
+                                                                    false &&
+                                                                BaseController
+                                                                        .locationPermission
+                                                                        .value !=
+                                                                    false &&
+                                                                BaseController
+                                                                        .locationMocked
+                                                                        .value !=
+                                                                    true) {
+                                                              final pickedFile =
+                                                                  await picker.pickImage(
+                                                                    source: ImageSource
+                                                                        .camera,
+                                                                  );
+
+                                                              if (pickedFile !=
+                                                                  null) {
+                                                                startTime
+                                                                        .value =
+                                                                    DateFormat(
+                                                                      'hh:mm:ss a',
+                                                                    ).format(
+                                                                      DateTime.now(),
+                                                                    );
+                                                                latitude.value =
+                                                                    BaseController
+                                                                        .currentLocation
+                                                                        .value
+                                                                        .latitude
+                                                                        .toStringAsFixed(
+                                                                          6,
+                                                                        );
+                                                                longitude
+                                                                    .value = BaseController
+                                                                    .currentLocation
+                                                                    .value
+                                                                    .longitude
+                                                                    .toStringAsFixed(
+                                                                      6,
+                                                                    );
+                                                                File
+                                                                croppedImage =
+                                                                    await BaseController.compressImage(
+                                                                      File(
+                                                                        pickedFile
+                                                                            .path,
+                                                                      ),
+                                                                      10,
+                                                                    );
+
+                                                                final path =
+                                                                    croppedImage
+                                                                        .path;
+                                                                imageFile
+                                                                        .value =
+                                                                    File(path);
+
+                                                                // print("Cropped File =========> ${OutletController.imageFile.value.path}");
+                                                                // Get the file size in bytes using length() (asynchronously)
+                                                                int
+                                                                sizeInBytes =
+                                                                    await imageFile
+                                                                        .value!
+                                                                        .length();
+                                                                double
+                                                                sizeInKb =
+                                                                    sizeInBytes /
+                                                                    1024;
+                                                                double
+                                                                sizeInMb =
+                                                                    sizeInKb /
+                                                                    1024;
+                                                                print(
+                                                                  'File size in KB: ${sizeInKb.toStringAsFixed(2)} KB',
                                                                 );
-
-                                                            if (pickedFile !=
-                                                                null) {
-                                                              File
-                                                              croppedImage =
-                                                                  await BaseController.compressImage(
-                                                                    File(
-                                                                      pickedFile
-                                                                          .path,
-                                                                    ),
-                                                                    10,
-                                                                  );
-
-                                                              final path =
-                                                                  croppedImage
-                                                                      .path;
-                                                              imageFile.value =
-                                                                  File(path);
-
-                                                              // print("Cropped File =========> ${OutletController.imageFile.value.path}");
-                                                              // Get the file size in bytes using length() (asynchronously)
-                                                              int sizeInBytes =
-                                                                  await imageFile
-                                                                      .value!
-                                                                      .length();
-                                                              double sizeInKb =
-                                                                  sizeInBytes /
-                                                                  1024;
-                                                              double sizeInMb =
-                                                                  sizeInKb /
-                                                                  1024;
-                                                              print(
-                                                                'File size in KB: ${sizeInKb.toStringAsFixed(2)} KB',
-                                                              );
-                                                              print(
-                                                                'File size in MB: ${sizeInMb.toStringAsFixed(2)} MB',
-                                                              );
-                                                              // widget.controller.updateProfileImage(imageFile);
-                                                              // BaseController.showReload.value = false;
-                                                              // widget.controller.updateProfileImage(File(pickedFile.path));
-                                                              isAuditStarted
-                                                                      .value =
-                                                                  true;
-                                                              startTime.value =
-                                                                  DateFormat(
-                                                                    'hh:mm:ss a',
-                                                                  ).format(
-                                                                    DateTime.now(),
-                                                                  );
-                                                              latitude.value =
-                                                                  BaseController
-                                                                      .currentLocation
-                                                                      .value
-                                                                      .latitude
-                                                                      .toStringAsFixed(
-                                                                        6,
-                                                                      );
-                                                              longitude.value =
-                                                                  BaseController
-                                                                      .currentLocation
-                                                                      .value
-                                                                      .longitude
-                                                                      .toStringAsFixed(
-                                                                        6,
-                                                                      );
-                                                            } else {
-                                                              DialogHelper.showInfoToast(
-                                                                description:
-                                                                    'No image clicked, please try again',
-                                                              );
+                                                                print(
+                                                                  'File size in MB: ${sizeInMb.toStringAsFixed(2)} MB',
+                                                                );
+                                                                // widget.controller.updateProfileImage(imageFile);
+                                                                // BaseController.showReload.value = false;
+                                                                // widget.controller.updateProfileImage(File(pickedFile.path));
+                                                                outletController
+                                                                    .startAudit(
+                                                                      imageFile
+                                                                          .value!,
+                                                                      latitude
+                                                                          .value,
+                                                                      longitude
+                                                                          .value,
+                                                                      outletDetails
+                                                                          .id,
+                                                                    );
+                                                                isAuditStarted
+                                                                        .value =
+                                                                    true;
+                                                              } else {
+                                                                DialogHelper.showInfoToast(
+                                                                  description:
+                                                                      'No image clicked, please try again',
+                                                                );
+                                                              }
                                                             }
-                                                          }
-                                                        },
-                                                      );
+                                                          },
+                                                        );
+                                                      }
                                                     },
                                                     child: Text(
                                                       "Start Audit",

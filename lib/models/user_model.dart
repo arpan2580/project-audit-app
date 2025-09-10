@@ -14,6 +14,7 @@ class UserModel {
   final String twilioConversationSid;
   final Manager? manager;
   final List<Agent>? managersUsers; // Keep dynamic if it's null or varying
+  final List<Agent>? adminUsers;
 
   UserModel({
     required this.id,
@@ -31,6 +32,7 @@ class UserModel {
     required this.twilioConversationSid,
     this.manager,
     this.managersUsers,
+    this.adminUsers,
   });
 
   /// Convert JSON to Model
@@ -57,6 +59,11 @@ class UserModel {
               json['managers_users'].map((user) => Agent.fromJson(user)),
             )
           : null,
+      adminUsers: json['admin_users'] != null
+          ? List<Agent>.from(
+              json['admin_users'].map((user) => Agent.fromJson(user)),
+            )
+          : null,
     );
   }
 
@@ -78,6 +85,7 @@ class UserModel {
       "twilio_conversation_sid": twilioConversationSid,
       "manager": manager?.toJson(),
       "managers_users": managersUsers?.map((user) => user.toJson()).toList(),
+      "admin_users": adminUsers?.map((user) => user.toJson()).toList(),
     };
   }
 }

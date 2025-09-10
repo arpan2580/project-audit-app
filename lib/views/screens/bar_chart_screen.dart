@@ -21,12 +21,12 @@ class BarChartScreen extends StatelessWidget {
               children: [
                 buildLegendItem(
                   color: AppConstants.accentColor,
-                  label: 'Planned',
+                  label: 'Planned - ${data[0].value.toInt()}',
                 ),
                 SizedBox(width: 10),
                 buildLegendItem(
                   color: AppConstants.primaryColor,
-                  label: 'Acheived',
+                  label: 'Acheived - ${data[1].value.toInt()}',
                 ),
               ],
             ),

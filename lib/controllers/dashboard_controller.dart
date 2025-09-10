@@ -21,8 +21,10 @@ class DashboardController extends GetxController {
     // BaseController.user.value = UserModel.fromJson(
     //   BaseController.storeToken.read("user_data"),
     // );
-    fetchDashboardData().then((value) {
-      isLoading.value = false;
+    Future.delayed(const Duration(seconds: 3), () {
+      fetchDashboardData().then((value) {
+        isLoading.value = false;
+      });
     });
   }
 
@@ -43,6 +45,11 @@ class DashboardController extends GetxController {
   }
 
   static Future<void> fetchDashboardData() async {
+    if (BaseController.storeToken.read("user_data") != null) {
+      BaseController.user.value = UserModel.fromJson(
+        BaseController.storeToken.read("user_data"),
+      );
+    }
     if (BaseController.user.value == null) {
       fetchUserData();
     }
@@ -53,6 +60,12 @@ class DashboardController extends GetxController {
         dashboard.value = DashboardModel.fromJson(response['data']);
         final attendanceInfo = dashboard.value?.attendanceInfo;
         final lunchBreakInfo = dashboard.value?.lunchBreakInfo;
+        if (attendanceInfo?.status != 'present' &&
+            attendanceInfo?.checkInTime == null &&
+            lunchBreakInfo?.startTime == null &&
+            lunchBreakInfo?.endTime == null) {
+          BaseController.storeToken.remove("day_status");
+        }
         BaseController.isPresent.value =
             attendanceInfo?.status != 'absent' &&
                 attendanceInfo?.checkInTime != null

@@ -118,10 +118,10 @@ class BitPlanScreen extends StatelessWidget {
                                   //     : bitPlanController.todaysBitPlan[index];
                                   final record =
                                       bitPlanController.filteredBit[index];
-                                  DateTime visitDate = DateTime(1900);
-                                  DateTime today = DateTime.now();
+                                  // DateTime visitDate = DateTime(1900);
+                                  // DateTime today = DateTime.now();
                                   if (record.lastVisitDate != null) {
-                                    today = DateTime.now();
+                                    // today = DateTime.now();
                                     DateTime.parse(record.lastVisitDate!);
                                   }
                                   return Card(
@@ -164,8 +164,15 @@ class BitPlanScreen extends StatelessWidget {
                                         child: ListTile(
                                           leading: CircleAvatar(
                                             radius: 30,
-                                            backgroundColor: index / 2 == 0
+                                            backgroundColor:
+                                                record.inBitVisitStatus ==
+                                                        null ||
+                                                    record.inBitVisitStatus ==
+                                                        'pending'
                                                 ? AppConstants.primaryColor
+                                                : record.inBitVisitStatus ==
+                                                      'started'
+                                                ? Colors.orangeAccent
                                                 : const Color.fromARGB(
                                                     255,
                                                     34,
@@ -213,15 +220,21 @@ class BitPlanScreen extends StatelessWidget {
                                             ],
                                           ),
                                           trailing:
-                                              (visitDate.year == today.year &&
-                                                  visitDate.month ==
-                                                      today.month &&
-                                                  visitDate.day == today.day)
-                                              ? SvgPicture.asset(
-                                                  'assets/icons/green-check.svg',
-                                                  height: 18,
-                                                  width: 8.0,
-                                                )
+                                              record.inBitVisitStatus != null &&
+                                                  record.inBitVisitStatus !=
+                                                      'pending'
+                                              ? record.inBitVisitStatus ==
+                                                        'started'
+                                                    ? SvgPicture.asset(
+                                                        'assets/icons/progress-icon.svg',
+                                                        height: 18,
+                                                        width: 8.0,
+                                                      )
+                                                    : SvgPicture.asset(
+                                                        'assets/icons/green-check.svg',
+                                                        height: 18,
+                                                        width: 8.0,
+                                                      )
                                               : SvgPicture.asset(
                                                   'assets/icons/red-cross-line.svg',
                                                   height: 18,

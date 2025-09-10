@@ -76,6 +76,8 @@ class LastVisit {
   final String? endTime;
   final String? duration;
   final String? photo;
+  final double lat;
+  final double long;
   final String status;
   final String outletAgency;
 
@@ -86,6 +88,8 @@ class LastVisit {
     this.endTime,
     this.duration,
     this.photo,
+    required this.lat,
+    required this.long,
     required this.status,
     required this.outletAgency,
   });
@@ -98,6 +102,8 @@ class LastVisit {
       endTime: json['end_time'],
       duration: json['duration'],
       photo: json['photo'],
+      lat: json['start_latitude'],
+      long: json['start_longitude'],
       status: json['status'] ?? '',
       outletAgency: json['outlet_agency'] ?? '',
     );
@@ -111,6 +117,8 @@ class LastVisit {
       "end_time": endTime,
       "duration": duration,
       "photo": photo,
+      "start_latitude": lat,
+      "start_longitude": long,
       "status": status,
       "outlet_agency": outletAgency,
     };
