@@ -6,6 +6,7 @@ import 'package:dio/dio.dart' as dio;
 import 'package:jnk_app/controllers/base_controller.dart';
 import 'package:jnk_app/controllers/bit_plan_controller.dart';
 import 'package:jnk_app/services/base_client.dart';
+import 'package:jnk_app/services/gps_logger_service.dart';
 import 'package:jnk_app/views/dialogs/dialog_helper.dart';
 
 class OutletController extends GetxController {
@@ -52,6 +53,7 @@ class OutletController extends GetxController {
           BaseController.startTime.value = response['data']['start_time']
               .toString();
           bitPlanController.initData();
+          GpsLoggerService.startLogging();
           BaseController.hideLoading();
           DialogHelper.showSuccessToast(description: response['message']);
         } else {
@@ -67,11 +69,13 @@ class OutletController extends GetxController {
 
   Future<void> endAudit(String lat, String long, int visitId) async {
     BaseController.showLoading('Please wait..');
+    GpsLoggerService.stopLogging();
+    String gpsLogs = GpsLoggerService.getLogsJson();
     var response = await BaseClient().dioPost('/visit/end/', {
       "visit_id": visitId,
       "end_latitude": lat,
       "end_longitude": long,
-      "gps_log": jsonEncode({}),
+      "gps_log": gpsLogs,
     });
     if (response != null) {
       print("{END AUDIT DATA: ${response.toString()}}");
