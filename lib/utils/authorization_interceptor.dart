@@ -1,8 +1,6 @@
 import 'package:dio/dio.dart';
-import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:jnk_app/services/dio_exceptions.dart';
-import 'package:jnk_app/views/screens/login_screen.dart';
 
 import '../controllers/base_controller.dart';
 import '../views/dialogs/dialog_helper.dart';
@@ -25,7 +23,8 @@ class AuthorizationInterceptor extends Interceptor {
   }
 
   int _needAuthorizationHeader(RequestOptions options) {
-    if (options.method == 'GET') {
+    if (options.method == 'GET' || options.headers.containsKey('noToken')) {
+      options.headers.remove('noToken');
       return 0;
     }
     if (options.headers.containsKey('refreshToken')) {
@@ -52,6 +51,7 @@ class AuthorizationInterceptor extends Interceptor {
         return;
       }
     } else if (err.response?.statusCode == 401 &&
+        err.response?.data.containsKey('detail') &&
         (err.response?.data['detail'] != null ||
             err.response?.data['detail'] != '')) {
       if ((err.response?.data['code'] != null ||
@@ -96,6 +96,14 @@ class AuthorizationInterceptor extends Interceptor {
         BaseController.hideLoading();
         DialogHelper.showErrorToast(description: err.response?.data['detail']);
       }
+    } else if (err.response?.statusCode == 401 &&
+        err.response?.data.containsKey('message') &&
+        err.response?.data['message'] != '') {
+      BaseController.hideLoading();
+      DialogHelper.showErrorToast(
+        description: err.response!.data['message'].toString(),
+      );
+      return;
     } else {
       final errorMessage = DioExceptions.fromDioError(err).toString();
       BaseController.hideLoading();

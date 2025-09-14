@@ -52,6 +52,9 @@ dependencies:
   app_settings: ^6.1.1
   flutter_image_compress: ^2.4.0
   dropdown_button2: ^2.3.9
+  pinput: ^5.0.2
+  cached_network_image: ^3.4.1
+  flutter_cache_manager: ^3.4.1
 
 dev_dependencies:
   flutter_test:

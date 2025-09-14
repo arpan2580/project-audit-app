@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
+import 'package:dio/dio.dart' as dio show LogInterceptor;
 import 'package:jnk_app/controllers/base_controller.dart';
 import 'package:get_storage/get_storage.dart';
 
@@ -21,7 +22,22 @@ class BaseClient {
           responseType: ResponseType.json,
           contentType: 'application/json',
         ),
-      )..interceptors.add(AuthorizationInterceptor());
+      ) {
+    _dio.interceptors.add(AuthorizationInterceptor());
+
+    // 📝 Logging Interceptor
+    _dio.interceptors.add(
+      dio.LogInterceptor(
+        request: true,
+        requestHeader: true,
+        requestBody: true,
+        responseHeader: true,
+        responseBody: true,
+        error: true,
+        logPrint: (obj) => print("🔍 DIO LOG: $obj"),
+      ),
+    );
+  }
 
   //GET
   // Future<dynamic> get(String api) async {
@@ -45,6 +61,7 @@ class BaseClient {
     String api,
     dynamic payload, [
     bool isRefresh = false,
+    bool noToken = false,
   ]) async {
     dynamic response;
     dynamic responseJson;
@@ -58,16 +75,30 @@ class BaseClient {
           ),
         );
       } else {
-        response = await _dio.post(
-          api,
-          data: payload,
-          options: Options(
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json',
-            },
-          ),
-        );
+        if (noToken) {
+          response = await _dio.post(
+            api,
+            data: payload,
+            options: Options(
+              headers: {
+                'noToken': true,
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+              },
+            ),
+          );
+        } else {
+          response = await _dio.post(
+            api,
+            data: payload,
+            options: Options(
+              headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+              },
+            ),
+          );
+        }
       }
 
       if (response.statusCode == 200 || response.statusCode == 201) {

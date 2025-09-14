@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -112,15 +113,38 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                       )
                                                     : CircleAvatar(
                                                         radius: 80,
-                                                        backgroundImage:
-                                                            NetworkImage(
-                                                              BaseController
-                                                                  .user
-                                                                  .value!
-                                                                  .avatar,
-                                                            ),
                                                         backgroundColor:
                                                             Colors.transparent,
+                                                        child: ClipOval(
+                                                          child: CachedNetworkImage(
+                                                            imageUrl:
+                                                                BaseController
+                                                                    .user
+                                                                    .value!
+                                                                    .avatar,
+                                                            fit: BoxFit.cover,
+                                                            width:
+                                                                160, // 2 * radius
+                                                            height: 160,
+                                                            placeholder:
+                                                                (
+                                                                  context,
+                                                                  url,
+                                                                ) => const Center(
+                                                                  child:
+                                                                      CircularProgressIndicator(),
+                                                                ),
+                                                            errorWidget:
+                                                                (
+                                                                  context,
+                                                                  url,
+                                                                  error,
+                                                                ) => const Icon(
+                                                                  Icons.error,
+                                                                  size: 40,
+                                                                ),
+                                                          ),
+                                                        ),
                                                       )
                                               : CircleAvatar(
                                                   radius: 80,

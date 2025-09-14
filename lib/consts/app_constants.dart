@@ -47,6 +47,7 @@ class AppConstants {
   static const String loginIllustration = 'assets/images/login_logo.svg';
   static const String registerIllustration = 'assets/images/register_logo.svg';
   static const String forgotIllustration = 'assets/images/forgot-password.png';
+  static const String otpIllustration = 'assets/images/otp_screen.svg';
   static const String profilePlaceholder = 'assets/images/user-profile.png';
   static const String dashboardCardBg = 'assets/images/background-dark.jpeg';
 

@@ -3,6 +3,8 @@ import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:jnk_app/consts/app_constants.dart';
 import 'package:jnk_app/controllers/base_controller.dart';
+import 'package:jnk_app/controllers/dashboard_controller.dart';
+import 'package:jnk_app/views/dialogs/dialog_helper.dart';
 import 'package:jnk_app/views/screens/agents_chat_screen.dart';
 import 'package:jnk_app/views/screens/attendance_screen.dart';
 import 'package:jnk_app/views/screens/bit_plan_screen.dart';
@@ -138,7 +140,8 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
       // Only FAB here (no Column)
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          BaseController.showOptions.value = !BaseController.showOptions.value;
+          // BaseController.showOptions.value = !BaseController.showOptions.value;
+          DialogHelper.showInfoToast(description: "Feature coming soon!");
         },
         backgroundColor: AppConstants.logoBlueColor,
         shape: const CircleBorder(),
@@ -167,6 +170,7 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
                 ),
                 onPressed: () {
                   BaseController.showOptions.value = false;
+                  DashboardController.fetchDashboardData(fetchUser: true);
                   selectedIndex = 0;
                   pageController.jumpToPage(0);
                 },

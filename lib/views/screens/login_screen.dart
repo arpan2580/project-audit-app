@@ -57,7 +57,7 @@ class LoginScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 24),
 
-                const Text("Your Username"),
+                const Text("Your Email"),
                 const SizedBox(height: 6),
                 TextFormField(
                   controller: loginController.txtEmail,
@@ -66,18 +66,15 @@ class LoginScreen extends StatelessWidget {
                       Icons.email_outlined,
                       color: Color.fromARGB(255, 109, 109, 109),
                     ),
-                    hintText: "johndoe",
+                    hintText: "johndoe@test.com",
                   ),
                   validator: (value) {
                     loginController.txtEmail.text = value?.trim() ?? '';
                     if (loginController.txtEmail.text.isEmpty) {
-                      return "Username is required for login";
-                    }
-                    // else if (!loginController.txtEmail.text.contains('@') ||
-                    //     !loginController.txtEmail.text.contains('.in')) {
-                    //   return "Email id is not valid";
-                    // }
-                    else {
+                      return "Email is required for login";
+                    } else if (!loginController.txtEmail.text.contains('@')) {
+                      return "Email id is not valid";
+                    } else {
                       return null;
                     }
                   },

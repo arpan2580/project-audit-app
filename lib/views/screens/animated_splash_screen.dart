@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:jnk_app/controllers/base_controller.dart';
 import 'package:jnk_app/views/screens/bottom_navigation_screen.dart';
 import 'package:jnk_app/views/screens/login_screen.dart';
 

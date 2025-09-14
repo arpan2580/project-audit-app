@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
@@ -24,12 +25,10 @@ class OutletDetailsScreen extends StatelessWidget {
     final OutletController outletController = Get.find();
     String today = DateFormat('yyyy-MM-dd').format(DateTime.now());
     print("DATETIME - $today");
-    // final startTime;
     Rx<String> startTime = ''.obs;
-    Rx<String> endTime = ''.obs;
     Rx<String> latitude = ''.obs;
     Rx<String> longitude = ''.obs;
-    RxBool isAuditStarted = false.obs;
+    // RxBool isAuditStarted = false.obs;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -215,24 +214,48 @@ class OutletDetailsScreen extends StatelessWidget {
                                               imageFile.value == null ||
                                                   imageFile.value.toString() ==
                                                       ''
-                                              ? outletDetails
-                                                                .lastVisit!
-                                                                .photo !=
-                                                            null ||
+                                              ? outletDetails.lastVisit !=
+                                                            null &&
                                                         outletDetails
-                                                                .lastVisit!
-                                                                .photo !=
+                                                                .lastVisit
+                                                                ?.photo !=
+                                                            null &&
+                                                        outletDetails
+                                                                .lastVisit
+                                                                ?.photo !=
                                                             ''
                                                     ? CircleAvatar(
                                                         radius: 150,
-                                                        backgroundImage:
-                                                            NetworkImage(
-                                                              outletDetails
-                                                                  .lastVisit!
-                                                                  .photo!,
-                                                            ),
                                                         backgroundColor:
                                                             Colors.transparent,
+                                                        child: ClipOval(
+                                                          child: CachedNetworkImage(
+                                                            imageUrl:
+                                                                outletDetails
+                                                                    .lastVisit!
+                                                                    .photo!,
+                                                            fit: BoxFit.cover,
+                                                            width:
+                                                                300, // 2x radius
+                                                            height: 300,
+                                                            placeholder:
+                                                                (
+                                                                  context,
+                                                                  url,
+                                                                ) => const Center(
+                                                                  child:
+                                                                      CircularProgressIndicator(),
+                                                                ),
+                                                            errorWidget:
+                                                                (
+                                                                  context,
+                                                                  url,
+                                                                  error,
+                                                                ) => const Icon(
+                                                                  Icons.error,
+                                                                ),
+                                                          ),
+                                                        ),
                                                       )
                                                     : CircleAvatar(
                                                         radius: 150,
@@ -585,25 +608,27 @@ class OutletDetailsScreen extends StatelessWidget {
                                         ),
                                         child: SizedBox(
                                           width:
-                                              outletDetails.lastVisitDate !=
-                                                      null &&
-                                                  outletDetails
-                                                          .inBitVisitStatus !=
-                                                      'completed'
+                                              // outletDetails.lastVisitDate !=
+                                              //         null &&
+                                              //     outletDetails
+                                              //             .inBitVisitStatus !=
+                                              //         'completed'
                                               // && outletDetails.lastVisitDate !=
                                               // today
-                                              ? double.infinity
-                                              : 0,
+                                              // ?
+                                              double.infinity,
+                                          // : 0,
                                           height:
-                                              outletDetails.lastVisitDate !=
-                                                      null &&
-                                                  outletDetails
-                                                          .inBitVisitStatus !=
-                                                      'completed'
+                                              // outletDetails.lastVisitDate !=
+                                              //         null &&
+                                              //     outletDetails
+                                              //             .inBitVisitStatus !=
+                                              //         'completed'
                                               // && outletDetails.lastVisitDate !=
                                               // today
-                                              ? 55
-                                              : 0,
+                                              // ?
+                                              55,
+                                          // : 0,
                                           child: Obx(
                                             () =>
                                                 (BaseController
@@ -888,9 +913,9 @@ class OutletDetailsScreen extends StatelessWidget {
                                                                       outletDetails
                                                                           .id,
                                                                     );
-                                                                isAuditStarted
-                                                                        .value =
-                                                                    true;
+                                                                // isAuditStarted
+                                                                // .value =
+                                                                // true;
                                                               } else {
                                                                 DialogHelper.showInfoToast(
                                                                   description:

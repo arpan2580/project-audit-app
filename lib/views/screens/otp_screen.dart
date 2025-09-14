@@ -1,16 +1,35 @@
+import 'package:flutter_svg/svg.dart';
 import 'package:jnk_app/consts/app_constants.dart';
+import 'package:jnk_app/controllers/otp_controller.dart';
 import 'package:jnk_app/utils/custom/custom_color.dart';
 import 'package:jnk_app/utils/custom/faded_divider.dart';
 import 'package:flutter/material.dart';
+import 'package:jnk_app/views/dialogs/dialog_helper.dart';
+import 'package:pinput/pinput.dart';
 
-class ForgotPassScreen extends StatelessWidget {
-  const ForgotPassScreen({super.key});
+class OtpScreen extends StatelessWidget {
+  const OtpScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final customTxtColors = Theme.of(context).extension<CustomColor>();
-    final emailController = TextEditingController();
+    final OtpController otpController = OtpController();
+
+    final defaultPinTheme = PinTheme(
+      width: 50,
+      height: 56,
+      textStyle: const TextStyle(
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
+        color: Colors.black,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.teal.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.teal),
+      ),
+    );
 
     return Scaffold(
       // appBar: AppBar(),
@@ -25,40 +44,50 @@ class ForgotPassScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: 70),
+              SizedBox(height: 50),
               Center(
-                child: Image.asset(
-                  AppConstants.forgotIllustration,
-                  height: 220,
+                child: SvgPicture.asset(
+                  AppConstants.otpIllustration,
+                  height: 320,
                 ),
               ),
               const SizedBox(height: 32),
               Text(
-                "Forgot Password",
+                "OTP Verfication",
                 style: theme.textTheme.headlineSmall?.copyWith(
                   fontWeight: FontWeight.w900,
                 ),
               ),
               const SizedBox(height: 4),
               Text(
-                "Password reset instructions will be sent to your email",
+                "OTP has been sent on your email",
                 style: theme.textTheme.bodyMedium?.copyWith(
                   color: customTxtColors?.specialTextColor,
                 ),
               ),
               const SizedBox(height: 24),
 
-              const Text("Your Email"),
+              const Text("Enter OTP"),
               const SizedBox(height: 6),
-              TextField(
-                controller: emailController,
-                decoration: InputDecoration(
-                  prefixIcon: const Icon(
-                    Icons.email_outlined,
-                    color: Color.fromARGB(255, 109, 109, 109),
+              Pinput(
+                length: 6,
+                controller: otpController.txtOtpController,
+                defaultPinTheme: defaultPinTheme,
+                focusedPinTheme: defaultPinTheme.copyWith(
+                  decoration: BoxDecoration(
+                    color: Colors.teal.shade100,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.teal, width: 2),
                   ),
-                  hintText: "test@gmail.com",
                 ),
+                submittedPinTheme: defaultPinTheme.copyWith(
+                  decoration: BoxDecoration(
+                    color: Colors.teal.shade200,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.teal),
+                  ),
+                ),
+                // onCompleted: (pin) => verifyOtp(),
               ),
               const SizedBox(height: 24),
 
@@ -66,9 +95,15 @@ class ForgotPassScreen extends StatelessWidget {
                 width: double.infinity,
                 height: 55,
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    otpController.txtOtpController.text.trim().length == 6
+                        ? otpController.verifyOtp()
+                        : DialogHelper.showInfoToast(
+                            description: "Please enter a valid 6-digit OTP.",
+                          );
+                  },
                   child: Text(
-                    "Reset Password",
+                    "Verify OTP",
                     style: TextStyle(
                       color: AppConstants.backgroundColor,
                       fontSize: AppConstants.fontLarge,

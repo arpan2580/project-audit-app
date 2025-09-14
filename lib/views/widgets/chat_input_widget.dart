@@ -73,7 +73,7 @@ class ChatInputWidget extends StatelessWidget {
 }
 
 void takePhoto(ImageSource source, ImagePicker picker) async {
-  final pickedFile = await picker.pickImage(source: source);
+  // final pickedFile = await picker.pickImage(source: source);
 
   // if (pickedFile != null) {
   //   CroppedFile? croppedImage = await ImageCropper().cropImage(

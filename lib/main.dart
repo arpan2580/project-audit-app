@@ -8,7 +8,6 @@ import 'package:jnk_app/services/time_settings_service.dart';
 import 'package:jnk_app/utils/app_bindings.dart';
 import 'package:jnk_app/views/dialogs/dialog_helper.dart';
 import 'package:jnk_app/views/screens/animated_splash_screen.dart';
-// import 'package:jnk_app/views/screens/login_screen.dart';
 import 'package:jnk_app/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -87,7 +86,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.light,
       initialBinding: AppBindings(),
-      // home: const ChangePassScreen(),
+      // home: const OtpScreen(),
       home: const AnimatedSplashScreen(),
       builder: (context, child) {
         return Stack(

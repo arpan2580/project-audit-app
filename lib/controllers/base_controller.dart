@@ -46,7 +46,7 @@ class BaseController {
     headingAccuracy: 0.0,
   ).obs;
   static Rxn<UserModel> user = Rxn<UserModel>();
-
+  static String loginEmail = '';
   static Rx<String> startTime = ''.obs;
   static Rx<String> endTime = ''.obs;
   static Rx<String> latitude = ''.obs;

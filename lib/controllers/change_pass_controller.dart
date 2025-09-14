@@ -1,5 +1,4 @@
 import 'package:jnk_app/models/change_pass_model.dart';
-import 'package:jnk_app/models/login_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_state_manager/get_state_manager.dart';
 import 'package:get/route_manager.dart';
@@ -8,7 +7,6 @@ import 'package:jnk_app/controllers/base_controller.dart';
 import 'package:jnk_app/services/base_client.dart';
 import 'package:jnk_app/views/dialogs/dialog_helper.dart';
 import 'package:jnk_app/views/screens/bottom_navigation_screen.dart';
-import 'package:jnk_app/views/screens/change_pass_screen.dart';
 
 class ChangePassController extends GetxController {
   TextEditingController txtCurrentPassword = TextEditingController();

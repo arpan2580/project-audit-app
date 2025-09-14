@@ -1,9 +1,9 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:jnk_app/consts/app_constants.dart';
@@ -153,16 +153,40 @@ class DashboardScreen extends StatelessWidget {
                                                           )
                                                         : CircleAvatar(
                                                             radius: 40,
-                                                            backgroundImage:
-                                                                NetworkImage(
-                                                                  BaseController
-                                                                      .user
-                                                                      .value!
-                                                                      .avatar,
-                                                                ),
                                                             backgroundColor:
                                                                 Colors
                                                                     .transparent,
+                                                            child: ClipOval(
+                                                              child: CachedNetworkImage(
+                                                                imageUrl:
+                                                                    BaseController
+                                                                        .user
+                                                                        .value!
+                                                                        .avatar,
+                                                                fit: BoxFit
+                                                                    .cover,
+                                                                width:
+                                                                    80, // 2 * radius
+                                                                height: 80,
+                                                                placeholder:
+                                                                    (
+                                                                      context,
+                                                                      url,
+                                                                    ) => const Center(
+                                                                      child:
+                                                                          CircularProgressIndicator(),
+                                                                    ),
+                                                                errorWidget:
+                                                                    (
+                                                                      context,
+                                                                      url,
+                                                                      error,
+                                                                    ) => const Icon(
+                                                                      Icons
+                                                                          .error,
+                                                                    ),
+                                                              ),
+                                                            ),
                                                           ),
                                                   ),
                                                 ),
@@ -265,37 +289,38 @@ class DashboardScreen extends StatelessWidget {
                                                                           .showOptions
                                                                           .value =
                                                                       false;
-
-                                                                  DialogHelper.showAlertDialog(
-                                                                    context:
-                                                                        context,
-                                                                    title:
-                                                                        "Close Attendance",
-                                                                    content: Text(
-                                                                      "Please click on Confirm, if you want to close attendance",
-                                                                    ),
-                                                                    confirmText:
-                                                                        "Confirm",
-                                                                    onConfirm: () {
-                                                                      BaseController
-                                                                              .isPresent
-                                                                              .value =
-                                                                          false;
-                                                                      BaseController
-                                                                          .storeToken
-                                                                          .write(
-                                                                            "day_status",
-                                                                            "completed",
-                                                                          );
-                                                                      Get.back();
-                                                                      DialogHelper.showInfoToast(
-                                                                        description:
-                                                                            'Attendance Closed',
-                                                                      );
-                                                                    },
-                                                                    cancelText:
-                                                                        "Cancel",
-                                                                  );
+                                                                  if (BaseController
+                                                                      .isAuditStarted
+                                                                      .value) {
+                                                                    DialogHelper.showErrorToast(
+                                                                      description:
+                                                                          "Cannot close attendance during an ongoing audit. Please end the audit first.",
+                                                                    );
+                                                                    return;
+                                                                  } else {
+                                                                    DialogHelper.showAlertDialog(
+                                                                      context:
+                                                                          context,
+                                                                      title:
+                                                                          "Close Attendance",
+                                                                      content: Text(
+                                                                        "Please click on Confirm, if you want to close attendance",
+                                                                      ),
+                                                                      confirmText:
+                                                                          "Confirm",
+                                                                      onConfirm: () {
+                                                                        Get.back();
+                                                                        dashboardController
+                                                                            .endAttendance();
+                                                                        // DialogHelper.showInfoToast(
+                                                                        //   description:
+                                                                        //       'Attendance Closed',
+                                                                        // );
+                                                                      },
+                                                                      cancelText:
+                                                                          "Cancel",
+                                                                    );
+                                                                  }
                                                                 },
                                                                 style: ElevatedButton.styleFrom(
                                                                   padding:

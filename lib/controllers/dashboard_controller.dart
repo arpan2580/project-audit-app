@@ -44,13 +44,13 @@ class DashboardController extends GetxController {
     }
   }
 
-  static Future<void> fetchDashboardData() async {
+  static Future<void> fetchDashboardData({bool fetchUser = false}) async {
     if (BaseController.storeToken.read("user_data") != null) {
       BaseController.user.value = UserModel.fromJson(
         BaseController.storeToken.read("user_data"),
       );
     }
-    if (BaseController.user.value == null) {
+    if (BaseController.user.value == null || fetchUser) {
       fetchUserData();
     }
     var response = await BaseClient().dioPost('/dashboard/', null);
@@ -131,7 +131,27 @@ class DashboardController extends GetxController {
         }
       }
     } else {
+      BaseController.hideLoading();
       DialogHelper.showErrorToast(description: 'Image not recognized');
+    }
+  }
+
+  Future<void> endAttendance() async {
+    BaseController.showLoading('Please wait..');
+    var response = await BaseClient().dioPost('/end-attendance/', null);
+    if (response != null) {
+      if (response['status']) {
+        BaseController.hideLoading();
+        BaseController.isPresent.value = false;
+        BaseController.storeToken.write("day_status", "completed");
+        DialogHelper.showSuccessToast(description: response['message']);
+      } else {
+        BaseController.hideLoading();
+        DialogHelper.showErrorToast(description: response['message']);
+      }
+    } else {
+      BaseController.hideLoading();
+      DialogHelper.showErrorToast(description: "Failed! Please try later.");
     }
   }
 
