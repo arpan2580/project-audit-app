@@ -82,11 +82,23 @@ class AttendanceScreen extends StatelessWidget {
                                         ),
                                         items: attendanceController.agents
                                             .map(
-                                              (agent) =>
-                                                  DropdownMenuItem<Agent>(
-                                                    value: agent,
-                                                    child: Text(agent.name),
-                                                  ),
+                                              (
+                                                agent,
+                                              ) => DropdownMenuItem<Agent>(
+                                                value: agent,
+                                                child: agent.id == 0
+                                                    ? Text(
+                                                        agent.name,
+                                                        style: TextStyle(
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          fontSize: 18,
+                                                          color: AppConstants
+                                                              .logoBlueColor,
+                                                        ),
+                                                      )
+                                                    : Text(agent.name),
+                                              ),
                                             )
                                             .toList(),
                                         value:
