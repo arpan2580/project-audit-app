@@ -164,21 +164,45 @@ class BitPlanScreen extends StatelessWidget {
                                         child: ListTile(
                                           leading: CircleAvatar(
                                             radius: 30,
-                                            backgroundColor:
-                                                record.inBitVisitStatus ==
-                                                        null ||
-                                                    record.inBitVisitStatus ==
-                                                        'pending'
-                                                ? AppConstants.primaryColor
-                                                : record.inBitVisitStatus ==
-                                                      'started'
-                                                ? Colors.orangeAccent
-                                                : const Color.fromARGB(
-                                                    255,
-                                                    34,
-                                                    106,
-                                                    36,
-                                                  ),
+                                            backgroundColor: record.isInBitPlan
+                                                ? record.inBitVisitStatus ==
+                                                              null ||
+                                                          record.inBitVisitStatus ==
+                                                              'pending'
+                                                      ? AppConstants
+                                                            .primaryColor
+                                                      : record.inBitVisitStatus ==
+                                                            'started'
+                                                      ? Colors.orangeAccent
+                                                      : const Color.fromARGB(
+                                                          255,
+                                                          34,
+                                                          106,
+                                                          36,
+                                                        )
+                                                : record.lastVisitDate !=
+                                                          null &&
+                                                      DateTime.parse(
+                                                            record
+                                                                .lastVisitDate!,
+                                                          ).day ==
+                                                          DateTime.now().day
+                                                ? record.lastVisit?.status ==
+                                                          'completed'
+                                                      ? const Color.fromARGB(
+                                                          255,
+                                                          34,
+                                                          106,
+                                                          36,
+                                                        )
+                                                      : record
+                                                                .lastVisit
+                                                                ?.status ==
+                                                            'started'
+                                                      ? Colors.orangeAccent
+                                                      : AppConstants
+                                                            .primaryColor
+                                                : AppConstants.primaryColor,
                                             child: SvgPicture.asset(
                                               'assets/icons/outlet-icon.svg',
                                             ),
@@ -232,6 +256,32 @@ class BitPlanScreen extends StatelessWidget {
                                                       )
                                                     : SvgPicture.asset(
                                                         'assets/icons/green-check.svg',
+                                                        height: 18,
+                                                        width: 8.0,
+                                                      )
+                                              : record.lastVisitDate != null &&
+                                                    DateTime.parse(
+                                                          record.lastVisitDate!,
+                                                        ).day ==
+                                                        DateTime.now().day
+                                              ? record.lastVisit?.status ==
+                                                        'completed'
+                                                    ? SvgPicture.asset(
+                                                        'assets/icons/green-check.svg',
+                                                        height: 18,
+                                                        width: 8.0,
+                                                      )
+                                                    : record
+                                                              .lastVisit
+                                                              ?.status ==
+                                                          'started'
+                                                    ? SvgPicture.asset(
+                                                        'assets/icons/progress-icon.svg',
+                                                        height: 18,
+                                                        width: 8.0,
+                                                      )
+                                                    : SvgPicture.asset(
+                                                        'assets/icons/red-cross-line.svg',
                                                         height: 18,
                                                         width: 8.0,
                                                       )

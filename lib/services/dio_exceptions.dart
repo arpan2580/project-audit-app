@@ -1,9 +1,11 @@
 import 'package:dio/dio.dart';
+import 'package:jnk_app/controllers/base_controller.dart';
 
 class DioExceptions implements Exception {
   late String errorMessage;
 
   DioExceptions.fromDioError(DioException dioError) {
+    BaseController.hideLoading();
     switch (dioError.type) {
       case DioExceptionType.cancel:
         errorMessage = 'Request to the server was cancelled.';

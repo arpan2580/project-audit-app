@@ -64,7 +64,7 @@ class NonDismissibleWidget extends StatelessWidget {
                           ),
                         ),
                       ),
-                      if (onRefresh != null) SizedBox(width: 15),
+                      if (onRefresh != null) SizedBox(width: 20),
                       ElevatedButton(
                         onPressed: onRefresh,
                         child: Text(

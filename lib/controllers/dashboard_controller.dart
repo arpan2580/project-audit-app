@@ -21,11 +21,11 @@ class DashboardController extends GetxController {
     // BaseController.user.value = UserModel.fromJson(
     //   BaseController.storeToken.read("user_data"),
     // );
-    Future.delayed(const Duration(seconds: 3), () {
-      fetchDashboardData().then((value) {
-        isLoading.value = false;
-      });
+    // Future.delayed(const Duration(seconds: 3), () {
+    fetchDashboardData().then((value) {
+      isLoading.value = false;
     });
+    // });
   }
 
   static Future<void> fetchUserData() async {

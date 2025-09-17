@@ -101,7 +101,9 @@ class BaseClient {
         }
       }
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
+      if (response.statusCode == 200 ||
+          response.statusCode == 201 ||
+          response.statusCode == 206) {
         responseJson = json.decode(response.toString());
         return responseJson;
       }

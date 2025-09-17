@@ -66,7 +66,7 @@ class AttendanceController extends GetxController {
     isAgentAttendanceFetch.value = true;
     var response = await BaseClient().dioPost(
       '/attendance/',
-      json.encode({"agent": agentId}),
+      json.encode({"agent": agentId == 0 ? '' : agentId}),
     );
     if (response != null) {
       print("{AGENT ATTENDANCE: ${response.toString()}}");

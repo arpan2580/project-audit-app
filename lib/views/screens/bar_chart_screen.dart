@@ -35,7 +35,7 @@ class BarChartScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: SizedBox(
-              height: 300.0,
+              height: 280.0,
               child: BarChart(
                 BarChartData(
                   alignment: BarChartAlignment.spaceEvenly,

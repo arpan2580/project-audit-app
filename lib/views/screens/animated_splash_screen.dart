@@ -12,22 +12,27 @@ class AnimatedSplashScreen extends StatefulWidget {
 
 class _AnimatedSplashScreenState extends State<AnimatedSplashScreen> {
   GetStorage storage = GetStorage();
+  dynamic token;
+  dynamic refreshToken;
+  dynamic page;
 
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 4), () {
-      print(storage.read('token'));
-      print(storage.read('refreshToken'));
+    Future.delayed(const Duration(seconds: 1), () {
+      token = storage.read('token');
+      refreshToken = storage.read('refreshToken');
+      print(token);
+      print(refreshToken);
+      if ((token != null) && (refreshToken != null)) {
+        page = BottomNavigationScreen();
+      } else {
+        page = LoginScreen();
+      }
+    });
+    Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
-        if ((storage.read('token') != null) &&
-            (storage.read('refreshToken') != null)) {
-          Navigator.of(
-            context,
-          ).pushReplacement(createRoute(BottomNavigationScreen()));
-        } else {
-          Navigator.of(context).pushReplacement(createRoute(LoginScreen()));
-        }
+        Navigator.of(context).pushReplacement(createRoute(page));
       }
     });
   }

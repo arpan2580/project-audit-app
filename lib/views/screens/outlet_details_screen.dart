@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
@@ -259,11 +260,11 @@ class OutletDetailsScreen extends StatelessWidget {
                                                       )
                                                     : CircleAvatar(
                                                         radius: 150,
-                                                        backgroundImage: AssetImage(
-                                                          'assets/images/shop-exterior.jpg',
-                                                        ),
                                                         backgroundColor:
                                                             Colors.transparent,
+                                                        child: SvgPicture.asset(
+                                                          'assets/icons/outlet-icon.svg',
+                                                        ),
                                                       )
                                               : CircleAvatar(
                                                   radius: 150,

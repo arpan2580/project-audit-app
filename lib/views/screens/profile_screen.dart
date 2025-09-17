@@ -6,6 +6,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:intl/intl.dart';
 import 'package:jnk_app/consts/app_constants.dart';
 import 'package:jnk_app/controllers/base_controller.dart';
 import 'package:jnk_app/controllers/dashboard_controller.dart';
@@ -193,7 +194,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 textAlign: TextAlign.center,
                               ),
                               Text(
-                                "${BaseController.user.value!.empCode}, arpan.das@test.com, +91 12345 67890, Kolkata, India",
+                                "${BaseController.user.value?.empCode}, ${BaseController.user.value?.email} ${BaseController.user.value?.mobile != null ? ', ${BaseController.user.value?.mobile}' : ''}",
+                                // , ${BaseController.user.value?.agency}, ${BaseController.user.value?.dateJoined}",
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: AppConstants.backgroundColor.withAlpha(
+                                    240,
+                                  ),
+                                  fontStyle: FontStyle.italic,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              Text(
+                                "${BaseController.user.value?.agency}, ${BaseController.user.value?.dateJoined != null ? 'Joined on - ${(DateFormat.yMMMd().format(BaseController.user.value!.dateJoined))}' : ''}",
                                 style: TextStyle(
                                   fontSize: 16,
                                   color: AppConstants.backgroundColor.withAlpha(
@@ -492,6 +505,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       TextButton(
                                         onPressed: () {
                                           Navigator.pop(context);
+                                        },
+                                        child: const Text(
+                                          "No",
+                                          style: TextStyle(color: Colors.cyan),
+                                        ),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          Navigator.pop(context);
                                           BaseController.logout();
                                         },
                                         style: ButtonStyle(
@@ -505,15 +527,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                               ),
                                         ),
                                         child: const Text("Confirm"),
-                                      ),
-                                      TextButton(
-                                        onPressed: () {
-                                          Navigator.pop(context);
-                                        },
-                                        child: const Text(
-                                          "No",
-                                          style: TextStyle(color: Colors.cyan),
-                                        ),
                                       ),
                                     ],
                                   );

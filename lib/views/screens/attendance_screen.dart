@@ -236,8 +236,9 @@ class AttendanceScreen extends StatelessWidget {
                         : Expanded(
                             child: RefreshIndicator(
                               onRefresh: () async {
-                                await attendanceController
-                                    .fetchAttendanceData();
+                                await attendanceController.fetchAgentAttendance(
+                                  attendanceController.chooseAgent[0]!.id,
+                                );
                               },
                               child: ListView.builder(
                                 shrinkWrap: true,
@@ -301,7 +302,10 @@ class AttendanceScreen extends StatelessWidget {
                                                 height: 18,
                                                 width: 8.0,
                                               )
-                                            : Text("Week-Off"),
+                                            : Icon(
+                                                Icons.event_busy,
+                                                size: 21.0,
+                                              ),
                                       ),
                                     ),
                                   );

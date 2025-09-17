@@ -58,7 +58,8 @@ class OutletController extends GetxController {
           DialogHelper.showSuccessToast(description: response['message']);
         } else {
           BaseController.hideLoading();
-          DialogHelper.showErrorToast(description: response['messages']);
+          Get.back();
+          DialogHelper.showErrorToast(description: response['message']);
         }
       }
     } else {

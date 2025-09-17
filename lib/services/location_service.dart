@@ -10,7 +10,7 @@ class LocationService {
   static bool _permissionDialogShown = false;
   static bool _gpsDialogShown = false;
 
-  /// Main function to check GPS, permission and mock status
+  // Main function to check GPS, permission and mock status
   static Future<void> checkLocation() async {
     // 1. Check if GPS is enabled
     final serviceEnabled = await Geolocator.isLocationServiceEnabled();
