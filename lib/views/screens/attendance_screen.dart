@@ -317,6 +317,7 @@ class AttendanceScreen extends StatelessWidget {
                                             : Icon(
                                                 Icons.event_busy,
                                                 size: 21.0,
+                                                color: Colors.grey[600],
                                               ),
                                       ),
                                     ),

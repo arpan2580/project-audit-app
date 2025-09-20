@@ -519,7 +519,7 @@ class DashboardScreen extends StatelessWidget {
                                                                       .checkInTime !=
                                                                   null
                                                           ? DateFormat(
-                                                                  'yyyy-MM-dd hh:mm:ss a',
+                                                                  "d, MMM hh:mm a",
                                                                 )
                                                                 .format(
                                                                   DashboardController
@@ -549,15 +549,11 @@ class DashboardScreen extends StatelessWidget {
                                                       scroll: true,
                                                     ),
                                                     AuditorInfoWidget(
-                                                      title: 'Date Time',
-                                                      value:
-                                                          DateFormat(
-                                                                'yyyy-MM-dd hh:mm:ss a',
-                                                              )
-                                                              .format(
-                                                                DateTime.now(),
-                                                              )
-                                                              .toString(),
+                                                      title: 'Agency',
+                                                      value: BaseController
+                                                          .user
+                                                          .value!
+                                                          .agency,
                                                       scroll: true,
                                                     ),
                                                   ],

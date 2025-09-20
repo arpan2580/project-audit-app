@@ -42,7 +42,13 @@ class UserModel {
       name: json['name'] ?? '',
       email: json['email'],
       mobile: json['mobile'],
-      agency: json['agency'] ?? '',
+      agency: json['agency'] != null
+          ? json['agency'] == 'vivo'
+                ? 'VIVO'
+                : json['agency'] == 'nstl'
+                ? 'NESTLÉ'
+                : 'BRITANNIA'
+          : '',
       role: json['role'] ?? '',
       empCode: json['emp_code'] ?? '',
       isTest: json['is_test'] ?? false,
@@ -95,12 +101,20 @@ class Manager {
   final String name;
   final String agency;
   final String role;
+  final String empCode;
+  final String avatar;
+  final String twilioUserSid;
+  final String twilioConversationSid;
 
   Manager({
     required this.id,
     required this.name,
     required this.agency,
     required this.role,
+    required this.empCode,
+    required this.avatar,
+    required this.twilioUserSid,
+    required this.twilioConversationSid,
   });
 
   factory Manager.fromJson(Map<String, dynamic> json) {
@@ -109,11 +123,24 @@ class Manager {
       name: json['name'] ?? '',
       agency: json['agency'] ?? '',
       role: json['role'] ?? '',
+      empCode: json['emp_code'] ?? '',
+      avatar: json['avatar'] ?? '',
+      twilioUserSid: json['twilio_user_sid'] ?? '',
+      twilioConversationSid: json['twilio_conversation_sid'] ?? '',
     );
   }
 
   Map<String, dynamic> toJson() {
-    return {"id": id, "name": name, "agency": agency, "role": role};
+    return {
+      "id": id,
+      "name": name,
+      "agency": agency,
+      "role": role,
+      "emp_code": empCode,
+      "avatar": avatar,
+      "twilio_user_sid": twilioUserSid,
+      "twilio_conversation_sid": twilioConversationSid,
+    };
   }
 }
 

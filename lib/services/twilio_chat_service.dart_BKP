@@ -1,0 +1,155 @@
+import 'dart:convert';
+import 'package:flutter_twilio_conversations/flutter_twilio_conversations.dart';
+import 'package:jnk_app/services/base_client.dart';
+import 'package:jnk_app/views/dialogs/dialog_helper.dart';
+
+class MyConversationsListener implements ConversationsListener {
+  final void Function(Message)? onMessageAddedCallback;
+  final void Function(Conversation)? onConversationAddedCallback;
+  final void Function(Conversation)? onConversationDeletedCallback;
+  final void Function(Conversation, ConversationUpdateReason)?
+  onConversationUpdatedCallback;
+
+  MyConversationsListener({
+    this.onMessageAddedCallback,
+    this.onConversationAddedCallback,
+    this.onConversationDeletedCallback,
+    this.onConversationUpdatedCallback,
+  });
+
+  @override
+  void onConversationAdded(Conversation conversation) {
+    print("Conversation added: ${conversation.sid}");
+    onConversationAddedCallback?.call(conversation);
+  }
+
+  @override
+  void onConversationUpdated(
+    Conversation conversation,
+    ConversationUpdateReason reason,
+  ) {
+    print("Conversation updated: ${conversation.sid}");
+    onConversationUpdatedCallback?.call(conversation, reason);
+  }
+
+  @override
+  void onConversationDeleted(Conversation conversation) {
+    print("Conversation deleted: ${conversation.sid}");
+    onConversationDeletedCallback?.call(conversation);
+  }
+
+  @override
+  void onMessageAdded(Message message) {
+    print("Message added: ${message.body}");
+    onMessageAddedCallback?.call(message);
+  }
+
+  // Implement other overrides as needed (optional)
+}
+
+class TwilioChatService {
+  static final TwilioChatService _instance = TwilioChatService._internal();
+  factory TwilioChatService() => _instance;
+  TwilioChatService._internal();
+
+  TwilioConversationsClient? _client;
+  MyConversationsListener? _listener;
+
+  /// Initialize the client with access token and register listener
+  Future<void> initClient(
+    String token, {
+    void Function(Message)? onMessageAdded,
+    void Function(Conversation)? onConversationAdded,
+    void Function(Conversation)? onConversationDeleted,
+    void Function(Conversation, ConversationUpdateReason)?
+    onConversationUpdated,
+  }) async {
+    _client = await TwilioConversationsClient.create(token);
+
+    // Remove previous listener if any
+    if (_listener != null) {
+      _client?.removeListener(_listener!);
+    }
+
+    // Register new listener
+    _listener = MyConversationsListener(
+      onMessageAddedCallback: onMessageAdded,
+      onConversationAddedCallback: onConversationAdded,
+      onConversationDeletedCallback: onConversationDeleted,
+      onConversationUpdatedCallback: onConversationUpdated,
+    );
+    _client?.addListener(_listener!);
+  }
+
+  TwilioConversationsClient? get client => _client;
+
+  /// Refresh token
+  Future<void> updateToken(String token) async {
+    await _client?.updateToken(token);
+  }
+
+  /// Get conversation by sid
+  Future<Conversation?> getConversation(String sid) async {
+    return await _client?.getConversation(sid);
+  }
+
+  /// Send message in a conversation
+  Future<void> sendMessage(Conversation conversation, String body) async {
+    await conversation.sendMessage(body);
+  }
+
+  /// Fetch access token from backend
+  Future<String?> fetchAccessToken() async {
+    var response = await BaseClient().dioPost('/chat/token/', null);
+    if (response != null) {
+      print("{TWILIO TOKEN: ${response.toString()}}");
+      if (response['token'] != null) {
+        return response['token'];
+      } else {
+        DialogHelper.showErrorToast(description: 'Failed to fetch chat.');
+      }
+    } else {
+      DialogHelper.showErrorToast(
+        description: "Failed to initialize chat functionality.",
+      );
+    }
+    return null;
+  }
+
+  /// Star / Unstar message
+  Future<void> toggleStar(String conversationSid, String messageSid) async {
+    var response = await BaseClient().dioPost(
+      '/chat/star-toggle/',
+      json.encode({
+        "conversation_sid": conversationSid,
+        "message_sid": messageSid,
+      }),
+    );
+    if (response != null) {
+      print("{STAR TOGGLE: ${response.toString()}}");
+      if (response['status']) {
+        DialogHelper.showErrorToast(description: response['message']);
+      } else {
+        DialogHelper.showErrorToast(description: response['message']);
+      }
+    } else {
+      DialogHelper.showErrorToast(description: "Failed! Please try later.");
+    }
+  }
+
+  /// Get starred messages
+  Future<List<dynamic>> getStarredMessages() async {
+    var response = await BaseClient().dioPost('/chat/star-list/', null);
+    if (response != null) {
+      print("{STAR MESSAGES: ${response.toString()}}");
+      if (response['status']) {
+        DialogHelper.showErrorToast(description: response['message']);
+      } else {
+        DialogHelper.showErrorToast(description: response['message']);
+      }
+    } else {
+      DialogHelper.showErrorToast(description: "Failed! Please try later.");
+    }
+    return [];
+  }
+}

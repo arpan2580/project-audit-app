@@ -193,28 +193,111 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 ),
                                 textAlign: TextAlign.center,
                               ),
-                              Text(
-                                "${BaseController.user.value?.empCode}, ${BaseController.user.value?.email} ${BaseController.user.value?.mobile != null ? ', ${BaseController.user.value?.mobile}' : ''}",
-                                // , ${BaseController.user.value?.agency}, ${BaseController.user.value?.dateJoined}",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: AppConstants.backgroundColor.withAlpha(
-                                    240,
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.person,
+                                    size: 17.0,
+                                    color: AppConstants.backgroundColor,
                                   ),
-                                  fontStyle: FontStyle.italic,
-                                ),
-                                textAlign: TextAlign.center,
+                                  SizedBox(width: 2.0),
+                                  Text(
+                                    BaseController.user.value?.empCode ?? '',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: AppConstants.backgroundColor
+                                          .withAlpha(240),
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  SizedBox(width: 15.0),
+                                  Icon(
+                                    Icons.email_rounded,
+                                    size: 17.0,
+                                    color: AppConstants.backgroundColor,
+                                  ),
+                                  SizedBox(width: 2.0),
+                                  Text(
+                                    BaseController.user.value?.email ?? '',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: AppConstants.backgroundColor
+                                          .withAlpha(240),
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  (BaseController.user.value?.mobile != null)
+                                      ? SizedBox(width: 15.0)
+                                      : Container(),
+                                  (BaseController.user.value?.mobile != null)
+                                      ? Icon(
+                                          Icons.phone_rounded,
+                                          size: 17.0,
+                                          color: AppConstants.backgroundColor,
+                                        )
+                                      : Container(),
+                                  (BaseController.user.value?.mobile != null)
+                                      ? SizedBox(width: 2.0)
+                                      : Container(),
+                                  (BaseController.user.value?.mobile != null)
+                                      ? Text(
+                                          BaseController.user.value?.mobile ??
+                                              '',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            color: AppConstants.backgroundColor
+                                                .withAlpha(240),
+                                            fontStyle: FontStyle.italic,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        )
+                                      : Container(),
+                                ],
                               ),
-                              Text(
-                                "${BaseController.user.value?.agency}, ${BaseController.user.value?.dateJoined != null ? 'Joined on - ${(DateFormat.yMMMd().format(BaseController.user.value!.dateJoined))}' : ''}",
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: AppConstants.backgroundColor.withAlpha(
-                                    240,
+
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.work_rounded,
+                                    size: 17.0,
+                                    color: AppConstants.backgroundColor,
                                   ),
-                                  fontStyle: FontStyle.italic,
-                                ),
-                                textAlign: TextAlign.center,
+                                  SizedBox(width: 2.0),
+                                  Text(
+                                    BaseController.user.value?.agency ?? '',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: AppConstants.backgroundColor
+                                          .withAlpha(240),
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  SizedBox(width: 15.0),
+                                  Icon(
+                                    Icons.calendar_month_rounded,
+                                    size: 17,
+                                    color: AppConstants.backgroundColor,
+                                  ),
+                                  SizedBox(width: 2.0),
+                                  Text(
+                                    BaseController.user.value?.dateJoined !=
+                                            null
+                                        ? 'Joined on - ${(DateFormat.yMMMd().format(BaseController.user.value!.dateJoined))}'
+                                        : '',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      color: AppConstants.backgroundColor
+                                          .withAlpha(240),
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
                               ),
                             ],
                           ),
@@ -464,6 +547,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               'assets/icons/change-password.png',
                               height: 22,
                               width: 22,
+                              color: Colors.grey[600],
                             ),
                             "CHANGE PASSWORD",
                             null,

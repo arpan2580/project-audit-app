@@ -1,0 +1,46 @@
+import 'package:get/get.dart';
+import 'package:flutter_twilio_conversations/flutter_twilio_conversations.dart';
+import 'package:jnk_app/services/twilio_chat_service.dart';
+
+class TwilioChatController extends GetxController {
+  final messages = <Message>[].obs;
+  dynamic conversation;
+
+  /// Initialize chat for a specific conversation
+  Future<void> initChat(String conversationSid) async {
+    // Get token
+    final token = await TwilioChatService().fetchAccessToken();
+    if (token == null) return;
+
+    // Init client
+    await TwilioChatService().initClient(token);
+
+    // Load conversation
+    conversation = await TwilioChatService().getConversation(conversationSid);
+
+    if (conversation != null) {
+      // Fetch existing messages
+      final paginator = await conversation!.getMessages();
+      messages.assignAll(paginator.items);
+
+      // Listen for new messages
+      conversation!.onMessageAdded.listen((msg) {
+        messages.add(msg);
+      });
+    }
+  }
+
+  /// Send new message
+  Future<void> sendMessage(String text) async {
+    if (conversation != null && text.trim().isNotEmpty) {
+      await TwilioChatService().sendMessage(conversation!, text);
+    }
+  }
+
+  /// Toggle star for a message
+  Future<void> toggleStar(String messageSid) async {
+    if (conversation != null) {
+      await TwilioChatService().toggleStar(conversation!.sid, messageSid);
+    }
+  }
+}
