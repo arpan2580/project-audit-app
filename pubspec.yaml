@@ -57,7 +57,7 @@ dependencies:
   cached_network_image: ^3.4.1
   flutter_cache_manager: ^3.4.1
   # flutter_twilio_conversations: ^2.0.9+19
-  twilio_conversation_sdk: ^0.3.7
+  # twilio_conversation_sdk: ^0.3.7
 
 dev_dependencies:
   flutter_test:

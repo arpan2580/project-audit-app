@@ -925,14 +925,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.4"
-  twilio_conversation_sdk:
-    dependency: "direct main"
-    description:
-      name: twilio_conversation_sdk
-      sha256: bf8361877b78607d0daa1406f327f2c5758e109b29612d2dc8081b002b78089d
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.3.8"
   typed_data:
     dependency: transitive
     description:
