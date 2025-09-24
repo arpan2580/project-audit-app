@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:jnk_app/consts/app_constants.dart';
 import 'package:jnk_app/controllers/base_controller.dart';
 import 'package:jnk_app/controllers/bit_plan_controller.dart';
+import 'package:jnk_app/utils/custom/faded_divider.dart';
+import 'package:jnk_app/views/dialogs/dialog_helper.dart';
 import 'package:jnk_app/views/screens/outlet_details_screen.dart';
 import 'package:jnk_app/views/widgets/search_outlet_widget.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class BitPlanScreen extends StatelessWidget {
   const BitPlanScreen({super.key});
@@ -13,6 +18,8 @@ class BitPlanScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final BitPlanController bitPlanController = Get.find();
+    RxBool isExpanded = false.obs;
+    RxString olCode = ''.obs;
     return Obx(
       () => bitPlanController.isLoading.value
           ? Scaffold(
@@ -141,155 +148,438 @@ class BitPlanScreen extends StatelessWidget {
                                           ),
                                         );
                                       },
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          border: Border.all(
-                                            color: AppConstants.logoBlueColor,
-                                            width: 1.0,
-                                          ),
-                                          borderRadius: const BorderRadius.all(
-                                            Radius.circular(10),
-                                          ),
-                                          gradient: LinearGradient(
-                                            begin: Alignment.topCenter,
-                                            end: Alignment.bottomCenter,
-                                            colors: [
-                                              AppConstants.backgroundColor
-                                                  .withValues(alpha: 0.8),
-                                              AppConstants.backgroundColor
-                                                  .withValues(alpha: 0.7),
-                                            ],
-                                          ),
+                                      child: Slidable(
+                                        endActionPane: ActionPane(
+                                          motion: const DrawerMotion(),
+                                          extentRatio: 0.2,
+                                          children: [
+                                            Obx(
+                                              () => SlidableAction(
+                                                onPressed: (context) {
+                                                  if (olCode.value ==
+                                                          record.olCode &&
+                                                      isExpanded.value) {
+                                                    isExpanded.value = false;
+                                                    olCode.value = '';
+                                                  } else {
+                                                    isExpanded.value = true;
+                                                    olCode.value =
+                                                        record.olCode;
+                                                  }
+                                                },
+                                                backgroundColor:
+                                                    (olCode.value ==
+                                                            record.olCode &&
+                                                        isExpanded.value)
+                                                    ? AppConstants.primaryColor
+                                                    : AppConstants
+                                                          .logoBlueColor,
+                                                borderRadius: BorderRadius.all(
+                                                  Radius.circular(10),
+                                                ),
+                                                icon:
+                                                    (olCode.value ==
+                                                            record.olCode &&
+                                                        isExpanded.value)
+                                                    ? Icons.cancel_rounded
+                                                    : Icons.info_outlined,
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                        child: ListTile(
-                                          leading: CircleAvatar(
-                                            radius: 30,
-                                            backgroundColor: record.isInBitPlan
-                                                ? record.inBitVisitStatus ==
-                                                              null ||
-                                                          record.inBitVisitStatus ==
-                                                              'pending'
-                                                      ? AppConstants
-                                                            .primaryColor
-                                                      : record.inBitVisitStatus ==
-                                                            'started'
-                                                      ? Colors.orangeAccent
-                                                      : const Color.fromARGB(
-                                                          255,
-                                                          34,
-                                                          106,
-                                                          36,
-                                                        )
-                                                : record.lastVisitDate !=
-                                                          null &&
-                                                      DateTime.parse(
-                                                            record
-                                                                .lastVisitDate!,
-                                                          ).day ==
-                                                          DateTime.now().day
-                                                ? record.lastVisit?.status ==
-                                                          'completed'
-                                                      ? const Color.fromARGB(
-                                                          255,
-                                                          34,
-                                                          106,
-                                                          36,
-                                                        )
-                                                      : record
-                                                                .lastVisit
-                                                                ?.status ==
-                                                            'started'
-                                                      ? Colors.orangeAccent
-                                                      : AppConstants
-                                                            .primaryColor
-                                                : AppConstants.primaryColor,
-                                            child: SvgPicture.asset(
-                                              'assets/icons/outlet-icon.svg',
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            border: Border.all(
+                                              color: AppConstants.logoBlueColor,
+                                              width: 1.0,
+                                            ),
+                                            borderRadius:
+                                                const BorderRadius.all(
+                                                  Radius.circular(10),
+                                                ),
+                                            gradient: LinearGradient(
+                                              begin: Alignment.topCenter,
+                                              end: Alignment.bottomCenter,
+                                              colors: [
+                                                AppConstants.backgroundColor
+                                                    .withValues(alpha: 0.8),
+                                                AppConstants.backgroundColor
+                                                    .withValues(alpha: 0.7),
+                                              ],
                                             ),
                                           ),
-                                          title: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
+                                          child: Column(
                                             children: [
-                                              Text(
-                                                record.olCode,
-                                                style: TextStyle(
-                                                  fontSize: 16.0,
-                                                ),
-                                              ),
-                                              Text(
-                                                record.olName,
-                                                style: TextStyle(
-                                                  fontSize: 18.0,
-                                                ),
-                                              ),
-                                              Text(
-                                                record.isInBitPlan
-                                                    ? "In Today's bit"
-                                                    : "Not in Today's bit",
-                                                style: TextStyle(
-                                                  fontSize: 16.0,
-                                                  fontWeight: FontWeight.w500,
-                                                  color: record.isInBitPlan
-                                                      ? const Color.fromARGB(
-                                                          255,
-                                                          34,
-                                                          106,
-                                                          36,
-                                                        )
+                                              ListTile(
+                                                leading: CircleAvatar(
+                                                  radius: 30,
+                                                  backgroundColor:
+                                                      record.isInBitPlan
+                                                      ? record.inBitVisitStatus ==
+                                                                    null ||
+                                                                record.inBitVisitStatus ==
+                                                                    'pending'
+                                                            ? AppConstants
+                                                                  .primaryColor
+                                                            : record.inBitVisitStatus ==
+                                                                  'started'
+                                                            ? Colors
+                                                                  .orangeAccent
+                                                            : const Color.fromARGB(
+                                                                255,
+                                                                34,
+                                                                106,
+                                                                36,
+                                                              )
+                                                      : record.lastVisitDate !=
+                                                                null &&
+                                                            DateTime.parse(
+                                                                  record
+                                                                      .lastVisitDate!,
+                                                                ).day ==
+                                                                DateTime.now()
+                                                                    .day
+                                                      ? record
+                                                                    .lastVisit
+                                                                    ?.status ==
+                                                                'completed'
+                                                            ? const Color.fromARGB(
+                                                                255,
+                                                                34,
+                                                                106,
+                                                                36,
+                                                              )
+                                                            : record
+                                                                      .lastVisit
+                                                                      ?.status ==
+                                                                  'started'
+                                                            ? Colors
+                                                                  .orangeAccent
+                                                            : AppConstants
+                                                                  .primaryColor
                                                       : AppConstants
                                                             .primaryColor,
+                                                  child: SvgPicture.asset(
+                                                    'assets/icons/outlet-icon.svg',
+                                                  ),
                                                 ),
-                                              ),
-                                            ],
-                                          ),
-                                          trailing:
-                                              record.inBitVisitStatus != null &&
-                                                  record.inBitVisitStatus !=
-                                                      'pending'
-                                              ? record.inBitVisitStatus ==
-                                                        'started'
-                                                    ? SvgPicture.asset(
-                                                        'assets/icons/progress-icon.svg',
-                                                        height: 18,
-                                                        width: 8.0,
-                                                      )
-                                                    : SvgPicture.asset(
-                                                        'assets/icons/green-check.svg',
-                                                        height: 18,
-                                                        width: 8.0,
-                                                      )
-                                              : record.lastVisitDate != null &&
-                                                    DateTime.parse(
-                                                          record.lastVisitDate!,
-                                                        ).day ==
-                                                        DateTime.now().day
-                                              ? record.lastVisit?.status ==
-                                                        'completed'
-                                                    ? SvgPicture.asset(
-                                                        'assets/icons/green-check.svg',
-                                                        height: 18,
-                                                        width: 8.0,
-                                                      )
-                                                    : record
-                                                              .lastVisit
-                                                              ?.status ==
-                                                          'started'
-                                                    ? SvgPicture.asset(
-                                                        'assets/icons/progress-icon.svg',
-                                                        height: 18,
-                                                        width: 8.0,
-                                                      )
+                                                title: Column(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    Text(
+                                                      record.olCode,
+                                                      style: TextStyle(
+                                                        fontSize: 16.0,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      record.olName,
+                                                      style: TextStyle(
+                                                        fontSize: 18.0,
+                                                      ),
+                                                    ),
+                                                    Text(
+                                                      record.isInBitPlan
+                                                          ? "In Today's bit"
+                                                          : "Not in Today's bit",
+                                                      style: TextStyle(
+                                                        fontSize: 16.0,
+                                                        fontWeight:
+                                                            FontWeight.w500,
+                                                        color:
+                                                            record.isInBitPlan
+                                                            ? const Color.fromARGB(
+                                                                255,
+                                                                34,
+                                                                106,
+                                                                36,
+                                                              )
+                                                            : AppConstants
+                                                                  .primaryColor,
+                                                      ),
+                                                    ),
+                                                  ],
+                                                ),
+                                                trailing:
+                                                    record.inBitVisitStatus !=
+                                                            null &&
+                                                        record.inBitVisitStatus !=
+                                                            'pending'
+                                                    ? record.inBitVisitStatus ==
+                                                              'started'
+                                                          ? SvgPicture.asset(
+                                                              'assets/icons/progress-icon.svg',
+                                                              height: 18,
+                                                              width: 8.0,
+                                                            )
+                                                          : SvgPicture.asset(
+                                                              'assets/icons/green-check.svg',
+                                                              height: 18,
+                                                              width: 8.0,
+                                                            )
+                                                    : record.lastVisitDate !=
+                                                              null &&
+                                                          DateTime.parse(
+                                                                record
+                                                                    .lastVisitDate!,
+                                                              ).day ==
+                                                              DateTime.now().day
+                                                    ? record
+                                                                  .lastVisit
+                                                                  ?.status ==
+                                                              'completed'
+                                                          ? SvgPicture.asset(
+                                                              'assets/icons/green-check.svg',
+                                                              height: 18,
+                                                              width: 8.0,
+                                                            )
+                                                          : record
+                                                                    .lastVisit
+                                                                    ?.status ==
+                                                                'started'
+                                                          ? SvgPicture.asset(
+                                                              'assets/icons/progress-icon.svg',
+                                                              height: 18,
+                                                              width: 8.0,
+                                                            )
+                                                          : SvgPicture.asset(
+                                                              'assets/icons/red-cross-line.svg',
+                                                              height: 18,
+                                                              width: 8.0,
+                                                            )
                                                     : SvgPicture.asset(
                                                         'assets/icons/red-cross-line.svg',
                                                         height: 18,
                                                         width: 8.0,
+                                                      ),
+                                              ),
+                                              Obx(
+                                                () =>
+                                                    (isExpanded.value &&
+                                                        olCode.value ==
+                                                            record.olCode)
+                                                    ? Column(
+                                                        children: [
+                                                          const SizedBox(
+                                                            height: 2.0,
+                                                          ),
+                                                          Row(
+                                                            children: [
+                                                              Expanded(
+                                                                child: FadedDivider(
+                                                                  color: AppConstants
+                                                                      .primaryColor,
+                                                                  height: 3.0,
+                                                                  begin: Alignment
+                                                                      .centerLeft,
+                                                                  end: Alignment
+                                                                      .centerRight,
+                                                                ),
+                                                              ),
+                                                              Padding(
+                                                                padding:
+                                                                    EdgeInsets.symmetric(
+                                                                      horizontal:
+                                                                          10,
+                                                                    ),
+                                                                child: Text(
+                                                                  "Today's Audits",
+                                                                  style: TextStyle(
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w500,
+                                                                    fontSize:
+                                                                        16.0,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                              Expanded(
+                                                                child: FadedDivider(
+                                                                  color: AppConstants
+                                                                      .primaryColor,
+                                                                  height: 3.0,
+                                                                  begin: Alignment
+                                                                      .centerRight,
+                                                                  end: Alignment
+                                                                      .centerLeft,
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          const SizedBox(
+                                                            height: 3.0,
+                                                          ),
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets.only(
+                                                                  left: 20.0,
+                                                                  top: 0.0,
+                                                                  right: 10.0,
+                                                                  bottom: 0.0,
+                                                                ),
+                                                            child: Row(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .spaceBetween,
+                                                              children: [
+                                                                Text(
+                                                                  "agent1",
+                                                                  style:
+                                                                      TextStyle(
+                                                                        fontSize:
+                                                                            16.0,
+                                                                      ),
+                                                                ),
+                                                                Text(
+                                                                  "Start Time: ${record.lastVisit?.startTime != null ? DateFormat('hh:mm a').format(DateTime.parse(record.lastVisit!.startTime!)) : '--:--'}",
+                                                                  style:
+                                                                      TextStyle(
+                                                                        fontSize:
+                                                                            16.0,
+                                                                      ),
+                                                                ),
+                                                                Text(
+                                                                  "End Time: ${record.lastVisit?.endTime != null ? DateFormat('hh:mm a').format(DateTime.parse(record.lastVisit!.endTime!)) : '--:--'}",
+                                                                  style:
+                                                                      TextStyle(
+                                                                        fontSize:
+                                                                            16.0,
+                                                                      ),
+                                                                ),
+                                                                IconButton(
+                                                                  padding:
+                                                                      EdgeInsets.all(
+                                                                        0,
+                                                                      ),
+                                                                  onPressed: () async {
+                                                                    final url =
+                                                                        'https://maps.google.com/maps?q=${record.lastVisit?.lat},${record.lastVisit?.long}';
+                                                                    final uri =
+                                                                        Uri.parse(
+                                                                          url,
+                                                                        );
+                                                                    // if (await canLaunchUrl(
+                                                                    //   uri,
+                                                                    // )) {
+                                                                    await launchUrl(
+                                                                      uri,
+                                                                      mode: LaunchMode
+                                                                          .externalApplication,
+                                                                    );
+                                                                    // } else {
+                                                                    //   DialogHelper.showErrorToast(
+                                                                    //     description:
+                                                                    //         "Could not launch map for the given location.",
+                                                                    //   );
+
+                                                                    // }
+                                                                  },
+                                                                  icon: Icon(
+                                                                    Icons
+                                                                        .location_on_rounded,
+                                                                    color: Colors
+                                                                        .grey[600],
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets.only(
+                                                                  left: 20.0,
+                                                                  right: 20.0,
+                                                                ),
+                                                            child: Divider(
+                                                              thickness: 0.5,
+                                                              color: AppConstants
+                                                                  .primaryColor
+                                                                  .withValues(
+                                                                    alpha: 0.3,
+                                                                  ),
+                                                            ),
+                                                          ),
+                                                          Padding(
+                                                            padding:
+                                                                const EdgeInsets.only(
+                                                                  left: 20.0,
+                                                                  top: 0.0,
+                                                                  right: 10.0,
+                                                                  bottom: 5.0,
+                                                                ),
+                                                            child: Row(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .spaceBetween,
+                                                              children: [
+                                                                Text(
+                                                                  "agent2",
+                                                                  style:
+                                                                      TextStyle(
+                                                                        fontSize:
+                                                                            16.0,
+                                                                      ),
+                                                                ),
+                                                                Text(
+                                                                  "Start Time: ${record.lastVisit?.startTime != null ? DateFormat('hh:mm a').format(DateTime.parse(record.lastVisit!.startTime!)) : '--:--'}",
+                                                                  style:
+                                                                      TextStyle(
+                                                                        fontSize:
+                                                                            16.0,
+                                                                      ),
+                                                                ),
+                                                                Text(
+                                                                  "End Time: ${record.lastVisit?.endTime != null ? DateFormat('hh:mm a').format(DateTime.parse(record.lastVisit!.endTime!)) : '--:--'}",
+                                                                  style:
+                                                                      TextStyle(
+                                                                        fontSize:
+                                                                            16.0,
+                                                                      ),
+                                                                ),
+                                                                IconButton(
+                                                                  padding:
+                                                                      EdgeInsets.all(
+                                                                        0,
+                                                                      ),
+                                                                  onPressed: () async {
+                                                                    final url =
+                                                                        'https://maps.google.com/maps?q=${record.lastVisit?.lat},${record.lastVisit?.long}';
+                                                                    final uri =
+                                                                        Uri.parse(
+                                                                          url,
+                                                                        );
+                                                                    // if (await canLaunchUrl(
+                                                                    //   uri,
+                                                                    // )) {
+                                                                    await launchUrl(
+                                                                      uri,
+                                                                      mode: LaunchMode
+                                                                          .externalApplication,
+                                                                    );
+                                                                    // } else {
+                                                                    //   DialogHelper.showErrorToast(
+                                                                    //     description:
+                                                                    //         "Could not launch map for the given location.",
+                                                                    //   );
+                                                                    // }
+                                                                  },
+                                                                  icon: Icon(
+                                                                    Icons
+                                                                        .location_on_rounded,
+                                                                    color: Colors
+                                                                        .grey[600],
+                                                                  ),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ],
                                                       )
-                                              : SvgPicture.asset(
-                                                  'assets/icons/red-cross-line.svg',
-                                                  height: 18,
-                                                  width: 8.0,
-                                                ),
+                                                    : Container(),
+                                              ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ),
