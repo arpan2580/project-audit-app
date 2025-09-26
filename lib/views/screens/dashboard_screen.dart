@@ -491,16 +491,16 @@ class DashboardScreen extends StatelessWidget {
                                                       title: 'Emp ID',
                                                       value: BaseController
                                                           .user
-                                                          .value!
-                                                          .empCode,
+                                                          .value
+                                                          ?.empCode,
                                                       scroll: true,
                                                     ),
                                                     AuditorInfoWidget(
                                                       title: 'Emp Name',
                                                       value: BaseController
                                                           .user
-                                                          .value!
-                                                          .name,
+                                                          .value
+                                                          ?.name,
                                                       scroll: true,
                                                     ),
                                                     AuditorInfoWidget(
@@ -537,8 +537,8 @@ class DashboardScreen extends StatelessWidget {
                                                       value:
                                                           BaseController
                                                                   .user
-                                                                  .value!
-                                                                  .manager !=
+                                                                  .value
+                                                                  ?.manager !=
                                                               null
                                                           ? BaseController
                                                                 .user
@@ -552,8 +552,8 @@ class DashboardScreen extends StatelessWidget {
                                                       title: 'Agency',
                                                       value: BaseController
                                                           .user
-                                                          .value!
-                                                          .agency,
+                                                          .value
+                                                          ?.agency,
                                                       scroll: true,
                                                     ),
                                                   ],

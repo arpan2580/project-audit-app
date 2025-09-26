@@ -4,7 +4,7 @@ import 'package:flutter/cupertino.dart';
 
 class AuditorInfoWidget extends StatelessWidget {
   final String title;
-  final String value;
+  final String? value;
   final bool scroll;
   const AuditorInfoWidget({
     super.key,
@@ -30,7 +30,7 @@ class AuditorInfoWidget extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
                 Text(
-                  value,
+                  value ?? '',
                   style: TextStyle(
                     fontSize: 16,
                     color: AppConstants.backgroundColor,
@@ -52,7 +52,7 @@ class AuditorInfoWidget extends StatelessWidget {
               ),
               const SizedBox(width: 10),
               Text(
-                value,
+                value ?? '',
                 style: TextStyle(
                   fontSize: 16,
                   color: AppConstants.backgroundColor,
