@@ -248,9 +248,18 @@ class AttendanceScreen extends StatelessWidget {
                         : Expanded(
                             child: RefreshIndicator(
                               onRefresh: () async {
-                                await attendanceController.fetchAgentAttendance(
-                                  attendanceController.chooseAgent[0]!.id,
-                                );
+                                if (BaseController.user.value?.role == 'mngr' &&
+                                    attendanceController
+                                        .chooseAgent
+                                        .isNotEmpty) {
+                                  await attendanceController
+                                      .fetchAgentAttendance(
+                                        attendanceController.chooseAgent[0]!.id,
+                                      );
+                                } else {
+                                  await attendanceController
+                                      .fetchAttendanceData();
+                                }
                               },
                               child: ListView.builder(
                                 shrinkWrap: true,

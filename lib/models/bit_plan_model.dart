@@ -11,6 +11,7 @@ class BitPlanModel {
   final int currentMonthVisitCount;
   final LastVisit? lastVisit;
   final String? lastVisitDate;
+  final List<Visit> todaysVisitList;
 
   BitPlanModel({
     required this.id,
@@ -25,6 +26,7 @@ class BitPlanModel {
     required this.currentMonthVisitCount,
     this.lastVisit,
     this.lastVisitDate,
+    required this.todaysVisitList,
   });
 
   factory BitPlanModel.fromJson(Map<String, dynamic> json) {
@@ -43,6 +45,11 @@ class BitPlanModel {
           ? LastVisit.fromJson(json['last_visit'])
           : null,
       lastVisitDate: json['last_visit_date'],
+      todaysVisitList:
+          (json['todays_visit_list'] as List<dynamic>?)
+              ?.map((e) => Visit.fromJson(e))
+              .toList() ??
+          [],
     );
   }
 
@@ -60,6 +67,7 @@ class BitPlanModel {
       "current_month_visit_count": currentMonthVisitCount,
       "last_visit": lastVisit?.toJson(),
       "last_visit_date": lastVisitDate,
+      'todays_visit_list': todaysVisitList.map((e) => e.toJson()).toList(),
     };
   }
 
@@ -121,6 +129,66 @@ class LastVisit {
       "start_longitude": long,
       "status": status,
       "outlet_agency": outletAgency,
+    };
+  }
+}
+
+class Visit {
+  final int id;
+  final String userName;
+  final String date;
+  final String? startTime;
+  final String? endTime;
+  final double? startLatitude;
+  final double? startLongitude;
+  final String? duration;
+  final String? photo;
+  final String status;
+  final String outletAgency;
+
+  Visit({
+    required this.id,
+    required this.userName,
+    required this.date,
+    this.startTime,
+    this.endTime,
+    this.startLatitude,
+    this.startLongitude,
+    this.duration,
+    this.photo,
+    required this.status,
+    required this.outletAgency,
+  });
+
+  factory Visit.fromJson(Map<String, dynamic> json) {
+    return Visit(
+      id: json['id'],
+      userName: json['user_name'],
+      date: json['date'],
+      startTime: json['start_time'],
+      endTime: json['end_time'],
+      startLatitude: (json['start_latitude'] as num?)?.toDouble(),
+      startLongitude: (json['start_longitude'] as num?)?.toDouble(),
+      duration: json['duration'],
+      photo: json['photo'],
+      status: json['status'],
+      outletAgency: json['outlet_agency'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'user_name': userName,
+      'date': date,
+      'start_time': startTime,
+      'end_time': endTime,
+      'start_latitude': startLatitude,
+      'start_longitude': startLongitude,
+      'duration': duration,
+      'photo': photo,
+      'status': status,
+      'outlet_agency': outletAgency,
     };
   }
 }
