@@ -47,7 +47,25 @@ class ChatWidget extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                Text(msg['text'], style: const TextStyle(fontSize: 16)),
+                (msg['isMedia'] == true && msg['text'] == '')
+                    ? SizedBox(
+                        width: 200,
+                        height: 100,
+                        child: Center(
+                          child: CircularProgressIndicator.adaptive(),
+                        ),
+                      )
+                    : (msg['isMedia'] == true && msg['text'] != '')
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(12),
+                        child: Image.network(
+                          msg['text'],
+                          width: 200,
+                          height: 200,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                    : Text(msg['text'], style: const TextStyle(fontSize: 16)),
                 const SizedBox(height: 4),
                 Row(
                   mainAxisSize: MainAxisSize.min,
@@ -79,7 +97,7 @@ class ChatWidget extends StatelessWidget {
                 chatController.showChatReactions.value &&
                     chatController.selectedChat.value == msg['id']
                 ? Positioned(
-                    top: -10.0,
+                    top: -25.0,
                     child: buildReactChatWidget(
                       msg['id'],
                       context,

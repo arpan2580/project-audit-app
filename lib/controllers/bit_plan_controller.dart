@@ -13,7 +13,7 @@ class BitPlanController extends GetxController {
   RxList<BitPlanModel> todaysBitPlan = RxList<BitPlanModel>();
   RxList<BitPlanModel> filteredBit = RxList<BitPlanModel>();
   static TextEditingController txtSearchOutlet = TextEditingController();
-  RxBool isLoading = false.obs;
+  RxBool isLoading = true.obs;
   static RxBool isSearch = false.obs;
   static RxBool isViewAll = false.obs;
 

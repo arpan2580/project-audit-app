@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jnk_app/consts/app_constants.dart';
 import 'package:jnk_app/controllers/chat_controller.dart';
+import 'package:jnk_app/controllers/messages_controller.dart';
 import 'package:jnk_app/views/widgets/chat_input_widget.dart';
 
-class IndividualChatScreen extends StatelessWidget {
+class IndividualChatScreen extends StatefulWidget {
   final String name;
   final String profilePicUrl;
   const IndividualChatScreen({
@@ -14,10 +15,26 @@ class IndividualChatScreen extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final ChatController chatController = Get.put(ChatController());
-    // chatController.buildChatWidgets();
+  State<IndividualChatScreen> createState() => _IndividualChatScreenState();
+}
 
+class _IndividualChatScreenState extends State<IndividualChatScreen> {
+  late final ChatController chatController;
+  late final MessagesController msgController;
+  @override
+  void initState() {
+    super.initState();
+    if (!Get.isRegistered<ChatController>()) {
+      chatController = Get.put(ChatController(), permanent: true);
+    } else {
+      chatController = Get.find<ChatController>();
+    }
+
+    msgController = Get.find<MessagesController>();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTap: () {
@@ -58,7 +75,7 @@ class IndividualChatScreen extends StatelessWidget {
                 backgroundColor: Colors.transparent,
               ),
               SizedBox(width: 10.0),
-              Text(name),
+              Text(widget.name),
             ],
           ),
           titleSpacing: 0,
@@ -92,10 +109,17 @@ class IndividualChatScreen extends StatelessWidget {
                 children: [
                   // Chat messages list
                   Obx(
-                    () => ListView(
-                      padding: const EdgeInsets.only(bottom: 70),
-                      children: chatController.chatWidgets,
-                    ),
+                    () => MessagesController.isLoading.value
+                        ? Center(child: CircularProgressIndicator.adaptive())
+                        : Obx(
+                            () => ListView(
+                              controller: msgController.listScrollController,
+                              reverse: true,
+                              padding: const EdgeInsets.only(bottom: 70),
+                              children: chatController.chatWidgets.reversed
+                                  .toList(),
+                            ),
+                          ),
                   ),
                   Align(
                     alignment: Alignment.bottomCenter,

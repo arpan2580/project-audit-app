@@ -92,9 +92,53 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
                             onPressed: () {
                               BaseController.showOptions.value =
                                   !BaseController.showOptions.value;
+                              // final controller = ConversationsController();
+                              // controller.getMyConversations().then((onValue) {
+                              //   print(
+                              //     "{CONVER: ${controller.conversations[0]}}",
+                              //   );
+                              //   print("{CLIENT: ${controller.client}}");
+                              //   if (controller.conversations.isNotEmpty &&
+                              //       controller.client != null) {
+                              //     print(
+                              //       "{CONVER: ${controller.conversations}}",
+                              //     );
+                              //     final MessagesController msgController =
+                              //         Get.put(
+                              //           MessagesController(
+                              //             controller.conversations[0],
+                              //             controller.client!,
+                              //           ),
+                              //         );
+                              //     msgController.loadConversation();
+                              //     print(
+                              //       "{MESSAGES: ${msgController.messages}}",
+                              //     );
+                              //   } else {
+                              //     Get.back();
+                              //     DialogHelper.showErrorToast(
+                              //       description: "No conversations found.",
+                              //     );
+                              //   }
+
+                              //   // controller.conversations[0].getMessages().then((messages) {
+                              //   //   print("{MESSAGES: ${messages.items}}");
+                              //   //   // Assuming messages.items is a List<Map<String, dynamic>>
+                              //   //   this.messages.clear();
+                              //   //   this.messages.addAll(List<Map<String, dynamic>>.from(messages.items));
+                              //   //   buildChatWidgets();
+                              //   //   isLoading.value = false;
+                              //   // });
+                              // });
                               Get.to(
                                 () => IndividualChatScreen(
-                                  name: 'Rahul Sharma',
+                                  name:
+                                      BaseController
+                                          .user
+                                          .value
+                                          ?.manager
+                                          ?.name ??
+                                      'Admin',
                                   profilePicUrl: 'profile_pic_url',
                                 ),
                               );
@@ -138,14 +182,49 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
 
       // Only FAB here (no Column)
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // BaseController.showOptions.value = !BaseController.showOptions.value;
-          DialogHelper.showInfoToast(description: "Feature coming soon!");
-        },
-        backgroundColor: AppConstants.logoBlueColor,
-        shape: const CircleBorder(),
-        child: SvgPicture.asset('assets/icons/Chat-icon.svg', height: 28.0),
+      floatingActionButton: Stack(
+        alignment: Alignment(1.4, -1.4),
+        children: [
+          FloatingActionButton(
+            onPressed: () {
+              if (BaseController.isChatInitialized.value) {
+                if (BaseController.user.value?.role == 'agnt') {
+                  Get.to(
+                    () => IndividualChatScreen(
+                      name: BaseController.user.value?.manager?.name ?? 'Admin',
+                      profilePicUrl: 'profile_pic_url',
+                    ),
+                  );
+                } else {
+                  // BaseController.showOptions.value =
+                  //     !BaseController.showOptions.value;
+                  DialogHelper.showInfoToast(
+                    description: "Feature coming soon!",
+                  );
+                }
+              } else {
+                DialogHelper.showInfoToast(
+                  description: "Please wait while initializing!",
+                );
+              }
+              // DialogHelper.showInfoToast(description: "Feature coming soon!");
+            },
+            backgroundColor: AppConstants.logoBlueColor,
+            shape: const CircleBorder(),
+            child: SvgPicture.asset('assets/icons/Chat-icon.svg', height: 28.0),
+          ),
+
+          Obx(
+            () => CircleAvatar(
+              radius: 13,
+              backgroundColor: AppConstants.primaryColor,
+              child: Text(
+                BaseController.unreadMessages.value.toString(),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+        ],
       ),
 
       bottomNavigationBar: SafeArea(
@@ -170,7 +249,7 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
                 ),
                 onPressed: () {
                   BaseController.showOptions.value = false;
-                  DashboardController.fetchDashboardData(fetchUser: true);
+                  DashboardController().fetchDashboardData(fetchUser: true);
                   selectedIndex = 0;
                   pageController.jumpToPage(0);
                 },

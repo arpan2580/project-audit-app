@@ -53,8 +53,17 @@ class BaseController {
   static Rx<String> longitude = ''.obs;
   static RxBool isAuditStarted = false.obs;
   static Rx<int> currAuditOutletId = 0.obs;
+  static RxBool isChatInitialized = false.obs;
+  static RxBool showReload = true.obs;
+  static Rx<int> unreadMessages = 0.obs;
+  // static RxInt timerCountdown = 60.obs;
+  // static RxBool isCountdownEnd = false.obs;
+  // static RxBool otpScreen = false.obs;
 
-  // static dynamic unreadNotification = 0.obs;
+  // static RxBool notifcationReload = false.obs;
+
+  // static Map<String, dynamic> searchData = {};
+
   // static dynamic assignedPosts = 0.obs;
   // static RxBool commentReload = false.obs;
 
@@ -65,16 +74,6 @@ class BaseController {
   // static RxList isLikedPost = [].obs;
   // static RxList likedFeedbackId = [].obs;
   // static RxList postLikedCount = [].obs;
-
-  static RxBool showReload = true.obs;
-
-  // static RxInt timerCountdown = 60.obs;
-  // static RxBool isCountdownEnd = false.obs;
-  // static RxBool otpScreen = false.obs;
-
-  // static RxBool notifcationReload = false.obs;
-
-  // static Map<String, dynamic> searchData = {};
 
   // static RxList feedbackStatusId = [].obs;
   static final storeToken = GetStorage();

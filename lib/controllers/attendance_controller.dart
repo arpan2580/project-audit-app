@@ -11,7 +11,7 @@ class AttendanceController extends GetxController {
   RxList<Agent> agents = RxList<Agent>();
   var chooseAgent = RxList<Agent?>();
   // TextEditingController chooseAgent = TextEditingController();
-  RxBool isLoading = false.obs;
+  RxBool isLoading = true.obs;
   RxBool isAgentAttendanceFetch = false.obs;
 
   @override

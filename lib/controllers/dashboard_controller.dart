@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart' as dio;
 import 'package:get/get.dart';
 import 'package:jnk_app/controllers/base_controller.dart';
+import 'package:jnk_app/controllers/conversations_controller.dart';
 import 'package:jnk_app/models/dashboard_model.dart';
 import 'package:jnk_app/models/user_model.dart';
 import 'package:jnk_app/services/base_client.dart';
@@ -11,7 +12,9 @@ import 'package:jnk_app/views/screens/login_screen.dart';
 
 class DashboardController extends GetxController {
   static Rxn<DashboardModel> dashboard = Rxn<DashboardModel>();
-  RxBool isLoading = false.obs;
+  final ConversationsController controller = Get.put(ConversationsController());
+  RxBool isLoading = true.obs;
+  String? jwtToken;
 
   @override
   void onInit() async {
@@ -22,8 +25,9 @@ class DashboardController extends GetxController {
     //   BaseController.storeToken.read("user_data"),
     // );
     // Future.delayed(const Duration(seconds: 3), () {
-    fetchDashboardData().then((value) {
-      isLoading.value = false;
+    fetchUserData().then((value) {
+      fetchDashboardData(fetchUser: false);
+      // isLoading.value = false;
     });
     // });
   }
@@ -44,7 +48,7 @@ class DashboardController extends GetxController {
     }
   }
 
-  static Future<void> fetchDashboardData({bool fetchUser = false}) async {
+  Future<void> fetchDashboardData({bool fetchUser = false}) async {
     if (BaseController.storeToken.read("user_data") != null) {
       BaseController.user.value = UserModel.fromJson(
         BaseController.storeToken.read("user_data"),
@@ -75,6 +79,16 @@ class DashboardController extends GetxController {
             lunchBreakInfo?.startTime != null && lunchBreakInfo?.endTime == null
             ? true
             : false;
+        isLoading.value = false;
+        if (BaseController.isChatInitialized.value == false) {
+          await controller.fetchAccessToken().then((value) async {
+            print("{TWILIO TOKEN: $value}");
+            await controller.create(jwtToken: value!).then((onValue) {
+              controller.getMyConversations();
+              BaseController.isChatInitialized.value = true;
+            });
+          });
+        }
       } else {
         DialogHelper.showErrorToast(description: response['message']);
       }

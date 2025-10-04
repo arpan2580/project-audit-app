@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:jnk_app/controllers/messages_controller.dart';
 
 class ChatInputWidget extends StatelessWidget {
   const ChatInputWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final ImagePicker chatImgPicker = ImagePicker();
+    final MessagesController msgController = Get.find<MessagesController>();
+    // final ImagePicker chatImgPicker = ImagePicker();
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 6.0, vertical: 6.0),
@@ -22,32 +25,46 @@ class ChatInputWidget extends StatelessWidget {
                 ),
                 child: Row(
                   children: [
-                    SizedBox(
-                      width: 40.0,
-                      child: IconButton(
-                        onPressed: () {
-                          takePhoto(ImageSource.camera, chatImgPicker);
-                        },
-                        icon: Icon(Icons.camera_alt, color: Colors.grey),
-                        alignment: Alignment.center,
-                        padding: EdgeInsets.only(left: 1.0),
-                      ),
-                    ),
+                    // SizedBox(
+                    //   width: 40.0,
+                    //   child: IconButton(
+                    //     onPressed: () {
+                    //       takePhoto(ImageSource.camera, chatImgPicker);
+                    //     },
+                    //     icon: Icon(Icons.camera_alt, color: Colors.grey),
+                    //     alignment: Alignment.center,
+                    //     padding: EdgeInsets.only(left: 1.0),
+                    //   ),
+                    // ),
                     Expanded(
                       child: TextField(
+                        controller: msgController.messageInputTextController,
                         keyboardType: TextInputType.multiline,
                         maxLines: 5,
                         minLines: 1,
                         decoration: InputDecoration(
+                          contentPadding: EdgeInsets.only(
+                            left: 15,
+                            top: 10,
+                            bottom: 10,
+                          ),
                           hintText: "Type a message",
-                          border: InputBorder.none,
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide.none,
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(30),
+                              bottomLeft: Radius.circular(30),
+                            ),
+                          ),
                         ),
                       ),
                     ),
                     SizedBox(
                       width: 40.0,
                       child: IconButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          msgController.onSendMediaMessagePressed();
+                        },
                         icon: Icon(Icons.attach_file, color: Colors.grey),
                         alignment: Alignment.center,
                         padding: EdgeInsets.only(right: 1.0),
@@ -60,11 +77,33 @@ class ChatInputWidget extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 6),
-            // Mic Button
-            CircleAvatar(
-              backgroundColor: Colors.teal,
-              child: Icon(Icons.send, color: Colors.white, size: 22.0),
+            // Send Button
+            Obx(
+              () => GestureDetector(
+                onTap: msgController.isSendingMessage.value
+                    ? null
+                    : () async => msgController.onSendMessagePressed(),
+                child: CircleAvatar(
+                  backgroundColor: msgController.isSendingMessage.value
+                      ? Colors.grey
+                      : Colors.teal,
+                  child: const Icon(
+                    Icons.send,
+                    color: Colors.white,
+                    size: 22.0,
+                  ),
+                ),
+              ),
             ),
+            // GestureDetector(
+            //   onTap: () {
+            //     msgController.onSendMessagePressed();
+            //   },
+            //   child: CircleAvatar(
+            //     backgroundColor: Colors.teal,
+            //     child: Icon(Icons.send, color: Colors.white, size: 22.0),
+            //   ),
+            // ),
           ],
         ),
       ),

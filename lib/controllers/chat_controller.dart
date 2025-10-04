@@ -1,99 +1,47 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
+import 'package:jnk_app/controllers/conversations_controller.dart';
+import 'package:jnk_app/controllers/messages_controller.dart';
+import 'package:jnk_app/views/dialogs/dialog_helper.dart';
 import 'package:jnk_app/views/widgets/chat_widget.dart';
 
 class ChatController extends GetxController {
+  final ConversationsController controller = Get.put(ConversationsController());
+  RxBool isLoading = true.obs;
+
   RxBool showChatReactions = false.obs;
   RxInt selectedChat = (-1).obs; // -1 to indicate none selected
-
   RxSet<int> starredMessages = <int>{}.obs;
   RxBool showOnlyStarred = false.obs;
-  RxList<Widget> chatWidgets = <Widget>[].obs;
+  final RxList<Widget> chatWidgets = <Widget>[].obs;
 
-  final List<Map<String, dynamic>> messages = const [
-    {'id': 1, 'text': 'Hey', 'time': '2025-07-11 17:09:00', 'isMe': false},
-    {
-      'id': 102,
-      'text': 'At what time are we going to the movies?',
-      'time': '2025-07-11 17:10:00',
-      'isMe': false,
-    },
-    {
-      'id': 11,
-      'text': '8PM I think ...',
-      'time': '2025-07-11 17:34:00',
-      'isMe': true,
-    },
-    {
-      'id': 105,
-      'text': 'Testing visual challenge',
-      'time': '2025-07-10 17:35:00',
-      'isMe': false,
-    },
-    {'id': 110, 'text': '123', 'time': '2025-07-10 17:35:00', 'isMe': false},
-    {'id': 120, 'text': 'Cool :)', 'time': '2025-07-10 17:35:00', 'isMe': true},
-    {
-      'id': 130,
-      'text': 'Testing 1..2...3',
-      'time': '2025-07-10 17:35:00',
-      'isMe': true,
-    },
-    {
-      'id': 19,
-      'text': 'Abcefg............',
-      'time': '2025-07-10 17:36:00',
-      'isMe': false,
-    },
-    {
-      'id': 12,
-      'text': 'Qwertyuiop',
-      'time': '2025-07-10 17:36:00',
-      'isMe': false,
-    },
-    {
-      'id': 13,
-      'text': 'Qwertyuu :)',
-      'time': '2025-07-10 17:36:00',
-      'isMe': true,
-    },
-    {
-      'id': 14,
-      'text': 'I\'m hungry',
-      'time': '2025-07-10 17:36:00',
-      'isMe': true,
-    },
-    {
-      'id': 15,
-      'text': 'I want pizza',
-      'time': '2025-07-09 17:36:00',
-      'isMe': true,
-    },
-    {
-      'id': 23,
-      'text': 'Pizza is awesome!',
-      'time': '2025-07-08 16:30:00',
-      'isMe': false,
-    },
-    {
-      'id': 24,
-      'text': 'I want pizza now, lets meet at dominos near the parking.',
-      'time': '2025-07-10 18:01:00',
-      'isMe': true,
-    },
-    {
-      'id': 29,
-      'text': 'Sure. I\'ll be there in 10 minutes.',
-      'time': '2025-07-10 18:05:00',
-      'isMe': false,
-    },
-    {
-      'id': 27,
-      'text': 'Ok. I have reached. Where are you?',
-      'time': '2025-07-10 18:17:00',
-      'isMe': true,
-    },
-  ].obs;
+  @override
+  void onInit() async {
+    super.onInit();
+    isLoading.value = true;
+    ever(messages, (_) {
+      buildChatWidgets();
+    });
+    // controller.getMyConversations().then((onValue) {
+    if (controller.conversations.isNotEmpty && controller.client != null) {
+      final MessagesController msgController = Get.put(
+        MessagesController(
+          controller.conversations[0],
+          controller.client!,
+          this,
+        ),
+        permanent: true,
+      );
+      msgController.loadConversation();
+      isLoading.value = false;
+    } else {
+      Get.back();
+      DialogHelper.showErrorToast(description: "No conversations found.");
+    }
+  }
+
+  final RxList<Map<String, Object>> messages = <Map<String, Object>>[].obs;
 
   // Sort messages by time (if not already sorted)
   List<Map<String, dynamic>> get sortedMessages {
@@ -179,6 +127,11 @@ class ChatController extends GetxController {
   }
 
   void toggleStarredMessage(int messageId) {
+    print("Channel SID: ${controller.conversations.single.sid}");
+    controller.toggleStar(
+      controller.conversations.single.sid,
+      messageId.toString(),
+    );
     if (starredMessages.contains(messageId)) {
       starredMessages.remove(messageId);
     } else {
@@ -198,12 +151,5 @@ class ChatController extends GetxController {
     } else {
       return sortedMessages;
     }
-  }
-
-  @override
-  void onInit() {
-    super.onInit();
-    filteredMessages;
-    buildChatWidgets();
   }
 }
