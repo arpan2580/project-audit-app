@@ -126,12 +126,9 @@ class ChatController extends GetxController {
     }
   }
 
-  void toggleStarredMessage(int messageId) {
+  void toggleStarredMessage(int messageId, String sid) {
     print("Channel SID: ${controller.conversations.single.sid}");
-    controller.toggleStar(
-      controller.conversations.single.sid,
-      messageId.toString(),
-    );
+    controller.toggleStar(controller.conversations.single.sid, sid);
     if (starredMessages.contains(messageId)) {
       starredMessages.remove(messageId);
     } else {

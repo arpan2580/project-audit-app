@@ -3,9 +3,11 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
+import 'package:path_provider/path_provider.dart';
+// import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
 import 'package:jnk_app/controllers/base_controller.dart';
 import 'package:jnk_app/controllers/chat_controller.dart';
@@ -48,21 +50,29 @@ class MessagesController extends GetxController {
     startingIndex.value = conversation.lastMessageIndex ?? 0;
 
     subscriptions.add(
-      conversation.onMessageAdded.listen((message) {
+      conversation.onMessageAdded.listen((message) async {
         messages.insert(0, message);
         final messageIndex = message.messageIndex;
         if (messageIndex != null) {
           conversation.advanceLastReadMessageIndex(messageIndex);
         }
 
+        // if (conversation.sid ==
+        // BaseController.user.value?.twilioConversationSid) {
+        // conversation.setAllMessagesRead();
+        await client.getMyConversations();
+        // }
+
         final newMsg = {
           'id': message.messageIndex ?? 0,
+          'sid': message.sid ?? '',
           'text': message.type == MessageType.MEDIA ? '' : (message.body ?? ''),
           'time': message.dateCreated != null
               ? message.dateCreated!.toLocal().toString()
               : DateTime.now().toString(),
           'isMe': message.author == client.myIdentity,
           'isMedia': message.type == MessageType.MEDIA,
+          'isLocal': false,
         };
 
         chatController.messages.add(newMsg);
@@ -274,51 +284,103 @@ class MessagesController extends GetxController {
     return messageMedia[messageSid];
   }
 
-  Future _getMedia(Message message) async {
-    print('_getMedia => message: ${message.sid}');
-    final url = await message.getMediaUrl();
-    if (url != null) {
-      final uri = Uri.parse(url);
-      final response = await http.get(uri);
-      messageMedia[message.sid!] = response.bodyBytes;
-      // if (chatController.messages.any((m) => m['id'] == message.messageIndex)) {
-      //   return;
-      // }
-      final index = chatController.messages.indexWhere(
-        (m) => m['id'] == message.messageIndex,
-      );
-      if (index != -1) {
-        chatController.messages[index] = {
-          'id': message.messageIndex ?? 0,
-          'text': url,
-          'time': message.dateCreated != null
-              ? message.dateCreated!.toLocal().toString()
-              : DateTime.now().toString(),
-          'isMe': message.author == client.myIdentity,
-          'isMedia': true,
-        };
-        // chatController.buildChatWidgets();
-        chatController.messages.refresh();
-      }
-      print('_getMedia => url: $url');
-    }
-  }
-
   // Future _getMedia(Message message) async {
   //   print('_getMedia => message: ${message.sid}');
   //   final url = await message.getMediaUrl();
-
   //   if (url != null) {
-  //     final dio = Dio();
-  //     final response = await dio.get<List<int>>(
-  //       url,
-  //       options: Options(responseType: ResponseType.bytes),
+  //     final uri = Uri.parse(url);
+  //     final response = await http.get(uri);
+  //     messageMedia[message.sid!] = response.bodyBytes;
+  //     // if (chatController.messages.any((m) => m['id'] == message.messageIndex)) {
+  //     //   return;
+  //     // }
+  //     final index = chatController.messages.indexWhere(
+  //       (m) => m['id'] == message.messageIndex,
   //     );
-
-  //     messageMedia[message.sid!] = Uint8List.fromList(response.data!);
+  //     if (index != -1) {
+  //       chatController.messages[index] = {
+  //         'id': message.messageIndex ?? 0,
+  //         'sid': message.sid ?? '',
+  //         'text': url,
+  //         'time': message.dateCreated != null
+  //             ? message.dateCreated!.toLocal().toString()
+  //             : DateTime.now().toString(),
+  //         'isMe': message.author == client.myIdentity,
+  //         'isMedia': true,
+  //         'isLocal': isLocal,
+  //       };
+  //       // chatController.buildChatWidgets();
+  //       chatController.messages.refresh();
+  //     }
   //     print('_getMedia => url: $url');
   //   }
   // }
+
+  Future<void> _getMedia(Message message) async {
+    print('_getMedia => message: ${message.sid}');
+
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final filePath = '${dir.path}/${message.sid}.jpg';
+      final file = File(filePath);
+
+      if (await file.exists()) {
+        print('_getMedia => loaded from cache: $filePath');
+        _updateMessageEntry(message, file.path, isLocal: true);
+        return;
+      }
+      final url = await message.getMediaUrl();
+      if (url == null) {
+        print('_getMedia => No media URL for ${message.sid}');
+        return;
+      }
+      print('_getMedia => downloading from: $url');
+      final dio = Dio();
+      final response = await dio.get<List<int>>(
+        url,
+        options: Options(responseType: ResponseType.bytes),
+      );
+
+      if (response.statusCode == 200 && response.data != null) {
+        await file.writeAsBytes(response.data!);
+        messageMedia[message.sid!] = Uint8List.fromList(response.data!);
+        _updateMessageEntry(message, file.path, isLocal: true);
+        print('_getMedia => saved to: ${file.path}');
+      } else {
+        print(
+          '_getMedia => failed to download, status: ${response.statusCode}',
+        );
+      }
+    } catch (e) {
+      print('_getMedia => error: $e');
+    }
+  }
+
+  void _updateMessageEntry(
+    Message message,
+    String path, {
+    bool isLocal = false,
+  }) {
+    final index = chatController.messages.indexWhere(
+      (m) => m['id'] == message.messageIndex,
+    );
+
+    if (index != -1) {
+      chatController.messages[index] = {
+        'id': message.messageIndex ?? 0,
+        'sid': message.sid ?? '',
+        'text': path, // cached file path
+        'time': message.dateCreated != null
+            ? message.dateCreated!.toLocal().toString()
+            : DateTime.now().toString(),
+        'isMe': message.author == client.myIdentity,
+        'isMedia': true,
+        'isLocal': isLocal,
+      };
+
+      chatController.messages.refresh();
+    }
+  }
 
   void refetchAfterError() {
     loadConversation();
@@ -344,23 +406,27 @@ class MessagesController extends GetxController {
 
           chatController.messages.add({
             'id': msg.messageIndex ?? 0,
+            'sid': msg.sid ?? '',
             'text': msg.body ?? '',
             'time': msg.dateCreated != null
                 ? msg.dateCreated!.toLocal().toString()
                 : DateTime.now().toString(),
             'isMe': msg.author == client.myIdentity,
             'isMedia': true,
+            'isLocal': false,
           });
           _getMedia(msg);
         } else {
           chatController.messages.add({
             'id': msg.messageIndex ?? 0,
+            'sid': msg.sid ?? '',
             'text': msg.body ?? '',
             'time': msg.dateCreated != null
                 ? msg.dateCreated!.toLocal().toString()
                 : DateTime.now().toString(),
             'isMe': msg.author == client.myIdentity,
             'isMedia': false,
+            'isLocal': false,
           });
         }
       }

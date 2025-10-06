@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jnk_app/consts/app_constants.dart';
@@ -16,7 +18,12 @@ class ChatWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // final ChatController chatController = Get.put(ChatController());
+    // if (msg['isMedia'] == true) {
+    //   final path = msg['text'];
+    //   final isLocal = path.toString().startsWith('/');
+    // } else {
+    //   return Text(msg['text']);
+    // }
     return GestureDetector(
       onLongPress: () {
         // Toggle the visibility of chat reactions
@@ -24,6 +31,7 @@ class ChatWidget extends StatelessWidget {
       },
       child: Stack(
         clipBehavior: Clip.none,
+
         alignment: msg['isMe'] ? Alignment.centerRight : Alignment.centerLeft,
         children: [
           Container(
@@ -58,12 +66,19 @@ class ChatWidget extends StatelessWidget {
                     : (msg['isMedia'] == true && msg['text'] != '')
                     ? ClipRRect(
                         borderRadius: BorderRadius.circular(12),
-                        child: Image.network(
-                          msg['text'],
-                          width: 200,
-                          height: 200,
-                          fit: BoxFit.cover,
-                        ),
+                        child: (msg['isLocal'])
+                            ? Image.file(
+                                File(msg['text']),
+                                width: 200,
+                                height: 200,
+                                fit: BoxFit.cover,
+                              )
+                            : Image.network(
+                                msg['text'],
+                                width: 200,
+                                height: 200,
+                                fit: BoxFit.cover,
+                              ),
                       )
                     : Text(msg['text'], style: const TextStyle(fontSize: 16)),
                 const SizedBox(height: 4),
@@ -100,6 +115,7 @@ class ChatWidget extends StatelessWidget {
                     top: -25.0,
                     child: buildReactChatWidget(
                       msg['id'],
+                      msg['sid'],
                       context,
                       chatController,
                     ),
@@ -122,6 +138,7 @@ class ChatWidget extends StatelessWidget {
 
 Widget buildReactChatWidget(
   int messageId,
+  String sid,
   BuildContext context,
   ChatController chatController,
 ) {
@@ -131,7 +148,7 @@ Widget buildReactChatWidget(
       // height: 40.0,
       margin: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
-        color: Colors.white70,
+        color: Colors.blueGrey[100],
         borderRadius: BorderRadius.circular(20.0),
       ),
       child: Obx(
@@ -153,7 +170,7 @@ Widget buildReactChatWidget(
               ),
               onPressed: () {
                 // chatController.hideChatReactions();
-                chatController.toggleStarredMessage(messageId);
+                chatController.toggleStarredMessage(messageId, sid);
                 print(messageId);
                 // Handle star reaction
                 print('Starred message $messageId');

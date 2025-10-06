@@ -101,8 +101,41 @@ class ConversationsController extends GetxController {
   }
 
   Future<void> markRead(Conversation conversation) async {
-    await conversation.setAllMessagesRead();
-    await getMyConversations();
+    // await conversation.setAllMessagesRead();
+    // await getMyConversations();
+    // try 2
+    // try {
+    //   // Try to join if not already a participant
+    //   final participants = await conversation.getParticipantsList();
+    //   final me = participants.firstWhereOrNull(
+    //     (p) => p.identity == client?.myIdentity,
+    //   );
+
+    //   if (me == null) {
+    //     print('Not part of this conversation — joining...');
+    //     await conversation.join();
+    //   }
+
+    //   // Mark all messages as read
+    //   await conversation.setAllMessagesRead();
+    //   print('All messages marked as read for ${conversation.sid}');
+
+    //   // Refresh the conversation list to update unread counts
+    //   await getMyConversations();
+    // } catch (e) {
+    //   print('markRead() error: $e');
+    // }
+
+    try {
+      final count = await conversation.getMessagesCount();
+      if (count != null && count > 0) {
+        await conversation.setLastReadMessageIndex(count - 1);
+        print('Marked all messages as read for ${conversation.sid}');
+      }
+      await getMyConversations();
+    } catch (e) {
+      print('Error marking as read: $e');
+    }
   }
 
   Future<void> markUnread(Conversation conversation) async {
@@ -148,33 +181,44 @@ class ConversationsController extends GetxController {
       conversations.assignAll(myConversations);
 
       for (var conversation in conversations) {
-        late int unreadMessages;
+        int unreadMessages;
         try {
-          unreadMessages = await conversation.getUnreadMessagesCount();
+          final totalMessages = await conversation.getMessagesCount() ?? 0;
+          final lastReadIndex = conversation.lastReadMessageIndex;
+
+          if (lastReadIndex != null && lastReadIndex >= 0) {
+            unreadMessages = ((totalMessages - 1) - lastReadIndex).toInt();
+          } else {
+            unreadMessages = totalMessages; // If no message marked read yet
+          }
+          // unreadMessages = await conversation.getUnreadMessagesCount();
+          // if (unreadMessages.isNaN) unreadMessages = 0;
         } on PlatformException {
           unreadMessages = 0;
         }
 
-        if (unreadMessages == 0) {
-          // If unreadMessages comes back as `null`, no last read message index set
-          final messagesCount = await conversation.getMessagesCount();
-          if (messagesCount != null && messagesCount > 0) {
-            await conversation.setLastReadMessageIndex(0);
-          }
-          var totalMessages = await conversation.getMessagesCount();
-          unreadMessageCounts[conversation.sid] = totalMessages ?? 0;
-        } else {
-          unreadMessageCounts[conversation.sid] = unreadMessages;
-        }
+        // if (unreadMessages == 0) {
+        //   // If unreadMessages comes back as `null`, no last read message index set
+        //   final messagesCount = await conversation.getMessagesCount();
+        //   if (messagesCount != null && messagesCount > 0) {
+        //     await conversation.setLastReadMessageIndex(0);
+        //   }
+        //   var totalMessages = await conversation.getMessagesCount();
+        //   unreadMessageCounts[conversation.sid] = totalMessages ?? 0;
+        // } else {
+        //   unreadMessageCounts[conversation.sid] = unreadMessages;
+        // }
+
+        unreadMessageCounts[conversation.sid] = unreadMessages;
       }
 
       unreadMessageCounts.refresh();
-      BaseController.unreadMessages.value =
-          unreadMessageCounts[BaseController
-              .user
-              .value
-              ?.twilioConversationSid] ??
-          0;
+
+      final activeSid = BaseController.user.value?.twilioConversationSid;
+      if (activeSid != null) {
+        BaseController.unreadMessages.value =
+            unreadMessageCounts[activeSid] ?? 0;
+      }
     }
   }
 
@@ -231,10 +275,10 @@ class ConversationsController extends GetxController {
     );
     if (response != null) {
       print("{STAR TOGGLE: ${response.toString()}}");
-      if (response['status']) {
-        DialogHelper.showErrorToast(description: response['message']);
+      if (response['starred']) {
+        DialogHelper.showErrorToast(description: 'Message marked as starred.');
       } else {
-        DialogHelper.showErrorToast(description: response['message']);
+        DialogHelper.showErrorToast(description: 'Message unstarred.');
       }
     } else {
       DialogHelper.showErrorToast(description: "Failed! Please try later.");

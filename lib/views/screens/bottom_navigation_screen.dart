@@ -215,14 +215,19 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
           ),
 
           Obx(
-            () => CircleAvatar(
-              radius: 13,
-              backgroundColor: AppConstants.primaryColor,
-              child: Text(
-                BaseController.unreadMessages.value.toString(),
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-              ),
-            ),
+            () => (BaseController.unreadMessages.value > 0)
+                ? CircleAvatar(
+                    radius: 13,
+                    backgroundColor: AppConstants.primaryColor,
+                    child: Text(
+                      BaseController.unreadMessages.value.toString(),
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  )
+                : Container(),
           ),
         ],
       ),
