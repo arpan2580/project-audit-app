@@ -4,6 +4,7 @@ import 'dart:io';
 // import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_twilio_chat_conversations/twilio_conversations.dart';
 import 'package:get/get.dart';
 import 'package:jnk_app/controllers/base_controller.dart';
@@ -13,6 +14,7 @@ import 'package:jnk_app/views/dialogs/dialog_helper.dart';
 class ConversationsController extends GetxController {
   final plugin = TwilioConversations();
   ConversationClient? client;
+  final FlutterSecureStorage storage = const FlutterSecureStorage();
 
   /// Reactive fields
   var isClientInitialized = false.obs;
@@ -252,6 +254,7 @@ class ConversationsController extends GetxController {
     if (response != null) {
       print("{TWILIO TOKEN: ${response.toString()}}");
       if (response['token'] != null) {
+        await storage.write(key: 'twilio_token', value: response['token']);
         return response['token'];
       } else {
         DialogHelper.showErrorToast(description: 'Failed to fetch chat.');

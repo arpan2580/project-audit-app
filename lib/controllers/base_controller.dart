@@ -3,13 +3,14 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:get/get.dart';
+import 'package:jnk_app/controllers/chat_controller.dart';
 import 'package:jnk_app/models/user_model.dart';
 import 'package:jnk_app/services/base_client.dart';
 import 'package:jnk_app/views/dialogs/dialog_helper.dart';
 import 'package:jnk_app/views/screens/login_screen.dart';
-import 'package:get/get_rx/get_rx.dart';
-import 'package:get/route_manager.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
@@ -77,6 +78,7 @@ class BaseController {
 
   // static RxList feedbackStatusId = [].obs;
   static final storeToken = GetStorage();
+  static final FlutterSecureStorage storage = FlutterSecureStorage();
 
   static showLoading([String? message]) {
     DialogHelper.showLoadingDialog(message);
@@ -151,6 +153,11 @@ class BaseController {
       storeToken.remove("day_status");
       storeToken.remove("currentAudit");
       storeToken.erase();
+      storage.deleteAll();
+      BaseController.isChatInitialized.value = false;
+      ChatController().msgControllerDispose();
+      ChatController().dispose();
+      Get.delete<ChatController>();
       Get.offAll(() => const LoginScreen());
       DialogHelper.showSuccessToast(description: "Logged out successfully.");
     } else {
@@ -168,6 +175,11 @@ class BaseController {
     storeToken.remove("day_status");
     storeToken.remove("currentAudit");
     storeToken.erase();
+    storage.deleteAll();
+    BaseController.isChatInitialized.value = false;
+    ChatController().msgControllerDispose();
+    ChatController().dispose();
+    Get.delete<ChatController>();
     Get.offAll(() => const LoginScreen());
     // DialogHelper.showErrorToast(
     //   description: 'Your session has expired. Please log in again.',

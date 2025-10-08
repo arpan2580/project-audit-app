@@ -19,7 +19,7 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 1), () {
+    Future.delayed(const Duration(seconds: 2), () {
       token = storage.read('token');
       refreshToken = storage.read('refreshToken');
       print(token);

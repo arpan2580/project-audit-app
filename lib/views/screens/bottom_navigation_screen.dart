@@ -24,6 +24,13 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
   late int selectedIndex = 0;
 
   @override
+  void initState() {
+    super.initState();
+    DashboardController.isLoading.value = true;
+    DashboardController().fetchDashboardData();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true,
@@ -133,12 +140,11 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
                               Get.to(
                                 () => IndividualChatScreen(
                                   name:
-                                      BaseController
-                                          .user
-                                          .value
-                                          ?.manager
-                                          ?.name ??
-                                      'Admin',
+                                      BaseController.user.value?.agency != '' ||
+                                          BaseController.user.value?.agency !=
+                                              null
+                                      ? '${BaseController.user.value!.agency} Admin'
+                                      : 'Admin',
                                   profilePicUrl: 'profile_pic_url',
                                 ),
                               );
@@ -191,16 +197,20 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
                 if (BaseController.user.value?.role == 'agnt') {
                   Get.to(
                     () => IndividualChatScreen(
-                      name: BaseController.user.value?.manager?.name ?? 'Admin',
+                      name:
+                          BaseController.user.value?.agency != '' ||
+                              BaseController.user.value?.agency != null
+                          ? '${BaseController.user.value!.agency} Admin'
+                          : 'Admin',
                       profilePicUrl: 'profile_pic_url',
                     ),
                   );
                 } else {
-                  // BaseController.showOptions.value =
-                  //     !BaseController.showOptions.value;
-                  DialogHelper.showInfoToast(
-                    description: "Feature coming soon!",
-                  );
+                  BaseController.showOptions.value =
+                      !BaseController.showOptions.value;
+                  // DialogHelper.showInfoToast(
+                  //   description: "Feature coming soon!",
+                  // );
                 }
               } else {
                 DialogHelper.showInfoToast(
@@ -215,19 +225,14 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
           ),
 
           Obx(
-            () => (BaseController.unreadMessages.value > 0)
-                ? CircleAvatar(
-                    radius: 13,
-                    backgroundColor: AppConstants.primaryColor,
-                    child: Text(
-                      BaseController.unreadMessages.value.toString(),
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  )
-                : Container(),
+            () => CircleAvatar(
+              radius: (BaseController.unreadMessages.value > 0) ? 13 : 0,
+              backgroundColor: AppConstants.primaryColor,
+              child: Text(
+                BaseController.unreadMessages.value.toString(),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              ),
+            ),
           ),
         ],
       ),

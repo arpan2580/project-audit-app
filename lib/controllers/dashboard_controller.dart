@@ -12,23 +12,21 @@ import 'package:jnk_app/views/screens/login_screen.dart';
 
 class DashboardController extends GetxController {
   static Rxn<DashboardModel> dashboard = Rxn<DashboardModel>();
+  // static late final ConversationsController controller;
   final ConversationsController controller = Get.put(ConversationsController());
-  RxBool isLoading = true.obs;
+  static RxBool isLoading = true.obs;
   String? jwtToken;
 
   @override
   void onInit() async {
     super.onInit();
     isLoading.value = true;
-
-    // BaseController.user.value = UserModel.fromJson(
-    //   BaseController.storeToken.read("user_data"),
-    // );
     // Future.delayed(const Duration(seconds: 3), () {
-    fetchUserData().then((value) {
-      fetchDashboardData(fetchUser: false);
-      // isLoading.value = false;
-    });
+    // fetchUserData().then((value) {
+    //   fetchDashboardData(fetchUser: false);
+    // isLoading.value = false;
+    // });
+    fetchUserData();
     // });
   }
 

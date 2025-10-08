@@ -25,7 +25,7 @@ class DashboardScreen extends StatelessWidget {
     final ImagePicker picker = ImagePicker();
     // final scrollController = ScrollController();
     return Obx(
-      () => dashboardController.isLoading.value
+      () => DashboardController.isLoading.value
           ? Scaffold(
               extendBodyBehindAppBar: true,
               extendBody: true,

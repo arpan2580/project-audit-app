@@ -9,7 +9,7 @@ import 'package:jnk_app/views/widgets/chat_widget.dart';
 class ChatController extends GetxController {
   final ConversationsController controller = Get.put(ConversationsController());
   RxBool isLoading = true.obs;
-
+  late MessagesController msgController;
   RxBool showChatReactions = false.obs;
   RxInt selectedChat = (-1).obs; // -1 to indicate none selected
   RxSet<int> starredMessages = <int>{}.obs;
@@ -25,7 +25,8 @@ class ChatController extends GetxController {
     });
     // controller.getMyConversations().then((onValue) {
     if (controller.conversations.isNotEmpty && controller.client != null) {
-      final MessagesController msgController = Get.put(
+      // final MessagesController
+      msgController = Get.put(
         MessagesController(
           controller.conversations[0],
           controller.client!,
@@ -148,5 +149,13 @@ class ChatController extends GetxController {
     } else {
       return sortedMessages;
     }
+  }
+
+  void msgControllerDispose() {
+    if (Get.isRegistered<MessagesController>()) {
+      final MessagesController msgController = Get.find<MessagesController>();
+      msgController.dispose();
+      Get.delete<MessagesController>();
+    } else {}
   }
 }

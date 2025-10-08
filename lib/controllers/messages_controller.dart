@@ -5,6 +5,7 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 import 'package:path_provider/path_provider.dart';
 // import 'package:http/http.dart' as http;
@@ -18,7 +19,7 @@ class MessagesController extends GetxController {
   // Controllers
   final messageInputTextController = TextEditingController();
   final listScrollController = ScrollController();
-
+  final FlutterSecureStorage storage = const FlutterSecureStorage();
   // Reactive State
   static var isLoading = true.obs;
   var isSendingMessage = false.obs;
@@ -321,6 +322,26 @@ class MessagesController extends GetxController {
 
     try {
       final dir = await getApplicationDocumentsDirectory();
+
+      final files = dir.listSync();
+      if (files.length > 500) {
+        print(
+          '_getMedia => cache folder too large (${files.length} files), cleaning up...',
+        );
+        // Delete oldest files first
+        files.sort(
+          (a, b) => a.statSync().modified.compareTo(b.statSync().modified),
+        );
+        final excess = files.length - 400; // keep 400 latest
+        for (int i = 0; i < excess; i++) {
+          try {
+            files[i].deleteSync();
+          } catch (e) {
+            print('_getMedia => failed to delete cache file: $e');
+          }
+        }
+      }
+
       final filePath = '${dir.path}/${message.sid}.jpg';
       final file = File(filePath);
 
@@ -334,11 +355,15 @@ class MessagesController extends GetxController {
         print('_getMedia => No media URL for ${message.sid}');
         return;
       }
+      final token = await storage.read(key: 'twilio_token');
       print('_getMedia => downloading from: $url');
       final dio = Dio();
       final response = await dio.get<List<int>>(
         url,
-        options: Options(responseType: ResponseType.bytes),
+        options: Options(
+          responseType: ResponseType.bytes,
+          headers: {'Authorization': 'Bearer $token'},
+        ),
       );
 
       if (response.statusCode == 200 && response.data != null) {
@@ -351,6 +376,13 @@ class MessagesController extends GetxController {
           '_getMedia => failed to download, status: ${response.statusCode}',
         );
       }
+
+      if (await file.exists()) {
+        print('_getMedia => saved to: $filePath');
+        _updateMessageEntry(message, file.path, isLocal: true);
+      } else {
+        print('_getMedia => file not found after download');
+      }
     } catch (e) {
       print('_getMedia => error: $e');
     }
@@ -359,7 +391,7 @@ class MessagesController extends GetxController {
   void _updateMessageEntry(
     Message message,
     String path, {
-    bool isLocal = false,
+    bool isLocal = true,
   }) {
     final index = chatController.messages.indexWhere(
       (m) => m['id'] == message.messageIndex,
@@ -378,7 +410,8 @@ class MessagesController extends GetxController {
         'isLocal': isLocal,
       };
 
-      chatController.messages.refresh();
+      // chatController.messages.refresh();
+      chatController.buildChatWidgets();
     }
   }
 
@@ -476,21 +509,65 @@ class MessagesController extends GetxController {
     }
   }
 
-  Future onSendMediaMessagePressed() async {
-    final image = await ImagePicker().pickImage(source: ImageSource.gallery);
-    final mimeType = mime(image?.path);
-    if (image != null && mimeType != null) {
-      final File fileImage = File(image.path);
-      File croppedImage = await BaseController.compressImage(fileImage, 10);
-      final path = croppedImage.path;
-      int sizeInBytes = await croppedImage.length();
-      double sizeInKb = sizeInBytes / 1024;
-      double sizeInMb = sizeInKb / 1024;
-      print('File size in KB: ${sizeInKb.toStringAsFixed(2)} KB');
-      print('File size in MB: ${sizeInMb.toStringAsFixed(2)} MB');
+  // Future onSendMediaMessagePressed() async {
+  //   final image = await ImagePicker().pickImage(source: ImageSource.gallery);
+  //   final mimeType = mime(image?.path);
+  //   if (image != null && mimeType != null) {
+  //     final File fileImage = File(image.path);
+  //     File croppedImage = await BaseController.compressImage(fileImage, 10);
+  //     final path = croppedImage.path;
+  //     int sizeInBytes = await croppedImage.length();
+  //     double sizeInKb = sizeInBytes / 1024;
+  //     double sizeInMb = sizeInKb / 1024;
+  //     print('File size in KB: ${sizeInKb.toStringAsFixed(2)} KB');
+  //     print('File size in MB: ${sizeInMb.toStringAsFixed(2)} MB');
 
-      final messageOptions = MessageOptions()..withMedia(File(path), mimeType);
+  //     final messageOptions = MessageOptions()..withMedia(File(path), mimeType);
+  //     await conversation.sendMessage(messageOptions);
+  //   }
+  // }
+
+  Future<void> onSendMediaMessagePressed() async {
+    try {
+      final picker = ImagePicker();
+      final picked = await picker.pickImage(source: ImageSource.gallery);
+
+      if (picked == null) return;
+
+      // Convert XFile to real File
+      final File file = File(picked.path);
+
+      // Ensure the file is readable
+      if (!await file.exists()) {
+        print('File does not exist at path: ${file.path}');
+        return;
+      }
+
+      // Optional compression (keep this if it’s implemented correctly)
+      final compressed = await BaseController.compressImage(file, 10);
+
+      // Determine mime type
+      final mimeType = mime(compressed.path) ?? "image/jpeg";
+
+      // Double check file size (Twilio supports up to 150 MB)
+      final fileSize = await compressed.length();
+      if (fileSize > 150 * 1024 * 1024) {
+        print('File too large for Twilio: ${fileSize / (1024 * 1024)} MB');
+        return;
+      }
+
+      print('Sending image of size ${(fileSize / 1024).toStringAsFixed(2)} KB');
+
+      // Create media message options
+      final messageOptions = MessageOptions()..withMedia(compressed, mimeType);
+
+      // Send via conversation
       await conversation.sendMessage(messageOptions);
+
+      print('Media message sent successfully.');
+    } catch (e, st) {
+      print('Error sending media message: $e');
+      print(st);
     }
   }
 

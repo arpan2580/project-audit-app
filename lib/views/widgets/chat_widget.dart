@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jnk_app/consts/app_constants.dart';
 import 'package:jnk_app/controllers/chat_controller.dart';
+import 'package:jnk_app/views/screens/image_view_screen.dart';
 
 class ChatWidget extends StatelessWidget {
   final Map<String, dynamic> msg;
@@ -64,21 +65,43 @@ class ChatWidget extends StatelessWidget {
                         ),
                       )
                     : (msg['isMedia'] == true && msg['text'] != '')
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: (msg['isLocal'])
-                            ? Image.file(
-                                File(msg['text']),
-                                width: 200,
-                                height: 200,
-                                fit: BoxFit.cover,
-                              )
-                            : Image.network(
-                                msg['text'],
-                                width: 200,
-                                height: 200,
-                                fit: BoxFit.cover,
+                    ? GestureDetector(
+                        onTap: () {
+                          if (msg['isLocal']) {
+                            Get.to(
+                              () => ImageViewScreen(
+                                imageUrl: msg['text'],
+                                isLocal: true,
                               ),
+                            );
+                          } else {
+                            Get.to(
+                              () => ImageViewScreen(
+                                imageUrl: msg['text'],
+                                isLocal: false,
+                              ),
+                            );
+                          }
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: (msg['isLocal'])
+                              ? Image.file(
+                                  File(msg['text']),
+                                  width: 200,
+                                  height: 200,
+                                  fit: BoxFit.cover,
+                                )
+                              : Image.network(
+                                  msg['text'],
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Icon(Icons.error);
+                                  },
+                                  width: 200,
+                                  height: 200,
+                                  fit: BoxFit.cover,
+                                ),
+                        ),
                       )
                     : Text(msg['text'], style: const TextStyle(fontSize: 16)),
                 const SizedBox(height: 4),
@@ -94,14 +117,10 @@ class ChatWidget extends StatelessWidget {
                         color: Colors.grey.shade600,
                       ),
                     ),
-                    if (msg['isMe']) ...[
-                      const SizedBox(width: 4),
-                      const Icon(
-                        Icons.done_all,
-                        size: 16,
-                        color: Colors.blueAccent,
-                      ),
-                    ],
+                    // if (msg['isMe']) ...[
+                    //   const SizedBox(width: 4),
+                    //   const Icon(Icons.done_all, size: 16, color: Colors.grey),
+                    // ],
                   ],
                 ),
               ],

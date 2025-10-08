@@ -29,7 +29,6 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
     } else {
       chatController = Get.find<ChatController>();
     }
-
     msgController = Get.find<MessagesController>();
   }
 
