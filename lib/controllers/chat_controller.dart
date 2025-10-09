@@ -34,7 +34,8 @@ class ChatController extends GetxController {
         ),
         permanent: true,
       );
-      msgController.loadConversation();
+      // msgController.loadConversation();
+      msgController.loadMessages();
       isLoading.value = false;
     } else {
       Get.back();

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:get/route_manager.dart';
+import 'package:get/get.dart';
 import 'package:jnk_app/consts/app_constants.dart';
+import 'package:jnk_app/controllers/base_controller.dart';
+import 'package:jnk_app/controllers/conversations_controller.dart';
+import 'package:jnk_app/views/dialogs/dialog_helper.dart';
 import 'package:jnk_app/views/screens/individual_chat_screen.dart';
 import 'package:jnk_app/views/widgets/agents_chat_widget.dart';
 
@@ -42,22 +45,51 @@ class AgentsChatScreen extends StatelessWidget {
                 shrinkWrap: true,
                 padding: EdgeInsets.only(bottom: 50.0),
                 physics: BouncingScrollPhysics(),
-                itemCount: 5,
+                itemCount: BaseController.user.value?.managersUsers?.length,
                 itemBuilder: (BuildContext context, int index) {
+                  final agnt = BaseController.user.value?.managersUsers?[index];
                   return GestureDetector(
-                    onTap: () {
-                      Get.to(
-                        () => IndividualChatScreen(
-                          name: 'Agent $index',
-                          profilePicUrl: 'profile_pic_url',
-                        ),
-                      );
+                    onTap: () async {
+                      final conversationSid = agnt.twilioConversationSid;
+                      final controller = Get.find<ConversationsController>();
+                      BaseController.showLoading();
+                      // Ensure client is initialized
+                      if (!controller.isClientInitialized.value) {
+                        await controller.fetchAccessToken().then((token) async {
+                          if (token != null) {
+                            await controller.create(jwtToken: token);
+                          }
+                        });
+                      }
+
+                      // Fetch or join the conversation
+                      final conversation = await controller
+                          .getOrJoinConversation(conversationSid);
+
+                      // if (conversation != null) {
+                      //   Get.to(() => ChatScreen(conversation: conversation));
+                      // } else {
+                      //   DialogHelper.showErrorToast(description: "Unable to open chat.");
+                      // }
+                      if (conversation != null) {
+                        Get.to(
+                          () => IndividualChatScreen(
+                            name: agnt.name,
+                            profilePicUrl: agnt.avatar,
+                            conversation: conversation,
+                          ),
+                        );
+                      } else {
+                        DialogHelper.showErrorToast(
+                          description: "Unable to open chat.",
+                        );
+                      }
                     },
                     child: AgentsChatWidget(
-                      agentName: 'Agent $index',
-                      agentProfilePic: 'profile_pic_url',
-                      lastMessage: 'Last message snippet',
-                      lastActive: 'Yesterday',
+                      agentName: agnt!.name,
+                      agentProfilePic: agnt.avatar,
+                      lastMessage: agnt.empCode,
+                      lastActive: '',
                     ),
                   );
                 },

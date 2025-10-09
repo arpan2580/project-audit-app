@@ -82,8 +82,13 @@ class DashboardController extends GetxController {
           await controller.fetchAccessToken().then((value) async {
             print("{TWILIO TOKEN: $value}");
             await controller.create(jwtToken: value!).then((onValue) {
-              controller.getMyConversations();
-              BaseController.isChatInitialized.value = true;
+              controller
+                  .getOrJoinConversation(
+                    BaseController.user.value!.twilioConversationSid,
+                  )
+                  .then((val) {
+                    BaseController.isChatInitialized.value = true;
+                  });
             });
           });
         }

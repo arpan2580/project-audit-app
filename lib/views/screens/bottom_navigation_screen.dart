@@ -3,6 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:jnk_app/consts/app_constants.dart';
 import 'package:jnk_app/controllers/base_controller.dart';
+import 'package:jnk_app/controllers/conversations_controller.dart';
 import 'package:jnk_app/controllers/dashboard_controller.dart';
 import 'package:jnk_app/views/dialogs/dialog_helper.dart';
 import 'package:jnk_app/views/screens/agents_chat_screen.dart';
@@ -22,6 +23,7 @@ class BottomNavigationScreen extends StatefulWidget {
 class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
   final PageController pageController = PageController(initialPage: 0);
   late int selectedIndex = 0;
+  final ConversationsController controller = Get.put(ConversationsController());
 
   @override
   void initState() {
@@ -96,7 +98,7 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
                         children: [
                           FloatingActionButton(
                             heroTag: 'individual_chat',
-                            onPressed: () {
+                            onPressed: () async {
                               BaseController.showOptions.value =
                                   !BaseController.showOptions.value;
                               // final controller = ConversationsController();
@@ -137,17 +139,35 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
                               //   //   isLoading.value = false;
                               //   // });
                               // });
-                              Get.to(
-                                () => IndividualChatScreen(
-                                  name:
-                                      BaseController.user.value?.agency != '' ||
-                                          BaseController.user.value?.agency !=
-                                              null
-                                      ? '${BaseController.user.value!.agency} Admin'
-                                      : 'Admin',
-                                  profilePicUrl: 'profile_pic_url',
-                                ),
-                              );
+                              // final ConversationsController controller =
+                              //     Get.put(ConversationsController());
+                              BaseController.showLoading();
+                              final conversation = await controller
+                                  .getOrJoinConversation(
+                                    BaseController
+                                        .user
+                                        .value!
+                                        .twilioConversationSid,
+                                  );
+                              if (conversation != null) {
+                                Get.to(
+                                  () => IndividualChatScreen(
+                                    name:
+                                        BaseController.user.value?.agency !=
+                                                '' ||
+                                            BaseController.user.value?.agency !=
+                                                null
+                                        ? '${BaseController.user.value!.agency} Admin'
+                                        : 'Admin',
+                                    profilePicUrl: 'profile_pic_url',
+                                    conversation: conversation,
+                                  ),
+                                );
+                              } else {
+                                DialogHelper.showErrorToast(
+                                  description: "Unable to open chat.",
+                                );
+                              }
                             },
                             tooltip: 'Chat with Admin',
                             backgroundColor: AppConstants.logoBlueColor,
@@ -192,19 +212,42 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
         alignment: Alignment(1.4, -1.4),
         children: [
           FloatingActionButton(
-            onPressed: () {
+            onPressed: () async {
               if (BaseController.isChatInitialized.value) {
                 if (BaseController.user.value?.role == 'agnt') {
-                  Get.to(
-                    () => IndividualChatScreen(
-                      name:
-                          BaseController.user.value?.agency != '' ||
-                              BaseController.user.value?.agency != null
-                          ? '${BaseController.user.value!.agency} Admin'
-                          : 'Admin',
-                      profilePicUrl: 'profile_pic_url',
-                    ),
+                  BaseController.showLoading();
+                  final conversation = await controller.getOrJoinConversation(
+                    BaseController.user.value!.twilioConversationSid,
                   );
+                  if (conversation != null) {
+                    Get.to(
+                      () => IndividualChatScreen(
+                        name:
+                            BaseController.user.value?.agency != '' ||
+                                BaseController.user.value?.agency != null
+                            ? '${BaseController.user.value!.agency} Admin'
+                            : 'Admin',
+                        profilePicUrl: 'profile_pic_url',
+                        conversation: conversation,
+                      ),
+                    );
+                  } else {
+                    DialogHelper.showErrorToast(
+                      description: "Unable to open chat.",
+                    );
+                  }
+
+                  // Get.to(
+                  //   () => IndividualChatScreen(
+                  //     name:
+                  //         BaseController.user.value?.agency != '' ||
+                  //             BaseController.user.value?.agency != null
+                  //         ? '${BaseController.user.value!.agency} Admin'
+                  //         : 'Admin',
+                  //     profilePicUrl: 'profile_pic_url',
+                  //     conversation: ,
+                  //   ),
+                  // );
                 } else {
                   BaseController.showOptions.value =
                       !BaseController.showOptions.value;

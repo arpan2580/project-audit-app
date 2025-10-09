@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:jnk_app/consts/app_constants.dart';
 
@@ -25,8 +26,20 @@ class AgentsChatWidget extends StatelessWidget {
       child: ListTile(
         leading: CircleAvatar(
           radius: 30,
-          backgroundImage: AssetImage(AppConstants.profilePlaceholder),
+          //  backgroundImage: AssetImage(AppConstants.profilePlaceholder),
           backgroundColor: Colors.transparent,
+          child: ClipOval(
+            child: CachedNetworkImage(
+              imageUrl: agentProfilePic,
+              fit: BoxFit.cover,
+              width: 160, // 2 * radius
+              height: 160,
+              placeholder: (context, url) =>
+                  const Center(child: CircularProgressIndicator()),
+              errorWidget: (context, url, error) =>
+                  const Icon(Icons.error, size: 40),
+            ),
+          ),
         ),
         title: Text(
           agentName,
@@ -34,8 +47,8 @@ class AgentsChatWidget extends StatelessWidget {
         ),
         subtitle: Row(
           children: [
-            Icon(Icons.done_all, size: 20.0),
-            SizedBox(width: 5.0),
+            // Icon(Icons.done_all, size: 20.0),
+            // SizedBox(width: 5.0),
             Text(
               lastMessage,
               style: TextStyle(color: AppConstants.secondaryColor),

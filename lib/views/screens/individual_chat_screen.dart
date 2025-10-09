@@ -1,4 +1,6 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_twilio_chat_conversations/twilio_conversations.dart';
 import 'package:get/get.dart';
 import 'package:jnk_app/consts/app_constants.dart';
 import 'package:jnk_app/controllers/chat_controller.dart';
@@ -8,10 +10,12 @@ import 'package:jnk_app/views/widgets/chat_input_widget.dart';
 class IndividualChatScreen extends StatefulWidget {
   final String name;
   final String profilePicUrl;
+  final Conversation conversation;
   const IndividualChatScreen({
     super.key,
     required this.name,
     required this.profilePicUrl,
+    required this.conversation,
   });
 
   @override
@@ -30,6 +34,7 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
       chatController = Get.find<ChatController>();
     }
     msgController = Get.find<MessagesController>();
+    msgController.initConversation(widget.conversation);
   }
 
   @override
@@ -70,8 +75,20 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
             children: [
               CircleAvatar(
                 radius: 20,
-                backgroundImage: AssetImage(AppConstants.profilePlaceholder),
+                // backgroundImage: AssetImage(AppConstants.profilePlaceholder),
                 backgroundColor: Colors.transparent,
+                child: ClipOval(
+                  child: CachedNetworkImage(
+                    imageUrl: widget.profilePicUrl,
+                    fit: BoxFit.cover,
+                    width: 160, // 2 * radius
+                    height: 160,
+                    placeholder: (context, url) =>
+                        const Center(child: CircularProgressIndicator()),
+                    errorWidget: (context, url, error) =>
+                        const Icon(Icons.error, size: 40),
+                  ),
+                ),
               ),
               SizedBox(width: 10.0),
               Text(widget.name),
