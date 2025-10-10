@@ -53,9 +53,10 @@ class MessagesController extends GetxController {
           'time': msg.dateCreated != null
               ? msg.dateCreated!.toLocal().toString()
               : DateTime.now().toString(),
+          'author': msg.author ?? 'Admin',
           'isMe': msg.author == client.myIdentity,
           'isMedia': msg.type == MessageType.MEDIA,
-          'isLocal': false,
+          'isLocal': true,
         };
       }).toList();
 
@@ -69,13 +70,13 @@ class MessagesController extends GetxController {
     // onMessageAdded
     subscriptions.add(
       conversation.onMessageAdded.listen((message) async {
-        if (!messages.any((m) => m.sid == message.sid)) {
-          messages.add(message);
-          if (message.type == MessageType.MEDIA) {
-            _getMedia(message);
-          }
+        // if (!messages.any((m) => m.sid == message.sid)) {
+        messages.add(message);
+        if (message.type == MessageType.MEDIA) {
+          _getMedia(message);
         }
-
+        // }
+        messages.refresh();
         // Mark as read
         final messageIndex = message.messageIndex;
         if (messageIndex != null) {
@@ -102,6 +103,7 @@ class MessagesController extends GetxController {
     subscriptions.add(
       conversation.onMessageDeleted.listen((event) async {
         messages.removeWhere((m) => m.sid == event.sid);
+        messages.refresh();
       }),
     );
 
@@ -155,6 +157,25 @@ class MessagesController extends GetxController {
   Future<void> _getMedia(Message message) async {
     try {
       final dir = await getApplicationDocumentsDirectory();
+      final files = dir.listSync();
+      if (files.length > 500) {
+        print(
+          '_getMedia => cache folder too large (${files.length} files), cleaning up...',
+        );
+        // Delete oldest files first
+        files.sort(
+          (a, b) => a.statSync().modified.compareTo(b.statSync().modified),
+        );
+        final excess = files.length - 400; // keep 400 latest
+        for (int i = 0; i < excess; i++) {
+          try {
+            files[i].deleteSync();
+          } catch (e) {
+            print('_getMedia => failed to delete cache file: $e');
+          }
+        }
+      }
+
       final filePath = '${dir.path}/${message.sid}.jpg';
       final file = File(filePath);
 
@@ -231,6 +252,24 @@ class MessagesController extends GetxController {
     }
   }
 
+  Future<void> deleteMessageBySid(String messageSid) async {
+    try {
+      // Find the message in the messages list by its SID
+      final Message? msg = messages.firstWhereOrNull(
+        (m) => m.sid == messageSid,
+      );
+      if (msg != null) {
+        await conversation.removeMessage(msg); // Twilio API call
+        messages.remove(msg); // Update local list immediately
+        messages.refresh();
+      }
+    } catch (e) {
+      print('Error deleting message: $e');
+      isError.value = true;
+      // Optionally show a UI error
+    }
+  }
+
   void scrollToBottom({bool animated = true}) {
     if (!listScrollController.hasClients) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -253,6 +292,7 @@ class MessagesController extends GetxController {
     for (final sub in subscriptions) {
       sub.cancel();
     }
+    subscriptions.clear();
     super.onClose();
   }
 }

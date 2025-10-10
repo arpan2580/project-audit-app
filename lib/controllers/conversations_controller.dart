@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+// import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_twilio_chat_conversations/twilio_conversations.dart';
 import 'package:get/get.dart';
@@ -119,7 +119,10 @@ class ConversationsController extends GetxController {
         final activeSid = BaseController.user.value?.twilioConversationSid;
         if (activeSid != null) {
           BaseController.unreadMessages.value =
-              unreadMessageCounts[activeSid] ?? 0;
+              unreadMessageCounts[activeSid] != null
+              ? BaseController.unreadMessages.value +
+                    unreadMessageCounts[activeSid]!
+              : 0;
         }
       }
     } catch (e) {
@@ -286,29 +289,13 @@ class ConversationsController extends GetxController {
     if (response != null) {
       print("{STAR TOGGLE: ${response.toString()}}");
       if (response['starred']) {
-        DialogHelper.showErrorToast(description: 'Message marked as starred.');
+        // DialogHelper.showSuccessToast(description: 'Message marked as starred.');
       } else {
         DialogHelper.showErrorToast(description: 'Message unstarred.');
       }
     } else {
       DialogHelper.showErrorToast(description: "Failed! Please try later.");
     }
-  }
-
-  // Get starred messages
-  Future<List<dynamic>> getStarredMessages() async {
-    var response = await BaseClient().dioPost('/chat/star-list/', null);
-    if (response != null) {
-      print("{STAR MESSAGES: ${response.toString()}}");
-      if (response['status']) {
-        DialogHelper.showErrorToast(description: response['message']);
-      } else {
-        DialogHelper.showErrorToast(description: response['message']);
-      }
-    } else {
-      DialogHelper.showErrorToast(description: "Failed! Please try later.");
-    }
-    return [];
   }
 
   Future<void> setFriendlyName(String name) async {

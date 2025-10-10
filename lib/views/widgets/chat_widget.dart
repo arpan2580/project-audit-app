@@ -54,8 +54,26 @@ class ChatWidget extends StatelessWidget {
               ),
             ),
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.end,
+              crossAxisAlignment: (msg['isMe'])
+                  ? CrossAxisAlignment.end
+                  : CrossAxisAlignment.start,
               children: [
+                // (msg['isMe'])
+                //     ? Text(
+                //         BaseController.user.value!.name,
+                //         style: const TextStyle(
+                //           fontSize: 16,
+                //           fontWeight: FontWeight.w500,
+                //         ),
+                //       )
+                //     : Text(
+                //         msg['author'],
+                //         style: const TextStyle(
+                //           fontSize: 16,
+                //           fontWeight: FontWeight.w500,
+                //         ),
+                //       ),
+                // const SizedBox(height: 4),
                 (msg['isMedia'] == true && msg['text'] == '')
                     ? SizedBox(
                         width: 200,
@@ -165,7 +183,7 @@ Widget buildReactChatWidget(
     onTap: () {},
     child: Container(
       // height: 40.0,
-      margin: const EdgeInsets.symmetric(horizontal: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 20),
       decoration: BoxDecoration(
         color: Colors.blueGrey[100],
         borderRadius: BorderRadius.circular(20.0),
@@ -196,14 +214,11 @@ Widget buildReactChatWidget(
               },
             ),
             IconButton(
-              icon: const Icon(
-                Icons.delete_outlined,
-                color: Colors.red,
-                size: 28.0,
-              ),
+              icon: const Icon(Icons.delete, color: Colors.red, size: 28.0),
               onPressed: () {
                 chatController.hideChatReactions();
-                print('Deleted message $messageId');
+                chatController.msgController.deleteMessageBySid(sid);
+                print('Deleted message $messageId - $sid');
               },
             ),
           ],

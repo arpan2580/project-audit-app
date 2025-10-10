@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:jnk_app/controllers/conversations_controller.dart';
 import 'package:jnk_app/controllers/messages_controller.dart';
+import 'package:jnk_app/services/base_client.dart';
 import 'package:jnk_app/views/dialogs/dialog_helper.dart';
 import 'package:jnk_app/views/widgets/chat_widget.dart';
 
@@ -32,7 +33,8 @@ class ChatController extends GetxController {
           controller.client!,
           this,
         ),
-        permanent: true,
+        // permanent: true,
+        permanent: false,
       );
       // msgController.loadConversation();
       msgController.loadMessages();
@@ -129,8 +131,7 @@ class ChatController extends GetxController {
   }
 
   void toggleStarredMessage(int messageId, String sid) {
-    print("Channel SID: ${controller.conversations.single.sid}");
-    controller.toggleStar(controller.conversations.single.sid, sid);
+    controller.toggleStar(msgController.conversation.sid, sid);
     if (starredMessages.contains(messageId)) {
       starredMessages.remove(messageId);
     } else {
@@ -150,6 +151,25 @@ class ChatController extends GetxController {
     } else {
       return sortedMessages;
     }
+  }
+
+  // Get starred messages
+  Future<List<dynamic>> getStarredMessages() async {
+    var response = await BaseClient().dioPost('/chat/star-list/', null);
+    if (response != null) {
+      print("{STAR MESSAGES: ${response.toString()}}");
+      if (!response.isBlank) {
+        response.forEach((msg) {
+          print("{STAR MESSAGES SID: ${msg['message_sid'].toString()}}");
+          if (!starredMessages.contains(msg['message_sid'])) {
+            starredMessages.add(msg['message_sid']);
+          }
+        });
+      }
+    } else {
+      DialogHelper.showErrorToast(description: "Failed! Please try later.");
+    }
+    return [];
   }
 
   void msgControllerDispose() {

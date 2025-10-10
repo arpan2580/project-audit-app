@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jnk_app/consts/app_constants.dart';
 import 'package:jnk_app/controllers/base_controller.dart';
+import 'package:jnk_app/controllers/chat_controller.dart';
 import 'package:jnk_app/controllers/conversations_controller.dart';
+import 'package:jnk_app/controllers/messages_controller.dart';
 import 'package:jnk_app/views/dialogs/dialog_helper.dart';
 import 'package:jnk_app/views/screens/individual_chat_screen.dart';
 import 'package:jnk_app/views/widgets/agents_chat_widget.dart';
@@ -72,6 +74,27 @@ class AgentsChatScreen extends StatelessWidget {
                       //   DialogHelper.showErrorToast(description: "Unable to open chat.");
                       // }
                       if (conversation != null) {
+                        // Always dispose old controllers!
+                        if (Get.isRegistered<MessagesController>()) {
+                          Get.delete<MessagesController>();
+                        }
+                        if (Get.isRegistered<ChatController>()) {
+                          Get.delete<ChatController>();
+                        }
+
+                        // Create NEW controllers for the selected conversation/agent
+                        final chatController = Get.put(
+                          ChatController(), // create fresh instance
+                          permanent: false,
+                        );
+                        final msgController = Get.put(
+                          MessagesController(
+                            conversation,
+                            controller.client!,
+                            chatController,
+                          ),
+                          permanent: false,
+                        );
                         Get.to(
                           () => IndividualChatScreen(
                             name: agnt.name,

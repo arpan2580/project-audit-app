@@ -29,7 +29,11 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
   void initState() {
     super.initState();
     if (!Get.isRegistered<ChatController>()) {
-      chatController = Get.put(ChatController(), permanent: true);
+      chatController = Get.put(
+        ChatController(),
+        // permanent: true,
+        permanent: false,
+      );
     } else {
       chatController = Get.find<ChatController>();
     }
@@ -64,6 +68,9 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
                     : 'Show Starred Only',
                 onPressed: () {
                   chatController.toggleShowOnlyStarred();
+                  if (chatController.showOnlyStarred.value) {
+                    chatController.getStarredMessages();
+                  }
                   chatController.buildChatWidgets(
                     customMessages: chatController.filteredMessages,
                   );
