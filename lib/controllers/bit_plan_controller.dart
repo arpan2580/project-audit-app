@@ -64,6 +64,7 @@ class BitPlanController extends GetxController {
               'currentAudit',
               json.encode({
                 "outletId": item.id,
+                "startVisitUserId": item.lastVisit?.visitUserId,
                 "startTime": item.lastVisit?.startTime,
                 "latitude": item.lastVisit?.lat,
                 "longitude": item.lastVisit?.long,
@@ -80,16 +81,16 @@ class BitPlanController extends GetxController {
         if (storedAudit != null && storedAudit.isNotEmpty) {
           // Decode JSON to a Map
           final Map<String, dynamic> auditData = json.decode(storedAudit);
-
-          // Assign values to your reactive variables
-          BaseController.endTime.value =
-              ''; // Reset or fetch from API if needed
-          BaseController.isAuditStarted.value =
-              auditData['isAuditStarted'] ?? false;
-          BaseController.currAuditOutletId.value = auditData['outletId'] ?? 0;
-          BaseController.latitude.value = auditData['latitude'].toString();
-          BaseController.longitude.value = auditData['longitude'].toString();
-          BaseController.startTime.value = auditData['startTime'] ?? '';
+          if (auditData['startVisitUserId'] == BaseController.user.value?.id) {
+            BaseController.endTime.value =
+                ''; // Reset or fetch from API if needed
+            BaseController.isAuditStarted.value =
+                auditData['isAuditStarted'] ?? false;
+            BaseController.currAuditOutletId.value = auditData['outletId'] ?? 0;
+            BaseController.latitude.value = auditData['latitude'].toString();
+            BaseController.longitude.value = auditData['longitude'].toString();
+            BaseController.startTime.value = auditData['startTime'] ?? '';
+          }
         } else {
           print("No current audit data found in storage.");
         }
@@ -118,11 +119,11 @@ class BitPlanController extends GetxController {
     } else {
       if (BitPlanController.isViewAll.value) {
         filteredBit.value = bitPlan
-            .where((item) => item.olCode.toLowerCase().contains(query))
+            .where((item) => item.olName.toLowerCase().contains(query))
             .toList();
       } else {
         filteredBit.value = todaysBitPlan
-            .where((item) => item.olCode.toLowerCase().contains(query))
+            .where((item) => item.olName.toLowerCase().contains(query))
             .toList();
       }
     }

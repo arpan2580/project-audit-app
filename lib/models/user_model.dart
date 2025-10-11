@@ -13,7 +13,7 @@ class UserModel {
   final String twilioUserSid;
   final String twilioConversationSid;
   final Manager? manager;
-  final List<Agent>? managersUsers; // Keep dynamic if it's null or varying
+  final List<Agent>? managersUsers;
   final List<Agent>? adminUsers;
 
   UserModel({
@@ -35,7 +35,7 @@ class UserModel {
     this.adminUsers,
   });
 
-  /// Convert JSON to Model
+  // Convert JSON to Model
   factory UserModel.fromJson(Map<String, dynamic> json) {
     return UserModel(
       id: json['id'],
@@ -73,7 +73,7 @@ class UserModel {
     );
   }
 
-  /// Convert Model to JSON
+  // Convert Model to JSON
   Map<String, dynamic> toJson() {
     return {
       "id": id,
@@ -191,7 +191,7 @@ class Agent {
     };
   }
 
-  /// Helper method to parse a list of attendance records from JSON
+  // Helper method to parse a list of attendance records from JSON
   // static List<Agent> fromJsonList(List<dynamic> jsonList) {
   //   return jsonList.map((json) => Agent.fromJson(json)).toList();
   // }

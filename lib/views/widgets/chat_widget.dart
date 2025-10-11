@@ -52,22 +52,26 @@ class ChatWidget extends StatelessWidget {
                   ? CrossAxisAlignment.end
                   : CrossAxisAlignment.start,
               children: [
-                // (msg['isMe'])
-                //     ? Text(
-                //         BaseController.user.value!.name,
-                //         style: const TextStyle(
-                //           fontSize: 16,
-                //           fontWeight: FontWeight.w500,
-                //         ),
-                //       )
-                //     : Text(
-                //         msg['author'],
-                //         style: const TextStyle(
-                //           fontSize: 16,
-                //           fontWeight: FontWeight.w500,
-                //         ),
-                //       ),
-                // const SizedBox(height: 4),
+                (msg['isMe'])
+                    ?
+                      // Text(
+                      // BaseController.user.value!.name,
+                      // style: const TextStyle(
+                      //   fontSize: 14,
+                      //   fontWeight: FontWeight.w500,
+                      // ),
+                      // )
+                      SizedBox()
+                    : Text(
+                        msg['author'],
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                (msg['isMe'])
+                    ? const SizedBox(height: 0)
+                    : const SizedBox(height: 4),
                 (msg['isMedia'] == true && msg['text'] == '')
                     ? SizedBox(
                         width: 200,
@@ -146,6 +150,7 @@ class ChatWidget extends StatelessWidget {
                     child: buildReactChatWidget(
                       msg['id'],
                       msg['sid'],
+                      msg['isMe'],
                       context,
                       chatController,
                     ),
@@ -161,6 +166,7 @@ class ChatWidget extends StatelessWidget {
 Widget buildReactChatWidget(
   int messageId,
   String sid,
+  bool isMe,
   BuildContext context,
   ChatController chatController,
 ) {
@@ -184,28 +190,30 @@ Widget buildReactChatWidget(
                 color: AppConstants.secondaryColor,
                 size: 28.0,
               ),
-              isSelected: chatController.starredMessages.contains(messageId),
+              isSelected: chatController.starredMessages.contains(sid),
               selectedIcon: const Icon(
                 Icons.star,
                 color: AppConstants.logoBlueColor,
                 size: 28.0,
               ),
               onPressed: () {
-                // chatController.hideChatReactions();
                 chatController.toggleStarredMessage(messageId, sid);
-                print(messageId);
-                // Handle star reaction
-                print('Starred message $messageId');
               },
             ),
-            IconButton(
-              icon: const Icon(Icons.delete, color: Colors.red, size: 28.0),
-              onPressed: () {
-                chatController.hideChatReactions();
-                chatController.msgController.deleteMessageBySid(sid);
-                print('Deleted message $messageId - $sid');
-              },
-            ),
+            (isMe)
+                ? IconButton(
+                    icon: const Icon(
+                      Icons.delete,
+                      color: Colors.red,
+                      size: 28.0,
+                    ),
+                    onPressed: () {
+                      chatController.hideChatReactions();
+                      chatController.msgController.deleteMessageBySid(sid);
+                      print('Deleted message $messageId - $sid');
+                    },
+                  )
+                : SizedBox(),
           ],
         ),
       ),

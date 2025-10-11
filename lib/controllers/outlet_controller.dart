@@ -34,6 +34,7 @@ class OutletController extends GetxController {
             'currentAudit',
             json.encode({
               "outletId": id,
+              "startVisitUserId": BaseController.user.value?.id,
               "startTime": response['data']['start_time'],
               "latitude": lat,
               "longitude": long,

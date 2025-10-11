@@ -79,6 +79,7 @@ class BitPlanModel {
 
 class LastVisit {
   final int id;
+  final int visitUserId;
   final String date;
   final String? startTime;
   final String? endTime;
@@ -91,6 +92,7 @@ class LastVisit {
 
   LastVisit({
     required this.id,
+    required this.visitUserId,
     required this.date,
     this.startTime,
     this.endTime,
@@ -105,6 +107,7 @@ class LastVisit {
   factory LastVisit.fromJson(Map<String, dynamic> json) {
     return LastVisit(
       id: json['id'] ?? 0,
+      visitUserId: json['user_id'] ?? 0,
       date: json['date'] ?? '',
       startTime: json['start_time'],
       endTime: json['end_time'],
@@ -120,6 +123,7 @@ class LastVisit {
   Map<String, dynamic> toJson() {
     return {
       "id": id,
+      "user_id": visitUserId,
       "date": date,
       "start_time": startTime,
       "end_time": endTime,

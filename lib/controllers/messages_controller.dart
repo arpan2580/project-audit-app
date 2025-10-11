@@ -20,6 +20,7 @@ class MessagesController extends GetxController {
   static final isLoading = true.obs;
   final isSendingMessage = false.obs;
   final isError = false.obs;
+  RxBool isLoaded = false.obs;
 
   late Conversation conversation;
   late ConversationClient client;
@@ -49,7 +50,7 @@ class MessagesController extends GetxController {
         final existingIndex = chatController.messages.indexWhere(
           (m) => m['sid'] == sid,
         );
-
+        var userName = getUserNameFromIdentity(msg.author);
         final newMap = {
           'id': msg.messageIndex ?? 0,
           'sid': sid,
@@ -57,7 +58,7 @@ class MessagesController extends GetxController {
           'time':
               msg.dateCreated?.toLocal().toString() ??
               DateTime.now().toString(),
-          'author': msg.author ?? 'Admin',
+          'author': userName ?? 'Admin',
           'isMe': msg.author == client.myIdentity,
           'isMedia': msg.type == MessageType.MEDIA,
           'isLocal': false,
@@ -143,6 +144,7 @@ class MessagesController extends GetxController {
 
   Future<void> loadMessages() async {
     isLoading.value = true;
+    isLoaded.value = false;
     try {
       final total = await conversation.getMessagesCount() ?? 0;
       if (total == 0) {
@@ -164,6 +166,7 @@ class MessagesController extends GetxController {
 
       await conversation.setAllMessagesRead();
       messages.refresh();
+      isLoaded.value = true;
     } catch (e) {
       print('loadMessages error: $e');
     } finally {
@@ -318,6 +321,15 @@ class MessagesController extends GetxController {
         await conversation.removeMessage(msg); // Twilio API call
         messages.remove(msg); // Update local list immediately
         messages.refresh();
+        final int chatIdx = chatController.messages.indexWhere(
+          (m) => m['sid'] == messageSid,
+        );
+        if (chatIdx != -1) {
+          chatController.messages.removeAt(chatIdx);
+          chatController.messages.refresh();
+        }
+
+        chatController.buildChatWidgets();
       }
     } catch (e) {
       print('Error deleting message: $e');
@@ -340,6 +352,23 @@ class MessagesController extends GetxController {
         listScrollController.jumpTo(pos);
       }
     });
+  }
+
+  String? getUserNameFromIdentity(String? userIdentity) {
+    if (userIdentity != null) {
+      final parts = userIdentity.split('-');
+      if (parts.length < 3) return null;
+      final idPart = parts.last;
+      final int? userId = int.tryParse(idPart);
+      if (userId == null) return null;
+      final user = BaseController.chatUsers.firstWhere(
+        (u) => u?.id == userId,
+        orElse: () => null,
+      );
+      return user?.name;
+    } else {
+      return null;
+    }
   }
 
   @override

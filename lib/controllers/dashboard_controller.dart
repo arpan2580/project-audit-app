@@ -37,6 +37,12 @@ class DashboardController extends GetxController {
       BaseController.user.value = UserModel.fromJson(
         BaseController.storeToken.read("user_data"),
       );
+      BaseController.chatUsers.value = [
+        if (BaseController.user.value?.manager != null)
+          BaseController.user.value?.manager,
+        ...(BaseController.user.value?.managersUsers ?? []),
+        ...(BaseController.user.value?.adminUsers ?? []),
+      ];
     } else {
       DialogHelper.showErrorToast(
         description: "Your session has expired. Please log in again.",

@@ -57,6 +57,7 @@ class BaseController {
   static RxBool isChatInitialized = false.obs;
   static RxBool showReload = true.obs;
   static Rx<int> unreadMessages = 0.obs;
+  static RxList chatUsers = [].obs;
   // static RxInt timerCountdown = 60.obs;
   // static RxBool isCountdownEnd = false.obs;
   // static RxBool otpScreen = false.obs;
@@ -72,7 +73,6 @@ class BaseController {
   // static RxBool isSearchApplied = false.obs;
   // static RxString searchString = ''.obs;
 
-  // static RxList isLikedPost = [].obs;
   // static RxList likedFeedbackId = [].obs;
   // static RxList postLikedCount = [].obs;
 

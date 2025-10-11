@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -15,7 +13,7 @@ class ChatController extends GetxController {
   late MessagesController msgController;
   RxBool showChatReactions = false.obs;
   RxInt selectedChat = (-1).obs; // -1 to indicate none selected
-  RxSet<int> starredMessages = <int>{}.obs;
+  RxSet<String> starredMessages = <String>{}.obs;
   RxBool showOnlyStarred = false.obs;
   final RxList<Widget> chatWidgets = <Widget>[].obs;
 
@@ -91,7 +89,8 @@ class ChatController extends GetxController {
     chatWidgets.clear();
     lastDateGroup = null;
     final List<Map<String, dynamic>> displayMessages =
-        customMessages ?? sortedMessages;
+        // customMessages ?? sortedMessages;
+        customMessages ?? filteredMessages;
 
     for (var msg in displayMessages) {
       final dateTime = DateTime.parse(msg['time']);
@@ -134,10 +133,10 @@ class ChatController extends GetxController {
 
   void toggleStarredMessage(int messageId, String sid) {
     controller.toggleStar(msgController.conversation.sid, sid);
-    if (starredMessages.contains(messageId)) {
-      starredMessages.remove(messageId);
+    if (starredMessages.contains(sid)) {
+      starredMessages.remove(sid);
     } else {
-      starredMessages.add(messageId);
+      starredMessages.add(sid);
     }
   }
 
@@ -148,7 +147,7 @@ class ChatController extends GetxController {
   List<Map<String, dynamic>> get filteredMessages {
     if (showOnlyStarred.value) {
       return sortedMessages
-          .where((msg) => starredMessages.contains(msg['id']))
+          .where((msg) => starredMessages.contains(msg['sid']))
           .toList();
     } else {
       return sortedMessages;
@@ -159,14 +158,17 @@ class ChatController extends GetxController {
   Future<List<dynamic>> getStarredMessages() async {
     var response = await BaseClient().dioPost('/chat/star-list/', null);
     if (response != null) {
-      print("{STAR MESSAGES: ${jsonEncode(response)}}");
-      if (!response.isBlank) {
-        response.forEach((msg) {
-          print("{STAR MESSAGES SID: ${msg['message_sid'].toString()}}");
-          if (!starredMessages.contains(msg['message_sid'])) {
-            starredMessages.add(msg['message_sid']);
+      print("{STAR MESSAGES: ${response['starred_messages']}}");
+      if (response['starred_messages'] != null) {
+        response['starred_messages'].forEach((responseMsg) {
+          if (responseMsg['conversation_sid'] ==
+              msgController.conversation.sid) {
+            if (!starredMessages.contains(responseMsg['message_sid'])) {
+              starredMessages.add(responseMsg['message_sid']);
+            }
           }
         });
+        print("{STAR MESSAGES SID: ${starredMessages.toString()}}");
       }
     } else {
       DialogHelper.showErrorToast(description: "Failed! Please try later.");

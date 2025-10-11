@@ -727,23 +727,29 @@ class OutletDetailsScreen extends StatelessWidget {
                                                                     .decode(
                                                                       storedAudit,
                                                                     );
-                                                                outletController.endAudit(
-                                                                  BaseController
-                                                                      .currentLocation
-                                                                      .value
-                                                                      .latitude
-                                                                      .toStringAsFixed(
-                                                                        6,
-                                                                      ),
-                                                                  BaseController
-                                                                      .currentLocation
-                                                                      .value
-                                                                      .longitude
-                                                                      .toStringAsFixed(
-                                                                        6,
-                                                                      ),
-                                                                  auditData['visitId'],
-                                                                );
+                                                                if (auditData['startVisitUserId'] ==
+                                                                    BaseController
+                                                                        .user
+                                                                        .value
+                                                                        ?.id) {
+                                                                  outletController.endAudit(
+                                                                    BaseController
+                                                                        .currentLocation
+                                                                        .value
+                                                                        .latitude
+                                                                        .toStringAsFixed(
+                                                                          6,
+                                                                        ),
+                                                                    BaseController
+                                                                        .currentLocation
+                                                                        .value
+                                                                        .longitude
+                                                                        .toStringAsFixed(
+                                                                          6,
+                                                                        ),
+                                                                    auditData['visitId'],
+                                                                  );
+                                                                }
                                                               }
                                                             }
                                                           },

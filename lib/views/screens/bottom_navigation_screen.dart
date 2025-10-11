@@ -264,7 +264,16 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
             },
             backgroundColor: AppConstants.logoBlueColor,
             shape: const CircleBorder(),
-            child: SvgPicture.asset('assets/icons/Chat-icon.svg', height: 28.0),
+            child: Obx(
+              () => (BaseController.isChatInitialized.value)
+                  ? SvgPicture.asset('assets/icons/Chat-icon.svg', height: 28.0)
+                  : Center(
+                      child: CircularProgressIndicator.adaptive(
+                        strokeWidth: 2.0,
+                        padding: EdgeInsets.all(15.0),
+                      ),
+                    ),
+            ),
           ),
 
           Obx(

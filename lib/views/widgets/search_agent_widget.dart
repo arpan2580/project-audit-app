@@ -1,30 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:jnk_app/consts/app_constants.dart';
+import 'package:jnk_app/controllers/agents_chat_controller.dart';
 import 'package:jnk_app/controllers/base_controller.dart';
-import 'package:jnk_app/controllers/bit_plan_controller.dart';
 
-class SearchOutletWidget extends StatelessWidget {
-  final BitPlanController controller;
-  const SearchOutletWidget({super.key, required this.controller});
+class SearchAgentWidget extends StatelessWidget {
+  final AgentsChatController controller;
+  const SearchAgentWidget({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(left: 8.0, right: 8.0),
+      padding: const EdgeInsets.only(top: 10.0, left: 10.0, right: 10.0),
       child: TextField(
         onTap: () {
           BaseController.showOptions.value = false;
         },
         onChanged: (value) {
           if (value == '') {
-            BitPlanController.txtSearchOutlet.clear();
-            BitPlanController.isSearch.value = false;
+            AgentsChatController.txtSearchAgent.clear();
+            AgentsChatController.isSearch.value = false;
             controller.clearSearch();
           }
         },
-        controller: BitPlanController.txtSearchOutlet,
+        controller: AgentsChatController.txtSearchAgent,
         decoration: InputDecoration(
-          hintText: 'Search Outlet',
+          hintText: 'Search Agent',
           hintStyle: TextStyle(color: Colors.grey),
           prefixIcon: Padding(
             padding: const EdgeInsets.only(
@@ -33,17 +34,21 @@ class SearchOutletWidget extends StatelessWidget {
               right: 4.0,
               bottom: 8.0,
             ),
-            child: Image.asset('assets/icons/store-icon.png', height: 20.0),
+            child: SvgPicture.asset(
+              'assets/icons/Profile.svg',
+              height: 20,
+              // width: 28.0,
+            ),
           ),
-          suffixIcon: !BitPlanController.isSearch.value
+          suffixIcon: !AgentsChatController.isSearch.value
               ? IconButton(
                   onPressed: () {
-                    if (BitPlanController.txtSearchOutlet.text.isNotEmpty) {
-                      BitPlanController.isSearch.value = true;
+                    if (AgentsChatController.txtSearchAgent.text.isNotEmpty) {
+                      AgentsChatController.isSearch.value = true;
                       controller.searchOutlet();
                     } else {
-                      BitPlanController.txtSearchOutlet.clear();
-                      BitPlanController.isSearch.value = false;
+                      AgentsChatController.txtSearchAgent.clear();
+                      AgentsChatController.isSearch.value = false;
                       controller.clearSearch();
                     }
                   },
@@ -55,9 +60,9 @@ class SearchOutletWidget extends StatelessWidget {
                 )
               : IconButton(
                   onPressed: () {
-                    // if (BitPlanController.txtSearchOutlet.text.isNotEmpty) {
-                    BitPlanController.txtSearchOutlet.clear();
-                    BitPlanController.isSearch.value = false;
+                    // if (AgentsChatController.txtSearchAgent.text.isNotEmpty) {
+                    AgentsChatController.txtSearchAgent.clear();
+                    AgentsChatController.isSearch.value = false;
                     controller.clearSearch();
                     // }
                   },

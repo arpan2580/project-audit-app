@@ -39,6 +39,13 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
     }
     msgController = Get.find<MessagesController>();
     msgController.initConversation(widget.conversation);
+
+    ever(msgController.isLoaded, (loaded) async {
+      if (loaded == true) {
+        await chatController.getStarredMessages();
+        chatController.buildChatWidgets();
+      }
+    });
   }
 
   @override
@@ -69,7 +76,7 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
                 onPressed: () {
                   chatController.toggleShowOnlyStarred();
                   if (chatController.showOnlyStarred.value) {
-                    chatController.getStarredMessages();
+                    // chatController.getStarredMessages();
                   }
                   chatController.buildChatWidgets(
                     customMessages: chatController.filteredMessages,
