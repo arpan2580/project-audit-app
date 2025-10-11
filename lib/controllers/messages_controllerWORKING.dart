@@ -42,6 +42,29 @@ class MessagesController extends GetxController {
     loadMessages();
   }
 
+  /// Binds MessagesController -> ChatController in real time
+  // void _bindReactiveMessageSync() {
+  //   ever<List<Message>>(messages, (_) {
+  //     final mapped = messages.map((msg) {
+  //       return {
+  //         'id': msg.messageIndex ?? 0,
+  //         'sid': msg.sid ?? '',
+  //         'text': msg.type == MessageType.MEDIA ? '' : (msg.body ?? ''),
+  //         'time': msg.dateCreated != null
+  //             ? msg.dateCreated!.toLocal().toString()
+  //             : DateTime.now().toString(),
+  //         'author': msg.author ?? 'Admin',
+  //         'isMe': msg.author == client.myIdentity,
+  //         'isMedia': msg.type == MessageType.MEDIA,
+  //         'isLocal': true,
+  //       };
+  //     }).toList();
+
+  //     chatController.messages.assignAll(mapped);
+  //     chatController.buildChatWidgets();
+  //   });
+  // }
+
   void _bindReactiveMessageSync() {
     ever<List<Message>>(messages, (_) {
       for (final msg in messages) {
@@ -83,7 +106,7 @@ class MessagesController extends GetxController {
     });
   }
 
-  // Initializes Twilio event listeners
+  /// Initializes Twilio event listeners
   void _initializeListeners() {
     // onMessageAdded
     subscriptions.add(
@@ -152,7 +175,7 @@ class MessagesController extends GetxController {
 
       final lastMsgs = await conversation.getLastMessages(total);
 
-      // Only add missing messages
+      // Only add missing messages (avoid reloading entire list)
       for (final msg in lastMsgs.reversed) {
         if (!messages.any((m) => m.sid == msg.sid)) {
           messages.add(msg);
@@ -171,8 +194,39 @@ class MessagesController extends GetxController {
     }
   }
 
+  // void loadMessages() async {
+  //   isLoading.value = true;
+  //   final total = await conversation.getMessagesCount() ?? 0;
+  //   final lastMsgs = await conversation.getLastMessages(total);
+  //   messages.assignAll(lastMsgs.reversed);
+
+  //   for (final msg in messages) {
+  //     if (msg.type == MessageType.MEDIA) _getMedia(msg);
+  //   }
+
+  //   await conversation.setAllMessagesRead();
+  //   isLoading.value = false;
+  // }
+
+  // void initConversation(Conversation conversation) async {
+  //   this.conversation = conversation;
+
+  //   // Ensure messages are synchronized
+  //   if (conversation.synchronizationStatus !=
+  //       ConversationSynchronizationStatus.ALL) {
+  //     int retries = 0;
+  //     while (conversation.synchronizationStatus !=
+  //             ConversationSynchronizationStatus.ALL &&
+  //         retries < 10) {
+  //       await Future.delayed(const Duration(milliseconds: 500));
+  //       retries++;
+  //     }
+  //   }
+  //   loadMessages();
+  // }
+
   Future<void> initConversation(Conversation newConversation) async {
-    // Cancel all previous subscriptions so old conversation streams stop flowing
+    // Cancel all previous subscriptions (so old conversation streams stop flowing)
     for (final sub in subscriptions) {
       try {
         await sub.cancel();
@@ -200,7 +254,8 @@ class MessagesController extends GetxController {
         retries++;
       }
     }
-    // load messages for the new conversation
+
+    // Now load messages for the new conversation
     loadMessages();
   }
 

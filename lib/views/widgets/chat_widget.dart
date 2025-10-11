@@ -19,12 +19,6 @@ class ChatWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // if (msg['isMedia'] == true) {
-    //   final path = msg['text'];
-    //   final isLocal = path.toString().startsWith('/');
-    // } else {
-    //   return Text(msg['text']);
-    // }
     return GestureDetector(
       onLongPress: () {
         // Toggle the visibility of chat reactions
@@ -128,7 +122,6 @@ class ChatWidget extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Text(
-                      // msg['time'],
                       timeStr,
                       style: TextStyle(
                         fontSize: 12,
@@ -162,14 +155,6 @@ class ChatWidget extends StatelessWidget {
         ],
       ),
     );
-    // );
-
-    // return chatWidgets.isNotEmpty
-    //     ? Column(
-    //         crossAxisAlignment: CrossAxisAlignment.start,
-    //         children: chatWidgets,
-    //       )
-    //     : const SizedBox.shrink();
   }
 }
 

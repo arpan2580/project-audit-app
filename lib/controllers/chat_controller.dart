@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -157,7 +159,7 @@ class ChatController extends GetxController {
   Future<List<dynamic>> getStarredMessages() async {
     var response = await BaseClient().dioPost('/chat/star-list/', null);
     if (response != null) {
-      print("{STAR MESSAGES: ${response.toString()}}");
+      print("{STAR MESSAGES: ${jsonEncode(response)}}");
       if (!response.isBlank) {
         response.forEach((msg) {
           print("{STAR MESSAGES SID: ${msg['message_sid'].toString()}}");

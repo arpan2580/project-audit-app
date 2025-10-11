@@ -8,7 +8,6 @@ import 'package:jnk_app/models/dashboard_model.dart';
 import 'package:jnk_app/models/user_model.dart';
 import 'package:jnk_app/services/base_client.dart';
 import 'package:jnk_app/views/dialogs/dialog_helper.dart';
-import 'package:jnk_app/views/screens/login_screen.dart';
 
 class DashboardController extends GetxController {
   static Rxn<DashboardModel> dashboard = Rxn<DashboardModel>();
@@ -42,7 +41,7 @@ class DashboardController extends GetxController {
       DialogHelper.showErrorToast(
         description: "Your session has expired. Please log in again.",
       );
-      Get.offAll(() => LoginScreen());
+      // Get.offAll(() => LoginScreen());
     }
   }
 
