@@ -51,6 +51,7 @@ class MessagesController extends GetxController {
           (m) => m['sid'] == sid,
         );
         var userName = getUserNameFromIdentity(msg.author);
+        var profilePicUrl = getPicUrlFromIdentity(msg.author);
         final newMap = {
           'id': msg.messageIndex ?? 0,
           'sid': sid,
@@ -59,6 +60,7 @@ class MessagesController extends GetxController {
               msg.dateCreated?.toLocal().toString() ??
               DateTime.now().toString(),
           'author': userName ?? 'Admin',
+          'profilePic': profilePicUrl ?? '',
           'isMe': msg.author == client.myIdentity,
           'isMedia': msg.type == MessageType.MEDIA,
           'isLocal': false,
@@ -366,6 +368,23 @@ class MessagesController extends GetxController {
         orElse: () => null,
       );
       return user?.name;
+    } else {
+      return null;
+    }
+  }
+
+  String? getPicUrlFromIdentity(String? userIdentity) {
+    if (userIdentity != null) {
+      final parts = userIdentity.split('-');
+      if (parts.length < 3) return null;
+      final idPart = parts.last;
+      final int? userId = int.tryParse(idPart);
+      if (userId == null) return null;
+      final user = BaseController.chatUsers.firstWhere(
+        (u) => u?.id == userId,
+        orElse: () => null,
+      );
+      return user?.avatar;
     } else {
       return null;
     }
