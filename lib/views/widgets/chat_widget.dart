@@ -40,7 +40,6 @@ class ChatWidget extends StatelessWidget {
                   : Padding(
                       padding: const EdgeInsets.only(left: 5.0, top: 4.0),
                       child: CircleAvatar(
-                        //  backgroundImage: AssetImage(AppConstants.profilePlaceholder),
                         backgroundColor: Colors.transparent,
                         child: ClipOval(
                           child: CachedNetworkImage(
@@ -56,123 +55,128 @@ class ChatWidget extends StatelessWidget {
                         ),
                       ),
                     ),
-              Container(
-                margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: msg['isMe']
-                      ? const Color(0xFFD9FDD3) // light green
-                      : Colors.white,
-                  borderRadius: BorderRadius.only(
-                    topLeft: msg['isMe']
-                        ? const Radius.circular(12)
-                        : Radius.zero,
-                    topRight: const Radius.circular(12),
-                    bottomLeft: const Radius.circular(12),
-                    bottomRight: msg['isMe']
-                        ? Radius.zero
-                        : const Radius.circular(12),
+              Flexible(
+                child: Container(
+                  margin: const EdgeInsets.symmetric(
+                    vertical: 4,
+                    horizontal: 8,
                   ),
-                ),
-                child: Column(
-                  crossAxisAlignment: (msg['isMe'])
-                      ? CrossAxisAlignment.end
-                      : CrossAxisAlignment.start,
-                  children: [
-                    (msg['isMe'])
-                        ?
-                          // Text(
-                          // BaseController.user.value!.name,
-                          // style: const TextStyle(
-                          //   fontSize: 14,
-                          //   fontWeight: FontWeight.w500,
-                          // ),
-                          // )
-                          SizedBox()
-                        : Text(
-                            msg['author'],
-                            style: const TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                            ),
-                          ),
-                    (msg['isMe'])
-                        ? const SizedBox(height: 0)
-                        : const SizedBox(height: 4),
-                    (msg['isMedia'] == true && msg['text'] == '')
-                        ? SizedBox(
-                            width: 200,
-                            height: 100,
-                            child: Center(
-                              child: CircularProgressIndicator.adaptive(),
-                            ),
-                          )
-                        : (msg['isMedia'] == true && msg['text'] != '')
-                        ? GestureDetector(
-                            onTap: () {
-                              if (msg['isLocal']) {
-                                Get.to(
-                                  () => ImageViewScreen(
-                                    imageUrl: msg['text'],
-                                    isLocal: true,
-                                  ),
-                                );
-                              } else {
-                                Get.to(
-                                  () => ImageViewScreen(
-                                    imageUrl: msg['text'],
-                                    isLocal: false,
-                                  ),
-                                );
-                              }
-                            },
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: (msg['isLocal'])
-                                  ? Image.file(
-                                      File(msg['text']),
-                                      width: 200,
-                                      height: 200,
-                                      fit: BoxFit.cover,
-                                    )
-                                  : Image.network(
-                                      msg['text'],
-                                      errorBuilder:
-                                          (context, error, stackTrace) {
-                                            return const Icon(Icons.error);
-                                          },
-                                      width: 200,
-                                      height: 200,
-                                      fit: BoxFit.cover,
-                                    ),
-                            ),
-                          )
-                        : Text(
-                            msg['text'],
-                            style: const TextStyle(fontSize: 16),
-                          ),
-                    const SizedBox(height: 4),
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        Text(
-                          timeStr,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                        // if (msg['isMe']) ...[
-                        //   const SizedBox(width: 4),
-                        //   const Icon(Icons.done_all, size: 16, color: Colors.grey),
-                        // ],
-                      ],
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: msg['isMe']
+                        ? const Color(0xFFD9FDD3) // light green
+                        : Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: msg['isMe']
+                          ? const Radius.circular(12)
+                          : Radius.zero,
+                      topRight: const Radius.circular(12),
+                      bottomLeft: const Radius.circular(12),
+                      bottomRight: msg['isMe']
+                          ? Radius.zero
+                          : const Radius.circular(12),
                     ),
-                  ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: (msg['isMe'])
+                        ? CrossAxisAlignment.end
+                        : CrossAxisAlignment.start,
+                    children: [
+                      (msg['isMe'])
+                          ?
+                            // Text(
+                            // BaseController.user.value!.name,
+                            // style: const TextStyle(
+                            //   fontSize: 14,
+                            //   fontWeight: FontWeight.w500,
+                            // ),
+                            // )
+                            SizedBox()
+                          : Text(
+                              msg['author'],
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                      (msg['isMe'])
+                          ? const SizedBox(height: 0)
+                          : const SizedBox(height: 4),
+                      (msg['isMedia'] == true && msg['text'] == '')
+                          ? SizedBox(
+                              width: 200,
+                              height: 100,
+                              child: Center(
+                                child: CircularProgressIndicator.adaptive(),
+                              ),
+                            )
+                          : (msg['isMedia'] == true && msg['text'] != '')
+                          ? GestureDetector(
+                              onTap: () {
+                                if (msg['isLocal']) {
+                                  Get.to(
+                                    () => ImageViewScreen(
+                                      imageUrl: msg['text'],
+                                      isLocal: true,
+                                    ),
+                                  );
+                                } else {
+                                  Get.to(
+                                    () => ImageViewScreen(
+                                      imageUrl: msg['text'],
+                                      isLocal: false,
+                                    ),
+                                  );
+                                }
+                              },
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: (msg['isLocal'])
+                                    ? Image.file(
+                                        File(msg['text']),
+                                        width: 200,
+                                        height: 200,
+                                        fit: BoxFit.cover,
+                                      )
+                                    : Image.network(
+                                        msg['text'],
+                                        errorBuilder:
+                                            (context, error, stackTrace) {
+                                              return const Icon(Icons.error);
+                                            },
+                                        width: 200,
+                                        height: 200,
+                                        fit: BoxFit.cover,
+                                      ),
+                              ),
+                            )
+                          : Text(
+                              msg['text'],
+                              style: const TextStyle(fontSize: 16),
+                            ),
+                      const SizedBox(height: 4),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          Text(
+                            timeStr,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                          // if (msg['isMe']) ...[
+                          //   const SizedBox(width: 4),
+                          //   const Icon(Icons.done_all, size: 16, color: Colors.grey),
+                          // ],
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],

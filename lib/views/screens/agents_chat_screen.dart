@@ -16,6 +16,7 @@ class AgentsChatScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final controller = Get.find<ConversationsController>();
     final AgentsChatController agentsChatController = Get.put(
       AgentsChatController(),
     );
@@ -59,74 +60,79 @@ class AgentsChatScreen extends StatelessWidget {
                     itemCount: agentsChatController.filteredAgents.length,
                     itemBuilder: (BuildContext context, int index) {
                       final agnt = agentsChatController.filteredAgents[index];
-                      return GestureDetector(
-                        onTap: () async {
-                          final conversationSid = agnt.twilioConversationSid;
-                          final controller =
-                              Get.find<ConversationsController>();
-                          BaseController.showLoading();
-                          // Ensure client is initialized
-                          if (!controller.isClientInitialized.value) {
-                            await controller.fetchAccessToken().then((
-                              token,
-                            ) async {
-                              if (token != null) {
-                                await controller.create(jwtToken: token);
+                      return Obx(() {
+                        final sid = agnt.twilioConversationSid;
+                        final unread = controller.unreadMessageCounts[sid] ?? 0;
+                        return GestureDetector(
+                          onTap: () async {
+                            final conversationSid = agnt.twilioConversationSid;
+                            // final controller =
+                            //     Get.find<ConversationsController>();
+                            BaseController.showLoading();
+                            // Ensure client is initialized
+                            if (!controller.isClientInitialized.value) {
+                              await controller.fetchAccessToken().then((
+                                token,
+                              ) async {
+                                if (token != null) {
+                                  await controller.create(jwtToken: token);
+                                }
+                              });
+                            }
+
+                            // Fetch or join the conversation
+                            final conversation = await controller
+                                .getOrJoinConversation(conversationSid);
+
+                            // if (conversation != null) {
+                            //   Get.to(() => ChatScreen(conversation: conversation));
+                            // } else {
+                            //   DialogHelper.showErrorToast(description: "Unable to open chat.");
+                            // }
+                            if (conversation != null) {
+                              // Always dispose old controllers!
+                              if (Get.isRegistered<MessagesController>()) {
+                                Get.delete<MessagesController>();
                               }
-                            });
-                          }
+                              if (Get.isRegistered<ChatController>()) {
+                                Get.delete<ChatController>();
+                              }
 
-                          // Fetch or join the conversation
-                          final conversation = await controller
-                              .getOrJoinConversation(conversationSid);
-
-                          // if (conversation != null) {
-                          //   Get.to(() => ChatScreen(conversation: conversation));
-                          // } else {
-                          //   DialogHelper.showErrorToast(description: "Unable to open chat.");
-                          // }
-                          if (conversation != null) {
-                            // Always dispose old controllers!
-                            if (Get.isRegistered<MessagesController>()) {
-                              Get.delete<MessagesController>();
+                              // Create NEW controllers for the selected conversation/agent
+                              final chatController = Get.put(
+                                ChatController(), // create fresh instance
+                                permanent: false,
+                              );
+                              Get.put(
+                                MessagesController(
+                                  conversation,
+                                  controller.client!,
+                                  chatController,
+                                ),
+                                permanent: false,
+                              );
+                              Get.to(
+                                () => IndividualChatScreen(
+                                  name: agnt.name,
+                                  profilePicUrl: agnt.avatar,
+                                  conversation: conversation,
+                                ),
+                              );
+                            } else {
+                              DialogHelper.showErrorToast(
+                                description: "Unable to open chat.",
+                              );
                             }
-                            if (Get.isRegistered<ChatController>()) {
-                              Get.delete<ChatController>();
-                            }
-
-                            // Create NEW controllers for the selected conversation/agent
-                            final chatController = Get.put(
-                              ChatController(), // create fresh instance
-                              permanent: false,
-                            );
-                            Get.put(
-                              MessagesController(
-                                conversation,
-                                controller.client!,
-                                chatController,
-                              ),
-                              permanent: false,
-                            );
-                            Get.to(
-                              () => IndividualChatScreen(
-                                name: agnt.name,
-                                profilePicUrl: agnt.avatar,
-                                conversation: conversation,
-                              ),
-                            );
-                          } else {
-                            DialogHelper.showErrorToast(
-                              description: "Unable to open chat.",
-                            );
-                          }
-                        },
-                        child: AgentsChatWidget(
-                          agentName: agnt.name,
-                          agentProfilePic: agnt.avatar,
-                          lastMessage: agnt.empCode,
-                          lastActive: '',
-                        ),
-                      );
+                          },
+                          child: AgentsChatWidget(
+                            agentName: agnt.name,
+                            agentProfilePic: agnt.avatar,
+                            lastMessage: agnt.empCode,
+                            lastActive: '',
+                            unreadCount: unread,
+                          ),
+                        );
+                      });
                     },
                   ),
                 ],

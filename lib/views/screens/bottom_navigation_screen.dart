@@ -276,16 +276,17 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
             ),
           ),
 
-          Obx(
-            () => CircleAvatar(
-              radius: (BaseController.unreadMessages.value > 0) ? 13 : 0,
+          Obx(() {
+            int unreadCount = BaseController.unreadMessages.value;
+            return CircleAvatar(
+              radius: (BaseController.unreadMessages.value > 0) ? 14 : 0,
               backgroundColor: AppConstants.primaryColor,
               child: Text(
-                BaseController.unreadMessages.value.toString(),
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                unreadCount > 99 ? '99+' : unreadCount.toString(),
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
               ),
-            ),
-          ),
+            );
+          }),
         ],
       ),
 

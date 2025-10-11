@@ -101,11 +101,16 @@ class ConversationsController extends GetxController {
         for (var conversation in myConversations) {
           int unreadMessages = 0;
           try {
-            final totalMessages = await conversation.getMessagesCount() ?? 0;
-            final lastReadIndex = conversation.lastReadMessageIndex;
-            unreadMessages = (lastReadIndex != null && lastReadIndex >= 0)
-                ? ((totalMessages - 1) - lastReadIndex)
-                : totalMessages;
+            final unread = await conversation.getUnreadMessagesCount();
+            // if (unread != null) {
+            unreadMessages = unread;
+            // } else {
+            //   // Fallback: manual safe calculation
+            //   final total = await conversation.getMessagesCount() ?? 0;
+            //   final lastRead = conversation.lastReadMessageIndex ?? -1;
+            //   final calc = total - (lastRead + 1);
+            //   unreadMessages = calc < 0 ? 0 : calc;
+            // }
           } catch (_) {
             unreadMessages = 0;
           }
@@ -115,15 +120,10 @@ class ConversationsController extends GetxController {
         }
 
         unreadMessageCounts.refresh();
+        updateTotalUnreadCount();
 
-        final activeSid = BaseController.user.value?.twilioConversationSid;
-        if (activeSid != null) {
-          BaseController.unreadMessages.value =
-              unreadMessageCounts[activeSid] != null
-              ? BaseController.unreadMessages.value +
-                    unreadMessageCounts[activeSid]!
-              : 0;
-        }
+        print("REFRESHED CONVERSATIONS: ${conversations.length}");
+        print("UNREAD COUNTS MAP: $unreadMessageCounts");
       }
     } catch (e) {
       print("Error refreshing conversations: $e");
@@ -203,19 +203,17 @@ class ConversationsController extends GetxController {
       return;
     }
 
-    print('Attaching message listeners for ${conversation.sid}');
-
     final sub = conversation.onMessageAdded.listen((event) async {
       print('New message in ${conversation.sid}');
       // Update unread count for this conversation only
       try {
-        final totalMessages = await conversation.getMessagesCount() ?? 0;
-        final lastReadIndex = conversation.lastReadMessageIndex;
-        final unread = (lastReadIndex != null && lastReadIndex >= 0)
-            ? ((totalMessages - 1) - lastReadIndex)
-            : totalMessages;
+        int unread = 0;
+        final unreadFromSdk = await conversation.getUnreadMessagesCount();
+        unread = unreadFromSdk;
+
         unreadMessageCounts[conversation.sid] = unread;
         unreadMessageCounts.refresh();
+        updateTotalUnreadCount();
       } catch (e) {
         print('Unread update error: $e');
       }
@@ -307,6 +305,40 @@ class ConversationsController extends GetxController {
   Future<void> updateFriendlyName() async {
     final myUser = await TwilioConversations.conversationClient?.getMyUser();
     friendlyName.value = myUser?.friendlyName ?? '';
+  }
+
+  void updateTotalUnreadCount() {
+    final user = BaseController.user.value;
+    if (user == null) return;
+
+    int totalUnread = 0;
+
+    if (user.role == 'agnt') {
+      // Single conversation SID
+      final sid = user.twilioConversationSid;
+      if (unreadMessageCounts.containsKey(sid)) {
+        totalUnread = unreadMessageCounts[sid] ?? 0;
+      }
+    } else if (user.role == 'mngr') {
+      // For manager, collect all assigned conversation SIDs
+      final managerConversationSid = user.twilioConversationSid;
+      final agentConversations = [
+        ...?user.managersUsers?.map((u) => u.twilioConversationSid),
+        ...?user.adminUsers?.map((u) => u.twilioConversationSid),
+      ].whereType<String>();
+
+      final allSids = {managerConversationSid, ...agentConversations};
+
+      for (final sid in allSids) {
+        totalUnread += unreadMessageCounts[sid] ?? 0;
+      }
+    }
+
+    BaseController.unreadMessages.value = totalUnread;
+
+    print("🧮 Recalculating unread for role: ${user.role}");
+    print("Unread Map Snapshot: $unreadMessageCounts");
+    print("Calculated Total Unread = $totalUnread");
   }
 
   @override

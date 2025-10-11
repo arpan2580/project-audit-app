@@ -7,12 +7,14 @@ class AgentsChatWidget extends StatelessWidget {
   final String agentName;
   final String lastMessage;
   final String lastActive;
+  final int unreadCount;
   const AgentsChatWidget({
     super.key,
     required this.agentName,
     required this.agentProfilePic,
     required this.lastMessage,
     required this.lastActive,
+    this.unreadCount = 0,
   });
 
   @override
@@ -26,7 +28,6 @@ class AgentsChatWidget extends StatelessWidget {
       child: ListTile(
         leading: CircleAvatar(
           radius: 30,
-          //  backgroundImage: AssetImage(AppConstants.profilePlaceholder),
           backgroundColor: Colors.transparent,
           child: ClipOval(
             child: CachedNetworkImage(
@@ -35,7 +36,7 @@ class AgentsChatWidget extends StatelessWidget {
               width: 160, // 2 * radius
               height: 160,
               placeholder: (context, url) =>
-                  const Center(child: CircularProgressIndicator()),
+                  Image.asset(AppConstants.profilePlaceholder),
               errorWidget: (context, url, error) =>
                   const Icon(Icons.error, size: 40),
             ),
@@ -55,9 +56,31 @@ class AgentsChatWidget extends StatelessWidget {
             ),
           ],
         ),
-        trailing: Text(
-          lastActive,
-          style: TextStyle(color: AppConstants.secondaryColor),
+        trailing: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Text(
+            //   lastActive,
+            //   style: TextStyle(color: AppConstants.secondaryColor),
+            // ),
+            // const SizedBox(height: 6),
+            if (unreadCount > 0)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+                decoration: BoxDecoration(
+                  color: AppConstants.primaryColor,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  unreadCount > 99 ? '99+' : unreadCount.toString(),
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 13.0,
+                  ),
+                ),
+              ),
+          ],
         ),
       ),
     );
