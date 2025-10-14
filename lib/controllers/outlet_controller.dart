@@ -85,11 +85,12 @@ class OutletController extends GetxController {
         BaseController.storeToken.remove('currentAudit');
         BaseController.isAuditStarted.value = false;
         BaseController.currAuditOutletId.value = 0;
-        BaseController.latitude.value = '';
-        BaseController.longitude.value = '';
-        BaseController.startTime.value = '';
+        // BaseController.latitude.value = '';
+        // BaseController.longitude.value = '';
+        // BaseController.startTime.value = '';
         // BaseController.endTime.value = DateTime.now().toString();
-
+        BitPlanController.txtSearchOutlet.clear();
+        BitPlanController.isSearch.value = false;
         bitPlanController.initData();
         BaseController.hideLoading();
         Get.back();

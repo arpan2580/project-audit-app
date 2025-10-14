@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
+import 'package:get_storage/get_storage.dart';
+import 'package:jnk_app/views/dialogs/dialog_helper.dart';
 import 'package:mime_type/mime_type.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -16,6 +18,7 @@ class MessagesController extends GetxController {
   final messageInputTextController = TextEditingController();
   final listScrollController = ScrollController();
   final FlutterSecureStorage storage = const FlutterSecureStorage();
+  GetStorage st = GetStorage();
 
   static final isLoading = true.obs;
   final isSendingMessage = false.obs;
@@ -245,18 +248,15 @@ class MessagesController extends GetxController {
         _updateMediaInChat(message, file.path);
         return;
       }
-
-      final url = await message.getMediaUrl();
-      if (url == null) return;
-
-      final token = await storage.read(key: 'twilio_token');
+      final token = st.read('token');
       final dio = Dio();
-      final response = await dio.get<List<int>>(
-        url,
+      final response = await dio.post(
+        "https://jnkundu.com/api/v1/chat/media-url/",
         options: Options(
           responseType: ResponseType.bytes,
           headers: {'Authorization': 'Bearer $token'},
         ),
+        data: {'media_sid': message.media?.sid},
       );
 
       if (response.statusCode == 200 && response.data != null) {
@@ -296,20 +296,53 @@ class MessagesController extends GetxController {
     }
   }
 
+  // Future<void> onSendMediaMessagePressed() async {
+  //   final picker = ImagePicker();
+  //   final picked = await picker.pickImage(source: ImageSource.gallery);
+  //   if (picked == null) return;
+
+  //   final file = File(picked.path);
+  //   final mType = mime(file.path) ?? "image/jpeg";
+  //   final compressed = await BaseController.compressImage(file, 10);
+
+  //   try {
+  //     final messageOptions = MessageOptions()..withMedia(compressed, mType);
+  //     await conversation.sendMessage(messageOptions);
+  //   } catch (e) {
+  //     print('Error sending media: $e');
+  //     DialogHelper.showErrorToast(
+  //       description: 'Failed to send media. ${e.toString()}',
+  //     );
+  //   }
+  // }
+
   Future<void> onSendMediaMessagePressed() async {
-    final picker = ImagePicker();
-    final picked = await picker.pickImage(source: ImageSource.gallery);
-    if (picked == null) return;
-
-    final file = File(picked.path);
-    final mType = mime(file.path) ?? "image/jpeg";
-    final compressed = await BaseController.compressImage(file, 10);
-
     try {
-      final messageOptions = MessageOptions()..withMedia(compressed, mType);
+      final picker = ImagePicker();
+      final picked = await picker.pickImage(source: ImageSource.gallery);
+      if (picked == null) {
+        // DialogHelper.showErrorToast(description: 'No file picked.');
+        return;
+      }
+
+      final bytes = await picked.readAsBytes();
+      final tempDir = await getTemporaryDirectory();
+      final tempPath =
+          '${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
+      final file = await File(tempPath).writeAsBytes(bytes);
+
+      // Compress image
+      final mType = mime(file.path) ?? "image/jpeg";
+      // final compressed = await BaseController.compressImage(file, 10);
+
+      final messageOptions = MessageOptions()..withMedia(file, mType);
+
       await conversation.sendMessage(messageOptions);
-    } catch (e) {
-      print('Error sending media: $e');
+      // DialogHelper.showSuccessToast(description: 'Media Sent.');
+      print("Media message sent successfully");
+    } catch (e, st) {
+      print("Error sending media: $e\n$st");
+      DialogHelper.showErrorToast(description: 'Failed to send media.$e\n$st');
     }
   }
 

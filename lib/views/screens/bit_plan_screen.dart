@@ -110,6 +110,9 @@ class BitPlanScreen extends StatelessWidget {
                         : Expanded(
                             child: RefreshIndicator(
                               onRefresh: () async {
+                                BitPlanController.txtSearchOutlet.clear();
+                                BitPlanController.isSearch.value = false;
+                                bitPlanController.clearSearch();
                                 await bitPlanController.fetchBitPlanData();
                               },
                               child: ListView.builder(

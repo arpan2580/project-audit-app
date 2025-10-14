@@ -22,6 +22,10 @@ class SearchAgentWidget extends StatelessWidget {
             AgentsChatController.isSearch.value = false;
             controller.clearSearch();
           }
+          if (value.isNotEmpty) {
+            AgentsChatController.isSearch.value = true;
+            controller.searchAgent();
+          }
         },
         controller: AgentsChatController.txtSearchAgent,
         decoration: InputDecoration(
@@ -45,7 +49,7 @@ class SearchAgentWidget extends StatelessWidget {
                   onPressed: () {
                     if (AgentsChatController.txtSearchAgent.text.isNotEmpty) {
                       AgentsChatController.isSearch.value = true;
-                      controller.searchOutlet();
+                      controller.searchAgent();
                     } else {
                       AgentsChatController.txtSearchAgent.clear();
                       AgentsChatController.isSearch.value = false;

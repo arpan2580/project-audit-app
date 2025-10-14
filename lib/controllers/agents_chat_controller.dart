@@ -17,7 +17,7 @@ class AgentsChatController extends GetxController {
     filteredAgents.value = agentsList;
   }
 
-  void searchOutlet() {
+  void searchAgent() {
     String query = txtSearchAgent.text.toLowerCase().trim();
 
     if (query.isEmpty) {

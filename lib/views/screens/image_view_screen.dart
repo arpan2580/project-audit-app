@@ -5,11 +5,13 @@ import 'package:flutter/material.dart';
 class ImageViewScreen extends StatelessWidget {
   final String imageUrl;
   final bool isLocal;
+  final File? fileImage;
 
   const ImageViewScreen({
     super.key,
     required this.imageUrl,
     required this.isLocal,
+    this.fileImage,
   });
 
   @override

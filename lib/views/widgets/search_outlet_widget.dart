@@ -21,6 +21,10 @@ class SearchOutletWidget extends StatelessWidget {
             BitPlanController.isSearch.value = false;
             controller.clearSearch();
           }
+          if (value.isNotEmpty) {
+            BitPlanController.isSearch.value = true;
+            controller.searchOutlet();
+          }
         },
         controller: BitPlanController.txtSearchOutlet,
         decoration: InputDecoration(
