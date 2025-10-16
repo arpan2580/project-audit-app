@@ -116,22 +116,82 @@ class OutletDetailsScreen extends StatelessWidget {
                             Column(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Column(
-                                  children: [
-                                    Obx(
-                                      () => Center(
+                                Obx(
+                                  () => Column(
+                                    children: [
+                                      // Obx(
+                                      //   () =>
+                                      Center(
                                         child:
                                             imageFile.value == null ||
                                                 imageFile.value.toString() == ''
-                                            ? outletDetails.lastVisit != null &&
+                                            ? outletDetails.myVisit != null &&
                                                       outletDetails
-                                                              .lastVisit
+                                                              .myVisit
                                                               ?.photo !=
                                                           null &&
                                                       outletDetails
-                                                              .lastVisit
+                                                              .myVisit
                                                               ?.photo !=
                                                           ''
+                                                  ? GestureDetector(
+                                                      onTap: () {
+                                                        Get.to(
+                                                          ImageViewScreen(
+                                                            imageUrl:
+                                                                outletDetails
+                                                                    .myVisit!
+                                                                    .photo!,
+                                                            isLocal: false,
+                                                          ),
+                                                        );
+                                                      },
+                                                      child: Container(
+                                                        height: 350,
+                                                        width: Get.width,
+                                                        decoration: BoxDecoration(
+                                                          borderRadius:
+                                                              BorderRadius.circular(
+                                                                15,
+                                                              ),
+                                                        ),
+                                                        clipBehavior:
+                                                            Clip.hardEdge,
+                                                        child: CachedNetworkImage(
+                                                          imageUrl:
+                                                              outletDetails
+                                                                  .myVisit!
+                                                                  .photo!,
+                                                          fit: BoxFit.cover,
+                                                          placeholder:
+                                                              (
+                                                                context,
+                                                                url,
+                                                              ) => const Center(
+                                                                child:
+                                                                    CircularProgressIndicator(),
+                                                              ),
+                                                          errorWidget:
+                                                              (
+                                                                context,
+                                                                url,
+                                                                error,
+                                                              ) => const Icon(
+                                                                Icons.error,
+                                                              ),
+                                                        ),
+                                                      ),
+                                                    )
+                                                  : outletDetails.lastVisit !=
+                                                            null &&
+                                                        outletDetails
+                                                                .lastVisit
+                                                                ?.photo !=
+                                                            null &&
+                                                        outletDetails
+                                                                .lastVisit
+                                                                ?.photo !=
+                                                            ''
                                                   ? GestureDetector(
                                                       onTap: () {
                                                         Get.to(
@@ -255,197 +315,279 @@ class OutletDetailsScreen extends StatelessWidget {
                                                 // ),
                                               ),
                                       ),
-                                    ),
-                                    SizedBox(height: 20.0),
-                                    Row(
-                                      children: [
-                                        Expanded(
-                                          child: FadedDivider(
-                                            color: AppConstants.primaryColor,
-                                            height: 3.0,
-                                            begin: Alignment.centerLeft,
-                                            end: Alignment.centerRight,
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: 10,
-                                          ),
-                                          child: Text(
-                                            "Audit Details",
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.w500,
-                                              fontSize: 18.0,
-                                              color:
-                                                  AppConstants.backgroundColor,
+                                      // ),
+                                      SizedBox(height: 20.0),
+                                      Row(
+                                        children: [
+                                          Expanded(
+                                            child: FadedDivider(
+                                              color: AppConstants.primaryColor,
+                                              height: 3.0,
+                                              begin: Alignment.centerLeft,
+                                              end: Alignment.centerRight,
                                             ),
                                           ),
-                                        ),
-                                        Expanded(
-                                          child: FadedDivider(
-                                            color: AppConstants.primaryColor,
-                                            height: 3.0,
-                                            begin: Alignment.centerRight,
-                                            end: Alignment.centerLeft,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                    SizedBox(height: 10.0),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.center,
-                                      children: [
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Text(
-                                              "Auditor:",
+                                          Padding(
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                            ),
+                                            child: Text(
+                                              "Audit Details",
                                               style: TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                                color: AppConstants.accentColor,
+                                                fontWeight: FontWeight.w500,
+                                                fontSize: 18.0,
+                                                color: AppConstants
+                                                    .backgroundColor,
                                               ),
                                             ),
-                                            SizedBox(width: 8.0),
-                                            Text(
-                                              outletDetails.myVisit != null
-                                                  ? outletDetails
-                                                            .myVisit
-                                                            ?.userName ??
-                                                        "N/A"
-                                                  : outletDetails
-                                                            .lastVisitDate !=
-                                                        null
-                                                  ? outletDetails
-                                                            .lastVisit
-                                                            ?.userName ??
-                                                        "N/A"
-                                                  : "N/A",
-                                              style: TextStyle(
-                                                fontSize: 18,
-                                                color: AppConstants.accentColor,
-                                              ),
+                                          ),
+                                          Expanded(
+                                            child: FadedDivider(
+                                              color: AppConstants.primaryColor,
+                                              height: 3.0,
+                                              begin: Alignment.centerRight,
+                                              end: Alignment.centerLeft,
                                             ),
-                                          ],
-                                        ),
-                                        SizedBox(height: 5.0),
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Text(
-                                              "Audit Date:",
-                                              style: TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                                color: AppConstants.accentColor,
+                                          ),
+                                        ],
+                                      ),
+                                      SizedBox(height: 10.0),
+                                      Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.center,
+                                        children: [
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                "Auditor:",
+                                                style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                  color:
+                                                      AppConstants.accentColor,
+                                                ),
                                               ),
-                                            ),
-                                            SizedBox(width: 8.0),
-                                            Text(
-                                              // outletDetails.lastVisitDate != null
-                                              //     ? DateFormat(
-                                              //         'dd-MM-yyyy',
-                                              //       ).format(
-                                              //         DateTime.parse(
-                                              //           outletDetails
-                                              //               .lastVisitDate!,
-                                              //         ),
-                                              //       )
-                                              //     : "N/A",
-                                              outletDetails.myVisit != null
-                                                  ? DateFormat(
-                                                      'dd-MM-yyyy',
-                                                    ).format(
-                                                      DateTime.parse(
-                                                        outletDetails
-                                                            .myVisit!
-                                                            .date,
+                                              SizedBox(width: 8.0),
+                                              BaseController
+                                                              .currAuditOutletId
+                                                              .value ==
+                                                          outletDetails.id &&
+                                                      BaseController
+                                                          .isAuditStarted
+                                                          .value
+                                                  ? Text(
+                                                      BaseController
+                                                          .auditorName
+                                                          .value,
+                                                      style: TextStyle(
+                                                        fontSize: 18,
+                                                        color: AppConstants
+                                                            .accentColor,
                                                       ),
                                                     )
-                                                  : outletDetails
-                                                            .lastVisitDate !=
-                                                        null
-                                                  ? DateFormat(
-                                                      'dd-MM-yyyy',
-                                                    ).format(
-                                                      DateTime.parse(
-                                                        outletDetails
-                                                            .lastVisitDate!,
+                                                  : Text(
+                                                      outletDetails.myVisit !=
+                                                              null
+                                                          ? outletDetails
+                                                                    .myVisit
+                                                                    ?.userName ??
+                                                                "N/A"
+                                                          : outletDetails
+                                                                    .lastVisitDate !=
+                                                                null
+                                                          ? outletDetails
+                                                                    .lastVisit
+                                                                    ?.userName ??
+                                                                "N/A"
+                                                          : "N/A",
+                                                      style: TextStyle(
+                                                        fontSize: 18,
+                                                        color: AppConstants
+                                                            .accentColor,
+                                                      ),
+                                                    ),
+                                            ],
+                                          ),
+                                          SizedBox(height: 5.0),
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                "Audit Date:",
+                                                style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                  color:
+                                                      AppConstants.accentColor,
+                                                ),
+                                              ),
+                                              SizedBox(width: 8.0),
+                                              BaseController
+                                                              .currAuditOutletId
+                                                              .value ==
+                                                          outletDetails.id &&
+                                                      BaseController
+                                                          .isAuditStarted
+                                                          .value
+                                                  ? Text(
+                                                      DateFormat(
+                                                        'dd-MM-yyyy',
+                                                      ).format(
+                                                        DateTime.parse(
+                                                          BaseController
+                                                              .startTime
+                                                              .value,
+                                                        ),
+                                                      ),
+                                                      style: TextStyle(
+                                                        fontSize: 18,
+                                                        color: AppConstants
+                                                            .accentColor,
                                                       ),
                                                     )
-                                                  : "N/A",
-                                              style: TextStyle(
-                                                fontSize: 18,
-                                                color: AppConstants.accentColor,
+                                                  : Text(
+                                                      // outletDetails.lastVisitDate != null
+                                                      //     ? DateFormat(
+                                                      //         'dd-MM-yyyy',
+                                                      //       ).format(
+                                                      //         DateTime.parse(
+                                                      //           outletDetails
+                                                      //               .lastVisitDate!,
+                                                      //         ),
+                                                      //       )
+                                                      //     : "N/A",
+                                                      outletDetails.myVisit !=
+                                                              null
+                                                          ? DateFormat(
+                                                              'dd-MM-yyyy',
+                                                            ).format(
+                                                              DateTime.parse(
+                                                                outletDetails
+                                                                    .myVisit!
+                                                                    .date,
+                                                              ),
+                                                            )
+                                                          : outletDetails
+                                                                    .lastVisitDate !=
+                                                                null
+                                                          ? DateFormat(
+                                                              'dd-MM-yyyy',
+                                                            ).format(
+                                                              DateTime.parse(
+                                                                outletDetails
+                                                                    .lastVisitDate!,
+                                                              ),
+                                                            )
+                                                          : "N/A",
+                                                      style: TextStyle(
+                                                        fontSize: 18,
+                                                        color: AppConstants
+                                                            .accentColor,
+                                                      ),
+                                                    ),
+                                            ],
+                                          ),
+                                          SizedBox(height: 5.0),
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                "Audit Time:",
+                                                style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                  color:
+                                                      AppConstants.accentColor,
+                                                ),
                                               ),
-                                            ),
-                                          ],
-                                        ),
-                                        SizedBox(height: 5.0),
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Text(
-                                              "Audit Time:",
-                                              style: TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                                color: AppConstants.accentColor,
+                                              SizedBox(width: 8.0),
+                                              BaseController
+                                                              .currAuditOutletId
+                                                              .value ==
+                                                          outletDetails.id &&
+                                                      BaseController
+                                                          .isAuditStarted
+                                                          .value
+                                                  ? Text(
+                                                      "${DateFormat('hh:mm:ss a').format(DateTime.parse(BaseController.startTime.value))} - N/A",
+                                                      style: TextStyle(
+                                                        fontSize: 18,
+                                                        color: AppConstants
+                                                            .accentColor,
+                                                      ),
+                                                    )
+                                                  : Text(
+                                                      outletDetails.myVisit !=
+                                                              null
+                                                          ? "${DateFormat('hh:mm:ss a').format(DateTime.parse(outletDetails.myVisit!.startTime ?? ''))} - N/A"
+                                                          : outletDetails
+                                                                        .lastVisit !=
+                                                                    null &&
+                                                                outletDetails
+                                                                        .lastVisit!
+                                                                        .startTime !=
+                                                                    null
+                                                          ? "${DateFormat('hh:mm:ss a').format(DateTime.parse(outletDetails.lastVisit!.startTime ?? ''))} - ${outletDetails.lastVisit!.endTime != null ? DateFormat('hh:mm:ss a').format(DateTime.parse(outletDetails.lastVisit!.endTime ?? '')) : 'N/A'}"
+                                                          : "N/A",
+                                                      style: TextStyle(
+                                                        fontSize: 18,
+                                                        color: AppConstants
+                                                            .accentColor,
+                                                      ),
+                                                    ),
+                                            ],
+                                          ),
+                                          SizedBox(height: 5.0),
+                                          Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                "Location:",
+                                                style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold,
+                                                  color:
+                                                      AppConstants.accentColor,
+                                                ),
                                               ),
-                                            ),
-                                            SizedBox(width: 8.0),
-                                            Text(
-                                              outletDetails.myVisit != null
-                                                  ? "${DateFormat('hh:mm:ss a').format(DateTime.parse(outletDetails.myVisit!.startTime ?? ''))} - N/A"
-                                                  : outletDetails.lastVisit !=
-                                                            null &&
-                                                        outletDetails
-                                                                .lastVisit!
-                                                                .startTime !=
-                                                            null
-                                                  ? "${DateFormat('hh:mm:ss a').format(DateTime.parse(outletDetails.lastVisit!.startTime ?? ''))} - ${DateFormat('hh:mm:ss a').format(DateTime.parse(outletDetails.lastVisit!.endTime ?? ''))}"
-                                                  : "N/A",
-                                              style: TextStyle(
-                                                fontSize: 18,
-                                                color: AppConstants.accentColor,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        SizedBox(height: 5.0),
-                                        Row(
-                                          mainAxisSize: MainAxisSize.min,
-                                          children: [
-                                            Text(
-                                              "Location:",
-                                              style: TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                                color: AppConstants.accentColor,
-                                              ),
-                                            ),
-                                            SizedBox(width: 3.0),
-                                            Text(
-                                              outletDetails.myVisit != null
-                                                  ? "${outletDetails.myVisit?.startLatitude.toString()}, ${outletDetails.myVisit?.startLongitude.toString()}"
-                                                  : outletDetails
-                                                            .lastVisitDate !=
-                                                        null
-                                                  ? outletDetails.lastVisit?.lat
-                                                            .toString() ??
-                                                        "N/A"
-                                                  : "N/A",
-                                              style: TextStyle(
-                                                fontSize: 18,
-                                                color: AppConstants.accentColor,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ],
+                                              SizedBox(width: 3.0),
+                                              BaseController
+                                                              .currAuditOutletId
+                                                              .value ==
+                                                          outletDetails.id &&
+                                                      BaseController
+                                                          .isAuditStarted
+                                                          .value
+                                                  ? Text(
+                                                      "${BaseController.latitude.value}, ${BaseController.longitude.value}",
+                                                      style: TextStyle(
+                                                        fontSize: 18,
+                                                        color: AppConstants
+                                                            .accentColor,
+                                                      ),
+                                                    )
+                                                  : Text(
+                                                      outletDetails.myVisit !=
+                                                              null
+                                                          ? "${outletDetails.myVisit?.startLatitude.toString()}, ${outletDetails.myVisit?.startLongitude.toString()}"
+                                                          : outletDetails
+                                                                    .lastVisitDate !=
+                                                                null
+                                                          ? "${outletDetails.lastVisit?.lat.toString()}, ${outletDetails.lastVisit?.long.toString()}"
+                                                          : "N/A",
+                                                      style: TextStyle(
+                                                        fontSize: 18,
+                                                        color: AppConstants
+                                                            .accentColor,
+                                                      ),
+                                                    ),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
 
                                 // Start audit button
@@ -620,7 +762,7 @@ class OutletDetailsScreen extends StatelessWidget {
                                                         true) {
                                                       DialogHelper.showInfoToast(
                                                         description:
-                                                            'Audit cannot be started while another audit is ongoing.',
+                                                            'Audit cannot be started while another audit is ongoing on ${BaseController.currAuditOutletName.value}.',
                                                       );
                                                     } else {
                                                       DialogHelper.showAlertDialog(

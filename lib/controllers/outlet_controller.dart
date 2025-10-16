@@ -53,6 +53,7 @@ class OutletController extends GetxController {
           BaseController.longitude.value = long;
           BaseController.startTime.value = response['data']['start_time']
               .toString();
+          BaseController.auditorName.value = BaseController.user.value!.name;
           bitPlanController.initData();
           GpsLoggerService.startLogging();
           BaseController.hideLoading();

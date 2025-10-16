@@ -52,8 +52,10 @@ class BaseController {
   static Rx<String> endTime = ''.obs;
   static Rx<String> latitude = ''.obs;
   static Rx<String> longitude = ''.obs;
+  static Rx<String> auditorName = ''.obs;
   static RxBool isAuditStarted = false.obs;
   static Rx<int> currAuditOutletId = 0.obs;
+  static Rx<String> currAuditOutletName = ''.obs;
   static RxBool isChatInitialized = false.obs;
   static RxBool showReload = true.obs;
   static Rx<int> unreadMessages = 0.obs;

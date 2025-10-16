@@ -62,7 +62,7 @@ class BarChartScreen extends StatelessWidget {
                   gridData: FlGridData(
                     show: true,
                     drawHorizontalLine: true,
-                    horizontalInterval: type == 'daily' ? 10 : 200,
+                    horizontalInterval: type == 'daily' ? 20 : 400,
                     getDrawingHorizontalLine: (value) {
                       return FlLine(
                         color: AppConstants.secondaryColor,
@@ -90,7 +90,7 @@ class BarChartScreen extends StatelessWidget {
                       sideTitles: SideTitles(
                         showTitles: true,
                         reservedSize: 40,
-                        interval: type == 'daily' ? 10 : 200,
+                        interval: type == 'daily' ? 20 : 400,
                         getTitlesWidget: (value, meta) {
                           return Text(
                             value.toInt().toString(),

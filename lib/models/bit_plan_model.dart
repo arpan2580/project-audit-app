@@ -58,6 +58,12 @@ class BitPlanModel {
       BaseController.storeToken.write('currentAudit', ownVisit);
       BaseController.isAuditStarted.value = true;
       BaseController.currAuditOutletId.value = json['id'] ?? 0;
+      BaseController.currAuditOutletName.value = json['ol_name'];
+      BaseController.startTime.value = ownVisit.startTime ?? '';
+      BaseController.latitude.value = ownVisit.startLatitude?.toString() ?? '';
+      BaseController.longitude.value =
+          ownVisit.startLongitude?.toString() ?? '';
+      BaseController.auditorName.value = ownVisit.userName;
     } catch (e) {
       ownVisit = null;
     }
