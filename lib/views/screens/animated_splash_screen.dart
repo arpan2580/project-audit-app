@@ -19,18 +19,18 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen> {
   @override
   void initState() {
     super.initState();
-    Future.delayed(const Duration(seconds: 2), () {
+    Future.delayed(const Duration(seconds: 1), () {
       token = storage.read('token');
       refreshToken = storage.read('refreshToken');
-      print(token);
-      print(refreshToken);
+      // print(token);
+      // print(refreshToken);
+    });
+    Future.delayed(const Duration(seconds: 2), () {
       if ((token != null) && (refreshToken != null)) {
         page = BottomNavigationScreen();
       } else {
         page = LoginScreen();
       }
-    });
-    Future.delayed(const Duration(seconds: 2), () {
       if (mounted) {
         Navigator.of(context).pushReplacement(createRoute(page));
       }

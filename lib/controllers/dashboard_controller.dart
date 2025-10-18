@@ -32,11 +32,9 @@ class DashboardController extends GetxController {
   static Future<void> fetchUserData() async {
     var response1 = await BaseClient().dioPost('/user/fetch-account/', null);
     if (response1 != null && response1['status']) {
-      print("{USER DATA: ${response1['data']}}");
+      // print("{USER DATA: ${response1['data']}}");
       BaseController.storeToken.write("user_data", response1['data']);
-      BaseController.user.value = UserModel.fromJson(
-        BaseController.storeToken.read("user_data"),
-      );
+      BaseController.user.value = UserModel.fromJson(response1['data']);
       BaseController.chatUsers.value = [
         if (BaseController.user.value?.manager != null)
           BaseController.user.value?.manager,
@@ -52,10 +50,9 @@ class DashboardController extends GetxController {
   }
 
   Future<void> fetchDashboardData({bool fetchUser = false}) async {
-    if (BaseController.storeToken.read("user_data") != null) {
-      BaseController.user.value = UserModel.fromJson(
-        BaseController.storeToken.read("user_data"),
-      );
+    final userJson = BaseController.storeToken.read("user_data");
+    if (userJson != null) {
+      BaseController.user.value = UserModel.fromJson(userJson);
     }
     if (BaseController.user.value == null || fetchUser) {
       fetchUserData();
@@ -63,7 +60,7 @@ class DashboardController extends GetxController {
     var response = await BaseClient().dioPost('/dashboard/', null);
     if (response != null) {
       if (response['status']) {
-        print("{DASH DATA: ${response['data']}}");
+        // print("{DASH DATA: ${response['data']}}");
         dashboard.value = DashboardModel.fromJson(response['data']);
         final attendanceInfo = dashboard.value?.attendanceInfo;
         final lunchBreakInfo = dashboard.value?.lunchBreakInfo;
@@ -72,6 +69,7 @@ class DashboardController extends GetxController {
             lunchBreakInfo?.startTime == null &&
             lunchBreakInfo?.endTime == null) {
           BaseController.storeToken.remove("day_status");
+          BaseController.dayStatus.value = "";
         }
         BaseController.isPresent.value =
             attendanceInfo?.status != 'absent' &&
@@ -85,7 +83,7 @@ class DashboardController extends GetxController {
         isLoading.value = false;
         if (BaseController.isChatInitialized.value == false) {
           await controller.fetchAccessToken().then((value) async {
-            print("{TWILIO TOKEN: $value}");
+            // print("{TWILIO TOKEN: $value}");
             await controller.create(jwtToken: value!).then((onValue) {
               controller
                   .getOrJoinConversation(
@@ -112,7 +110,7 @@ class DashboardController extends GetxController {
     );
     if (response != null) {
       if (response['status']) {
-        print("{LUNCH DATA: ${response.toString()}}");
+        // print("{LUNCH DATA: ${response.toString()}}");
         if (status == "start") {
           BaseController.isLunchBreak.value = true;
         } else {
@@ -141,14 +139,15 @@ class DashboardController extends GetxController {
         "longitude": long,
       });
       response = await BaseClient().dioPost('/mark-attendance/', formData);
-      BaseController.hideLoading();
       if (response != null) {
-        print("{ATTENDANCE DATA: ${response.toString()}}");
+        // print("{ATTENDANCE DATA: ${response.toString()}}");
         if (response['status']) {
           // BaseController.isPresent.value = true;
           fetchDashboardData();
+          BaseController.hideLoading();
           DialogHelper.showSuccessToast(description: response['message']);
         } else {
+          BaseController.hideLoading();
           DialogHelper.showErrorToast(description: response['messages']);
         }
       }
@@ -166,6 +165,7 @@ class DashboardController extends GetxController {
         BaseController.hideLoading();
         BaseController.isPresent.value = false;
         BaseController.storeToken.write("day_status", "completed");
+        BaseController.dayStatus.value = "completed";
         DialogHelper.showSuccessToast(description: response['message']);
       } else {
         BaseController.hideLoading();

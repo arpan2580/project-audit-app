@@ -195,18 +195,16 @@ class DashboardScreen extends StatelessWidget {
                                               Obx(
                                                 () => SizedBox(
                                                   width:
-                                                      BaseController.storeToken
-                                                              .read(
-                                                                "day_status",
-                                                              ) ==
+                                                      BaseController
+                                                              .dayStatus
+                                                              .value ==
                                                           "completed"
                                                       ? 0
                                                       : 50,
                                                   height:
-                                                      BaseController.storeToken
-                                                              .read(
-                                                                "day_status",
-                                                              ) ==
+                                                      BaseController
+                                                              .dayStatus
+                                                              .value ==
                                                           "completed"
                                                       ? 0
                                                       : 30,

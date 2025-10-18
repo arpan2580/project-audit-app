@@ -158,7 +158,6 @@ class ChatController extends GetxController {
   Future<List<dynamic>> getStarredMessages() async {
     var response = await BaseClient().dioPost('/chat/star-list/', null);
     if (response != null) {
-      print("{STAR MESSAGES: ${response['starred_messages']}}");
       if (response['starred_messages'] != null) {
         response['starred_messages'].forEach((responseMsg) {
           if (responseMsg['conversation_sid'] ==
@@ -168,7 +167,6 @@ class ChatController extends GetxController {
             }
           }
         });
-        print("{STAR MESSAGES SID: ${starredMessages.toString()}}");
       }
     } else {
       DialogHelper.showErrorToast(description: "Failed! Please try later.");

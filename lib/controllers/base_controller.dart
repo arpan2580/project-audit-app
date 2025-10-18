@@ -3,25 +3,22 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter_image_compress/flutter_image_compress.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+// import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:jnk_app/controllers/chat_controller.dart';
 import 'package:jnk_app/models/user_model.dart';
 import 'package:jnk_app/services/base_client.dart';
 import 'package:jnk_app/views/dialogs/dialog_helper.dart';
 import 'package:jnk_app/views/screens/login_screen.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:path_provider/path_provider.dart';
+// ignore: depend_on_referenced_packages
 import 'package:path/path.dart' as path;
 
 class BaseController {
   static const baseUrl = 'https://jnkundu.com/api/v1';
-  static var baseImgUrl = '';
-  // https://premierclub.itc.in/empulse/public/storage/
   static RxString deviceId = ''.obs;
-  // static const captchaUrl =
-  //     'https://premierclub.itc.in/EmPulseQA/public/captcha';
   static int expiryTime = 0;
   static RxBool isPresent = false.obs;
   static RxBool isLunchBreak = false.obs;
@@ -60,27 +57,9 @@ class BaseController {
   static RxBool showReload = true.obs;
   static Rx<int> unreadMessages = 0.obs;
   static RxList chatUsers = [].obs;
-  // static RxInt timerCountdown = 60.obs;
-  // static RxBool isCountdownEnd = false.obs;
-  // static RxBool otpScreen = false.obs;
-
-  // static RxBool notifcationReload = false.obs;
-
-  // static Map<String, dynamic> searchData = {};
-
-  // static dynamic assignedPosts = 0.obs;
-  // static RxBool commentReload = false.obs;
-
-  // static RxBool isMyFeedOpen = true.obs;
-  // static RxBool isSearchApplied = false.obs;
-  // static RxString searchString = ''.obs;
-
-  // static RxList likedFeedbackId = [].obs;
-  // static RxList postLikedCount = [].obs;
-
-  // static RxList feedbackStatusId = [].obs;
+  static Rx<String> dayStatus = ''.obs;
+  // static final FlutterSecureStorage storeToken = FlutterSecureStorage();
   static final storeToken = GetStorage();
-  static final FlutterSecureStorage storage = FlutterSecureStorage();
 
   static showLoading([String? message]) {
     DialogHelper.showLoadingDialog(message);
@@ -95,7 +74,7 @@ class BaseController {
   }
 
   static Future<dynamic> tokenGeneration() async {
-    var refreshToken = storeToken.read('refreshToken');
+    String? refreshToken = storeToken.read('refreshToken');
     // print('refresh: ' + refreshToken.toString());
 
     if (refreshToken != null && refreshToken != '') {
@@ -106,8 +85,8 @@ class BaseController {
       );
       if (response != null) {
         if (response['access'] != null && response['access'] != "") {
-          storeToken.write("token", response['access']);
-          // storeToken.write("refreshToken", response['refresh']);
+          storeToken.write('token', response['access']);
+          storeToken.write("refreshToken", response['refresh']);
           return true;
         } else {
           sessionExpired();
@@ -117,6 +96,7 @@ class BaseController {
         return false;
       }
     } else {
+      BaseController.dayStatus.value = '';
       storeToken.remove("token");
       storeToken.remove("refreshToken");
       storeToken.remove("forcePasswordReset");
@@ -124,30 +104,19 @@ class BaseController {
       storeToken.remove("day_status");
       storeToken.remove("currentAudit");
       storeToken.erase();
-      // storeToken.remove("unreadNotification");
-      // storeToken.remove("assignedPost");
-      // storeToken.remove("company");
-      // storeToken.remove("genre");
-      // // storeToken.remove("baseImgUrl");
-      // storeToken.remove("aboutAppUrl");
-      // storeToken.remove("defaultBio");
-      // storeToken.remove("baseVersionAppUrl");
-      // storeToken.remove("privacyUrl");
-      // storeToken.remove("supportUrl");
-
       return false;
     }
   }
 
   static void logout() async {
-    var refreshToken = storeToken.read('refreshToken');
+    String? refreshToken = storeToken.read('refreshToken');
     BaseController.showLoading('Logging out...');
     var response = await BaseClient().dioPost(
       '/log-out/',
       json.encode({"refresh": refreshToken}),
     );
     if (response != null) {
-      print("{LOGOUT DATA: ${response.toString()}}");
+      BaseController.dayStatus.value = '';
       storeToken.remove("token");
       storeToken.remove("refreshToken");
       storeToken.remove("forcePasswordReset");
@@ -155,7 +124,6 @@ class BaseController {
       storeToken.remove("day_status");
       storeToken.remove("currentAudit");
       storeToken.erase();
-      storage.deleteAll();
       BaseController.isChatInitialized.value = false;
       ChatController().msgControllerDispose();
       ChatController().dispose();
@@ -170,6 +138,7 @@ class BaseController {
   }
 
   static void sessionExpired() {
+    BaseController.dayStatus.value = '';
     storeToken.remove("token");
     storeToken.remove("refreshToken");
     storeToken.remove("forcePasswordReset");
@@ -177,7 +146,6 @@ class BaseController {
     storeToken.remove("day_status");
     storeToken.remove("currentAudit");
     storeToken.erase();
-    storage.deleteAll();
     BaseController.isChatInitialized.value = false;
     ChatController().msgControllerDispose();
     ChatController().dispose();
@@ -207,29 +175,6 @@ class BaseController {
     return initials;
   }
 
-  Future<void> fetchGlobalData() async {
-    // if (isLoggedIn.read('unreadNotification') == null ||
-    //     isLoggedIn.read('assignedPost') == null) {
-
-    var response = await BaseClient().dioPost('/my-global-data', null);
-    if (response != null && response['success']) {
-      storeToken.write(
-        "unreadNotification",
-        response['data']['unread_notification_count'],
-      );
-      storeToken.write(
-        "assignedPost",
-        response['data']['assigned_feedback_count'],
-      );
-    } else {
-      storeToken.write("unreadNotification", 0);
-      storeToken.write("assignedPost", 0);
-    }
-    // }
-    // unreadNotification.value = storeToken.read('unreadNotification');
-    // assignedPosts.value = storeToken.read('assignedPost');
-  }
-
   static late Timer _timer;
   static void otpCountdown(countDown) {
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -246,7 +191,7 @@ class BaseController {
     _timer.cancel();
   }
 
-  /// Helper function to compress image manually (when not cropping)
+  // Helper function to compress image manually (when not cropping)
   static Future<File> compressImage(File file, int quality) async {
     try {
       final dir = await getTemporaryDirectory();
@@ -255,19 +200,18 @@ class BaseController {
         "${DateTime.now().millisecondsSinceEpoch}.jpg",
       );
 
-      final compressedFile =
-          await FlutterImageCompress.compressAndGetFile(
-                file.absolute.path,
-                targetPath,
-                quality: quality, // adjust as needed
-                format: CompressFormat.jpeg,
-              )
-              as File?;
+      final compressedFile = await FlutterImageCompress.compressAndGetFile(
+        file.absolute.path,
+        targetPath,
+        quality: quality,
+        format: CompressFormat.jpeg,
+      );
+      // as File?;
 
-      return compressedFile ?? file;
+      return File(compressedFile!.path);
+      // ?? file;
     } catch (e) {
-      print("Compression not supported on this platform: $e");
-      return file; // fallback to original
-    } // fallback to original if compression fails
+      return file;
+    }
   }
 }

@@ -43,7 +43,6 @@ class AttendanceController extends GetxController {
       json.encode({"agent": ''}),
     );
     if (response != null) {
-      print("{ATTENDANCE DATA: ${response.toString()}}");
       if (response['status']) {
         attendance.value = AttendanceModel.fromJsonList(response['data']);
         if (BaseController.user.value?.role == 'mngr') {
@@ -69,7 +68,6 @@ class AttendanceController extends GetxController {
       json.encode({"agent": agentId == 0 ? '' : agentId}),
     );
     if (response != null) {
-      print("{AGENT ATTENDANCE: ${response.toString()}}");
       if (response['status']) {
         attendance.value = AttendanceModel.fromJsonList(response['data']);
         // if (BaseController.user.value?.role == 'mngr') {

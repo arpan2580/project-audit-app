@@ -55,6 +55,7 @@ class BitPlanModel {
             v.endTime == null &&
             v.status.toLowerCase() == 'started',
       );
+
       BaseController.storeToken.write('currentAudit', ownVisit);
       BaseController.isAuditStarted.value = true;
       BaseController.currAuditOutletId.value = json['id'] ?? 0;

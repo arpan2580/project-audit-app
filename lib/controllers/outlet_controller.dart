@@ -28,7 +28,6 @@ class OutletController extends GetxController {
       });
       response = await BaseClient().dioPost('/visit/start/', formData);
       if (response != null) {
-        print("{START AUDIT DATA: ${response.toString()}}");
         if (response['status']) {
           BaseController.storeToken.write(
             'currentAudit',
@@ -42,9 +41,6 @@ class OutletController extends GetxController {
               "visitId": response['data']['visit_id'],
               // "visitCode": response['data']['visit_code'],
             }),
-          );
-          print(
-            "{CURRENT AUDIT: ${BaseController.storeToken.read('currentAudit')}}",
           );
           BaseController.endTime.value = '';
           BaseController.isAuditStarted.value = true;
@@ -81,14 +77,13 @@ class OutletController extends GetxController {
       "gps_log": gpsLogs,
     });
     if (response != null) {
-      print("{END AUDIT DATA: ${response.toString()}}");
       if (response['status']) {
         BaseController.storeToken.remove('currentAudit');
         BaseController.isAuditStarted.value = false;
         BaseController.currAuditOutletId.value = 0;
-        // BaseController.latitude.value = '';
-        // BaseController.longitude.value = '';
-        // BaseController.startTime.value = '';
+        BaseController.latitude.value = '';
+        BaseController.longitude.value = '';
+        BaseController.startTime.value = '';
         // BaseController.endTime.value = DateTime.now().toString();
         BitPlanController.txtSearchOutlet.clear();
         BitPlanController.isSearch.value = false;

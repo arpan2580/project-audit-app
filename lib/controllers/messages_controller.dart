@@ -1,24 +1,21 @@
 import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:get_storage/get_storage.dart';
+import 'package:jnk_app/services/base_client.dart';
 import 'package:jnk_app/views/dialogs/dialog_helper.dart';
-import 'package:mime_type/mime_type.dart';
-import 'package:dio/dio.dart';
+import 'package:dio/dio.dart' as dio;
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:jnk_app/controllers/base_controller.dart';
 import 'package:jnk_app/controllers/chat_controller.dart';
+import 'package:mime_type/mime_type.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter_twilio_chat_conversations/twilio_conversations.dart';
 
 class MessagesController extends GetxController {
   final messageInputTextController = TextEditingController();
   final listScrollController = ScrollController();
-  final FlutterSecureStorage storage = const FlutterSecureStorage();
-  GetStorage st = GetStorage();
 
   static final isLoading = true.obs;
   final isSendingMessage = false.obs;
@@ -173,7 +170,7 @@ class MessagesController extends GetxController {
       messages.refresh();
       isLoaded.value = true;
     } catch (e) {
-      print('loadMessages error: $e');
+      // print('loadMessages error: $e');
     } finally {
       isLoading.value = false;
     }
@@ -217,9 +214,6 @@ class MessagesController extends GetxController {
       final dir = await getApplicationDocumentsDirectory();
       final files = dir.listSync();
       if (files.length > 500) {
-        print(
-          '_getMedia => cache folder too large (${files.length} files), cleaning up...',
-        );
         // Delete oldest files first
         files.sort(
           (a, b) => a.statSync().modified.compareTo(b.statSync().modified),
@@ -229,7 +223,7 @@ class MessagesController extends GetxController {
           try {
             files[i].deleteSync();
           } catch (e) {
-            print('_getMedia => failed to delete cache file: $e');
+            // print('_getMedia => failed to delete cache file: $e');
           }
         }
       }
@@ -248,12 +242,13 @@ class MessagesController extends GetxController {
         _updateMediaInChat(message, file.path);
         return;
       }
-      final token = st.read('token');
-      final dio = Dio();
-      final response = await dio.post(
+      final token = BaseController.storeToken.read('token');
+      final dioClient = dio.Dio();
+
+      final response = await dioClient.post(
         "https://jnkundu.com/api/v1/chat/media-url/",
-        options: Options(
-          responseType: ResponseType.bytes,
+        options: dio.Options(
+          responseType: dio.ResponseType.bytes,
           headers: {'Authorization': 'Bearer $token'},
         ),
         data: {'media_sid': message.media?.sid},
@@ -265,7 +260,7 @@ class MessagesController extends GetxController {
         _updateMediaInChat(message, file.path);
       }
     } catch (e) {
-      print('_getMedia error: $e');
+      // print('_getMedia error: $e');
     }
   }
 
@@ -290,58 +285,47 @@ class MessagesController extends GetxController {
       await conversation.sendMessage(messageOptions);
       messageInputTextController.clear();
     } catch (e) {
-      print('Error sending message: $e');
+      // print('Error sending message: $e');
     } finally {
       isSendingMessage.value = false;
     }
   }
 
-  // Future<void> onSendMediaMessagePressed() async {
-  //   final picker = ImagePicker();
-  //   final picked = await picker.pickImage(source: ImageSource.gallery);
-  //   if (picked == null) return;
-
-  //   final file = File(picked.path);
-  //   final mType = mime(file.path) ?? "image/jpeg";
-  //   final compressed = await BaseController.compressImage(file, 10);
-
-  //   try {
-  //     final messageOptions = MessageOptions()..withMedia(compressed, mType);
-  //     await conversation.sendMessage(messageOptions);
-  //   } catch (e) {
-  //     print('Error sending media: $e');
-  //     DialogHelper.showErrorToast(
-  //       description: 'Failed to send media. ${e.toString()}',
-  //     );
-  //   }
-  // }
-
   Future<void> onSendMediaMessagePressed() async {
+    final picker = ImagePicker();
     try {
-      final picker = ImagePicker();
-      final picked = await picker.pickImage(source: ImageSource.gallery);
-      if (picked == null) {
-        // DialogHelper.showErrorToast(description: 'No file picked.');
+      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+      if (pickedFile != null) {
+        DialogHelper.showLoadingDialog('Uploading image...');
+        File croppedImage = await BaseController.compressImage(
+          File(pickedFile.path),
+          10,
+        );
+        final mType = mime(croppedImage.path) ?? "image/jpeg";
+        final dioClient = dio.Dio();
+        dioClient.interceptors.add(
+          dio.LogInterceptor(requestBody: true, responseBody: true),
+        );
+        final formData = dio.FormData.fromMap({
+          "conversation_sid": conversation.sid,
+          "image_file": await dio.MultipartFile.fromFile(
+            croppedImage.path,
+            filename: croppedImage.path.split('/').last,
+            contentType: dio.DioMediaType.parse(mType),
+          ),
+        });
+        // response = await dioClient.post(
+        //   "https://jnkundu.com/api/v1/chat/media-upload/",
+        //   options: dio.Options(headers: {'Authorization': 'Bearer $token'}),
+        //   data: formData,
+        // );
+        await BaseClient().dioPost('/chat/media-upload/', formData);
+        messages.refresh();
+        DialogHelper.hideLoadingDialog();
+      } else {
         return;
       }
-
-      final bytes = await picked.readAsBytes();
-      final tempDir = await getTemporaryDirectory();
-      final tempPath =
-          '${tempDir.path}/${DateTime.now().millisecondsSinceEpoch}.jpg';
-      final file = await File(tempPath).writeAsBytes(bytes);
-
-      // Compress image
-      final mType = mime(file.path) ?? "image/jpeg";
-      // final compressed = await BaseController.compressImage(file, 10);
-
-      final messageOptions = MessageOptions()..withMedia(file, mType);
-
-      await conversation.sendMessage(messageOptions);
-      // DialogHelper.showSuccessToast(description: 'Media Sent.');
-      print("Media message sent successfully");
     } catch (e, st) {
-      print("Error sending media: $e\n$st");
       DialogHelper.showErrorToast(description: 'Failed to send media.$e\n$st');
     }
   }
@@ -353,7 +337,7 @@ class MessagesController extends GetxController {
         (m) => m.sid == messageSid,
       );
       if (msg != null) {
-        await conversation.removeMessage(msg); // Twilio API call
+        await conversation.removeMessage(msg);
         messages.remove(msg); // Update local list immediately
         messages.refresh();
         final int chatIdx = chatController.messages.indexWhere(
@@ -367,9 +351,8 @@ class MessagesController extends GetxController {
         chatController.buildChatWidgets();
       }
     } catch (e) {
-      print('Error deleting message: $e');
+      // print('Error deleting message: $e');
       isError.value = true;
-      // Optionally show a UI error
     }
   }
 

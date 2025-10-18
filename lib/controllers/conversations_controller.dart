@@ -1,8 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-// import 'package:flutter/services.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_twilio_chat_conversations/twilio_conversations.dart';
 import 'package:get/get.dart';
 import 'package:jnk_app/controllers/base_controller.dart';
@@ -12,7 +10,6 @@ import 'package:jnk_app/views/dialogs/dialog_helper.dart';
 class ConversationsController extends GetxController {
   final plugin = TwilioConversations();
   ConversationClient? client;
-  final FlutterSecureStorage storage = const FlutterSecureStorage();
   var isClientInitialized = false.obs;
   var identity = ''.obs;
   var friendlyName = ''.obs;
@@ -26,10 +23,8 @@ class ConversationsController extends GetxController {
   // Initialize Twilio client
   Future<void> create({required String jwtToken}) async {
     await TwilioConversations.debug(dart: true, native: true, sdk: false);
-    print('Initializing Twilio Conversations client...');
 
     client = await plugin.create(jwtToken: jwtToken);
-    print('Twilio client initialized as ${client?.myIdentity}');
     final uClient = client;
 
     if (uClient == null) return;
@@ -58,7 +53,6 @@ class ConversationsController extends GetxController {
 
     subscriptions.add(
       uClient.onTokenAboutToExpire.listen((_) async {
-        print("Token about to expire — refreshing...");
         final newToken = await fetchAccessToken();
         if (newToken != null) await updateToken(jwtToken: newToken);
       }),
@@ -66,7 +60,6 @@ class ConversationsController extends GetxController {
 
     subscriptions.add(
       uClient.onTokenExpired.listen((_) async {
-        print("Token expired — refreshing...");
         final newToken = await fetchAccessToken();
         if (newToken != null) {
           await updateToken(jwtToken: newToken);
@@ -102,75 +95,47 @@ class ConversationsController extends GetxController {
           int unreadMessages = 0;
           try {
             final unread = await conversation.getUnreadMessagesCount();
-            // if (unread != null) {
             unreadMessages = unread;
-            // } else {
-            //   // Fallback: manual safe calculation
-            //   final total = await conversation.getMessagesCount() ?? 0;
-            //   final lastRead = conversation.lastReadMessageIndex ?? -1;
-            //   final calc = total - (lastRead + 1);
-            //   unreadMessages = calc < 0 ? 0 : calc;
-            // }
           } catch (_) {
             unreadMessages = 0;
           }
-
           unreadMessageCounts[conversation.sid] = unreadMessages;
           attachMessageListeners(conversation);
         }
 
         unreadMessageCounts.refresh();
         updateTotalUnreadCount();
-
-        print("REFRESHED CONVERSATIONS: ${conversations.length}");
-        print("UNREAD COUNTS MAP: $unreadMessageCounts");
       }
-    } catch (e) {
-      print("Error refreshing conversations: $e");
-    }
+    } catch (e) {}
   }
 
   Future<Conversation?> getOrJoinConversation(String conversationSid) async {
     Conversation? conversation;
-
     try {
       final client = TwilioConversations.conversationClient;
       if (client == null) {
-        print('Twilio client not initialized');
         BaseController.hideLoading();
         return null;
       }
-
       try {
         conversation = await client.getConversation(conversationSid);
       } catch (e) {
-        print("getConversation failed: $e");
-
         if (e.toString().contains('50400')) {
-          print('User not a member — joining via backend...');
           await joinConversation(conversationSid);
           conversation = await client.getConversation(conversationSid);
         } else {
           rethrow;
         }
       }
-
       if (conversation == null) {
-        print('Conversation not found for SID: $conversationSid');
         BaseController.hideLoading();
         return null;
       }
-
       if (conversation.status != ConversationStatus.JOINED) {
         try {
-          print('Joining conversation $conversationSid...');
           await conversation.join();
-          print('Joined successfully.');
-        } catch (e) {
-          print('Error joining conversation: $e');
-        }
+        } catch (e) {}
       }
-
       // Wait for synchronization
       int retries = 0;
       while (conversation.synchronizationStatus !=
@@ -179,9 +144,7 @@ class ConversationsController extends GetxController {
         await Future.delayed(const Duration(milliseconds: 500));
         retries++;
       }
-
-      print('Conversation synchronized.');
-
+      // print('Conversation synchronized.');
       // Attach real-time message listeners
       attachMessageListeners(conversation);
 
@@ -192,7 +155,7 @@ class ConversationsController extends GetxController {
       return conversation;
     } catch (e) {
       BaseController.hideLoading();
-      print('getOrJoinConversation() error: $e');
+      // print('getOrJoinConversation() error: $e');
       return null;
     }
   }
@@ -204,7 +167,7 @@ class ConversationsController extends GetxController {
     }
 
     final sub = conversation.onMessageAdded.listen((event) async {
-      print('New message in ${conversation.sid}');
+      // print('New message in ${conversation.sid}');
       // Update unread count for this conversation only
       try {
         int unread = 0;
@@ -215,18 +178,18 @@ class ConversationsController extends GetxController {
         unreadMessageCounts.refresh();
         updateTotalUnreadCount();
       } catch (e) {
-        print('Unread update error: $e');
+        // print('Unread update error: $e');
       }
     });
 
     _messageListeners[conversation.sid] = sub;
 
     conversation.onMessageUpdated.listen((event) {
-      print('Message updated in ${conversation.sid}');
+      // print('Message updated in ${conversation.sid}');
     });
 
     conversation.onMessageDeleted.listen((event) {
-      print('Message deleted in ${conversation.sid}');
+      // print('Message deleted in ${conversation.sid}');
     });
   }
 
@@ -236,11 +199,11 @@ class ConversationsController extends GetxController {
       final count = await conversation.getMessagesCount();
       if (count != null && count > 0) {
         await conversation.setLastReadMessageIndex(count - 1);
-        print('Marked all messages as read for ${conversation.sid}');
+        // print('Marked all messages as read for ${conversation.sid}');
       }
       await refreshConversationList();
     } catch (e) {
-      print('Error marking as read: $e');
+      // print('Error marking as read: $e');
     }
   }
 
@@ -249,11 +212,11 @@ class ConversationsController extends GetxController {
     try {
       var response = await BaseClient().dioPost('/chat/token/', null);
       if (response != null && response['token'] != null) {
-        await storage.write(key: 'twilio_token', value: response['token']);
+        BaseController.storeToken.write('twilio_token', response['token']);
         return response['token'];
       }
     } catch (e) {
-      print("Token fetch failed: $e");
+      // print("Token fetch failed: $e");
     }
     DialogHelper.showErrorToast(description: "Failed to fetch Twilio token.");
     return null;
@@ -271,7 +234,7 @@ class ConversationsController extends GetxController {
         );
       }
     } catch (e) {
-      print("Join conversation failed: $e");
+      // print("Join conversation failed: $e");
     }
   }
 
@@ -285,7 +248,7 @@ class ConversationsController extends GetxController {
       }),
     );
     if (response != null) {
-      print("{STAR TOGGLE: ${response.toString()}}");
+      // print("{STAR TOGGLE: ${response.toString()}}");
       if (response['starred']) {
         // DialogHelper.showSuccessToast(description: 'Message marked as starred.');
       } else {
@@ -336,9 +299,9 @@ class ConversationsController extends GetxController {
 
     BaseController.unreadMessages.value = totalUnread;
 
-    print("🧮 Recalculating unread for role: ${user.role}");
-    print("Unread Map Snapshot: $unreadMessageCounts");
-    print("Calculated Total Unread = $totalUnread");
+    // print("Recalculating unread for role: ${user.role}");
+    // print("Unread Map Snapshot: $unreadMessageCounts");
+    // print("Calculated Total Unread = $totalUnread");
   }
 
   @override

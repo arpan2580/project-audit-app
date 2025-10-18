@@ -69,25 +69,28 @@ class OtpScreen extends StatelessWidget {
 
               const Text("Enter OTP"),
               const SizedBox(height: 6),
-              Pinput(
-                length: 6,
-                controller: otpController.txtOtpController,
-                defaultPinTheme: defaultPinTheme,
-                focusedPinTheme: defaultPinTheme.copyWith(
-                  decoration: BoxDecoration(
-                    color: Colors.teal.shade100,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.teal, width: 2),
+              SizedBox(
+                width: double.infinity,
+                child: Pinput(
+                  length: 6,
+                  controller: otpController.txtOtpController,
+                  defaultPinTheme: defaultPinTheme,
+                  focusedPinTheme: defaultPinTheme.copyWith(
+                    decoration: BoxDecoration(
+                      color: Colors.teal.shade100,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.teal, width: 2),
+                    ),
                   ),
-                ),
-                submittedPinTheme: defaultPinTheme.copyWith(
-                  decoration: BoxDecoration(
-                    color: Colors.teal.shade200,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.teal),
+                  submittedPinTheme: defaultPinTheme.copyWith(
+                    decoration: BoxDecoration(
+                      color: Colors.teal.shade200,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.teal),
+                    ),
                   ),
+                  // onCompleted: (pin) => verifyOtp(),
                 ),
-                // onCompleted: (pin) => verifyOtp(),
               ),
               const SizedBox(height: 24),
 

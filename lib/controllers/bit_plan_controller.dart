@@ -43,7 +43,6 @@ class BitPlanController extends GetxController {
   Future<void> fetchBitPlanData() async {
     var response = await BaseClient().dioPost('/outlets/', null);
     if (response != null) {
-      print("{BIT PLAN DATA: ${response.toString()}}");
       if (response['status']) {
         bitPlan.value = BitPlanModel.fromJsonList(
           response['data'],
@@ -54,32 +53,9 @@ class BitPlanController extends GetxController {
         } else {
           filteredBit.value = todaysBitPlan;
         }
-
-        // final Visit? storedAudit = BaseController.storeToken.read(
-        //   'currentAudit',
-        // );
-
-        // if (storedAudit != null && storedAudit.isNotEmpty) {
-        //   // Decode JSON to a Map
-        //   if (auditData['startVisitUserId'] == BaseController.user.value?.id) {
-        //     BaseController.endTime.value =
-        //         ''; // Reset or fetch from API if needed
-        //     BaseController.isAuditStarted.value =
-        //         auditData['isAuditStarted'] ?? false;
-        //     BaseController.currAuditOutletId.value = auditData['outletId'] ?? 0;
-        //     BaseController.latitude.value = auditData['latitude'].toString();
-        //     BaseController.longitude.value = auditData['longitude'].toString();
-        //     BaseController.startTime.value = auditData['startTime'] ?? '';
-        //   }
-        // } else {
-        //   print("No current audit data found in storage.");
-        // }
       } else {
         DialogHelper.showErrorToast(description: response['message']);
       }
-      print(
-        "{TODAY's BIT PLAN DATA: ${todaysBitPlan.map((e) => e.toJson()).toList()}}",
-      );
     } else {
       DialogHelper.showErrorToast(
         description: "Failed to fetch bit plan data.",
@@ -111,7 +87,6 @@ class BitPlanController extends GetxController {
 
   void clearSearch() {
     txtSearchOutlet.text = '';
-    print(BitPlanController.isViewAll.value);
     if (BitPlanController.isViewAll.value) {
       filteredBit.value = bitPlan;
     } else {
