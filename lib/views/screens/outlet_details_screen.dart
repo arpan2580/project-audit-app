@@ -844,7 +844,7 @@ class OutletDetailsScreen extends StatelessWidget {
                                                                       pickedFile
                                                                           .path,
                                                                     ),
-                                                                    10,
+                                                                    40,
                                                                   );
 
                                                               final path =

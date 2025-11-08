@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart' as dio;
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jnk_app/controllers/base_controller.dart';
 import 'package:jnk_app/controllers/conversations_controller.dart';
@@ -81,20 +82,21 @@ class DashboardController extends GetxController {
             ? true
             : false;
         isLoading.value = false;
-        if (BaseController.isChatInitialized.value == false) {
-          await controller.fetchAccessToken().then((value) async {
-            // print("{TWILIO TOKEN: $value}");
-            await controller.create(jwtToken: value!).then((onValue) {
-              controller
-                  .getOrJoinConversation(
-                    BaseController.user.value!.twilioConversationSid,
-                  )
-                  .then((val) {
-                    BaseController.isChatInitialized.value = true;
-                  });
-            });
-          });
-        }
+        await initChatWithRetry(controller);
+        // if (BaseController.isChatInitialized.value == false) {
+        //   await controller.fetchAccessToken().then((value) async {
+        //     // print("{TWILIO TOKEN: $value}");
+        //     await controller.create(jwtToken: value!).then((onValue) {
+        //       controller
+        //           .getOrJoinConversation(
+        //             BaseController.user.value!.twilioConversationSid,
+        //           )
+        //           .then((val) {
+        //             BaseController.isChatInitialized.value = true;
+        //           });
+        //     });
+        //   });
+        // }
       } else {
         DialogHelper.showErrorToast(description: response['message']);
       }
@@ -199,5 +201,72 @@ class DashboardController extends GetxController {
     } else {
       DialogHelper.showErrorToast(description: 'Image not recognized');
     }
+  }
+
+  Future<void> initChatWithRetry(ConversationsController controller) async {
+    if (BaseController.isChatInitialized.value == true) return;
+
+    final initializationFuture = initializeChat(controller);
+    final timeoutFuture = waitForInitialization(timeout: 13);
+    final success = await Future.any([
+      initializationFuture.then((_) => true),
+      timeoutFuture,
+    ]);
+    if (!success) {
+      showRetryDialog(controller);
+    }
+  }
+
+  Future<void> initializeChat(ConversationsController controller) async {
+    try {
+      final token = await controller.fetchAccessToken();
+      if (token == null) {
+        throw Exception("Failed to get Twilio token");
+      }
+      await controller.create(jwtToken: token);
+      await controller.getOrJoinConversation(
+        BaseController.user.value!.twilioConversationSid,
+      );
+
+      BaseController.isChatInitialized.value = true;
+      // print("✅ Chat initialized successfully.");
+    } catch (e) {
+      // print("❌ Chat initialization failed: $e");
+    }
+  }
+
+  Future<bool> waitForInitialization({int timeout = 13}) async {
+    const checkInterval = Duration(seconds: 1);
+    final maxWaitTime = Duration(seconds: timeout);
+    final stopwatch = Stopwatch()..start();
+    while (stopwatch.elapsed < maxWaitTime) {
+      if (BaseController.isChatInitialized.value == true) {
+        return true;
+      }
+      await Future.delayed(checkInterval);
+    }
+    return false;
+  }
+
+  void showRetryDialog(ConversationsController controller) {
+    Get.dialog(
+      AlertDialog(
+        title: const Text("Chat Initialization Timeout"),
+        content: const Text(
+          "Chat could not be initialized. Please click on retry button to try again.",
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              Get.back();
+              BaseController.isChatInitialized.value = false;
+              initChatWithRetry(controller);
+            },
+            child: const Text("Retry", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+      barrierDismissible: false,
+    );
   }
 }

@@ -299,7 +299,7 @@ class MessagesController extends GetxController {
         DialogHelper.showLoadingDialog('Uploading image...');
         File croppedImage = await BaseController.compressImage(
           File(pickedFile.path),
-          10,
+          40,
         );
         final mType = mime(croppedImage.path) ?? "image/jpeg";
         final dioClient = dio.Dio();

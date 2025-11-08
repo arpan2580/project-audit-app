@@ -121,6 +121,7 @@ class ChatWidget extends StatelessWidget {
                                     () => ImageViewScreen(
                                       imageUrl: msg['text'],
                                       isLocal: true,
+                                      showDownloadButton: true,
                                     ),
                                   );
                                 } else {
@@ -128,6 +129,7 @@ class ChatWidget extends StatelessWidget {
                                     () => ImageViewScreen(
                                       imageUrl: msg['text'],
                                       isLocal: false,
+                                      showDownloadButton: true,
                                     ),
                                   );
                                 }

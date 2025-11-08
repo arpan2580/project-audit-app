@@ -1,12 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
+import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 // import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import 'package:jnk_app/controllers/chat_controller.dart';
 import 'package:jnk_app/models/user_model.dart';
 import 'package:jnk_app/services/base_client.dart';
@@ -15,6 +18,7 @@ import 'package:jnk_app/views/screens/login_screen.dart';
 import 'package:path_provider/path_provider.dart';
 // ignore: depend_on_referenced_packages
 import 'package:path/path.dart' as path;
+import 'package:permission_handler/permission_handler.dart';
 
 class BaseController {
   static const baseUrl = 'https://jnkundu.com/api/v1';
@@ -58,6 +62,7 @@ class BaseController {
   static Rx<int> unreadMessages = 0.obs;
   static RxList chatUsers = [].obs;
   static Rx<String> dayStatus = ''.obs;
+  static RxBool isDownloading = false.obs;
   // static final FlutterSecureStorage storeToken = FlutterSecureStorage();
   static final storeToken = GetStorage();
 
@@ -212,6 +217,71 @@ class BaseController {
       // ?? file;
     } catch (e) {
       return file;
+    }
+  }
+
+  static Future<void> saveImageToGallery(
+    String imagePath,
+    BuildContext context,
+  ) async {
+    isDownloading.value = true;
+    try {
+      if (await requestGalleryPermission(context) == false) {
+        DialogHelper.showErrorToast(description: 'Permission denied');
+        return;
+      }
+
+      // final response = await http.get(Uri.parse(imagePath));
+      // if (response.statusCode != 200) {
+      //   throw Exception('Failed to download image: ${response.statusCode}');
+      // }
+      // final Uint8List imageBytes = response.bodyBytes;
+
+      final file = File(imagePath);
+      if (!await file.exists()) {
+        throw Exception('Local image not found at $imagePath');
+      }
+      final Uint8List imageBytes = await file.readAsBytes();
+
+      // Save image to gallery
+      final timeStamp = DateTime.now().millisecondsSinceEpoch;
+      final result = await ImageGallerySaverPlus.saveImage(
+        imageBytes,
+        quality: 100,
+        name: 'jnk_photo_$timeStamp',
+      );
+
+      if (result['isSuccess'] == true || result['filePath'] != null) {
+        DialogHelper.showSuccessToast(description: 'Image saved to gallery');
+      } else {
+        throw Exception('Failed to save image.');
+      }
+    } catch (e) {
+      DialogHelper.showErrorToast(
+        description: 'Error saving image, please try again. $e',
+      );
+    } finally {
+      isDownloading.value = false;
+    }
+  }
+
+  // Handle platform-specific permission requests
+  static Future<bool> requestGalleryPermission(context) async {
+    if (Theme.of(context).platform == TargetPlatform.android) {
+      if (await Permission.photos.isGranted ||
+          await Permission.storage.isGranted) {
+        return true;
+      }
+
+      if (await Permission.photos.request().isGranted ||
+          await Permission.storage.request().isGranted) {
+        return true;
+      }
+
+      return false;
+    } else {
+      final status = await Permission.photosAddOnly.request();
+      return status.isGranted;
     }
   }
 }

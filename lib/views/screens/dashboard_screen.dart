@@ -661,7 +661,7 @@ class DashboardScreen extends StatelessWidget {
         if (pickedFile != null) {
           File croppedImage = await BaseController.compressImage(
             File(pickedFile.path),
-            10,
+            40,
           );
 
           final path = croppedImage.path;

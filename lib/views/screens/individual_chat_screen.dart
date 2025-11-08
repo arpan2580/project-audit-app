@@ -92,16 +92,23 @@ class _IndividualChatScreenState extends State<IndividualChatScreen> {
                 // backgroundImage: AssetImage(AppConstants.profilePlaceholder),
                 backgroundColor: Colors.transparent,
                 child: ClipOval(
-                  child: CachedNetworkImage(
-                    imageUrl: widget.profilePicUrl,
-                    fit: BoxFit.cover,
-                    width: 160, // 2 * radius
-                    height: 160,
-                    placeholder: (context, url) =>
-                        const Center(child: CircularProgressIndicator()),
-                    errorWidget: (context, url, error) =>
-                        const Icon(Icons.error, size: 40),
-                  ),
+                  child: (widget.profilePicUrl.toString().startsWith('http'))
+                      ? CachedNetworkImage(
+                          imageUrl: widget.profilePicUrl,
+                          fit: BoxFit.cover,
+                          width: 160, // 2 * radius
+                          height: 160,
+                          placeholder: (context, url) =>
+                              const Center(child: CircularProgressIndicator()),
+                          errorWidget: (context, url, error) =>
+                              const Icon(Icons.error, size: 40),
+                        )
+                      : Image.asset(
+                          AppConstants.profilePlaceholder,
+                          width: 40,
+                          height: 40,
+                          fit: BoxFit.cover,
+                        ),
                 ),
               ),
               SizedBox(width: 10.0),
