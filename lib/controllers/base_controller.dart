@@ -63,6 +63,9 @@ class BaseController {
   static RxList chatUsers = [].obs;
   static Rx<String> dayStatus = ''.obs;
   static RxBool isDownloading = false.obs;
+  static RxBool isUserLoggedOut = false.obs;
+  static int chatInitRetryCount = 0;
+  static int maxChatInitRetries = 3;
   // static final FlutterSecureStorage storeToken = FlutterSecureStorage();
   static final storeToken = GetStorage();
 
@@ -101,7 +104,7 @@ class BaseController {
         return false;
       }
     } else {
-      BaseController.dayStatus.value = '';
+      dayStatus.value = '';
       storeToken.remove("token");
       storeToken.remove("refreshToken");
       storeToken.remove("forcePasswordReset");
@@ -115,13 +118,13 @@ class BaseController {
 
   static void logout() async {
     String? refreshToken = storeToken.read('refreshToken');
-    BaseController.showLoading('Logging out...');
+    showLoading('Logging out...');
     var response = await BaseClient().dioPost(
       '/log-out/',
       json.encode({"refresh": refreshToken}),
     );
     if (response != null) {
-      BaseController.dayStatus.value = '';
+      dayStatus.value = '';
       storeToken.remove("token");
       storeToken.remove("refreshToken");
       storeToken.remove("forcePasswordReset");
@@ -129,7 +132,9 @@ class BaseController {
       storeToken.remove("day_status");
       storeToken.remove("currentAudit");
       storeToken.erase();
-      BaseController.isChatInitialized.value = false;
+      isChatInitialized.value = false;
+      isUserLoggedOut.value = true;
+      chatInitRetryCount = 0;
       ChatController().msgControllerDispose();
       ChatController().dispose();
       Get.delete<ChatController>();
@@ -143,7 +148,7 @@ class BaseController {
   }
 
   static void sessionExpired() {
-    BaseController.dayStatus.value = '';
+    dayStatus.value = '';
     storeToken.remove("token");
     storeToken.remove("refreshToken");
     storeToken.remove("forcePasswordReset");
@@ -151,7 +156,7 @@ class BaseController {
     storeToken.remove("day_status");
     storeToken.remove("currentAudit");
     storeToken.erase();
-    BaseController.isChatInitialized.value = false;
+    isChatInitialized.value = false;
     ChatController().msgControllerDispose();
     ChatController().dispose();
     Get.delete<ChatController>();

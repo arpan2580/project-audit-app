@@ -3,6 +3,8 @@ plugins {
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
+    id("com.google.gms.google-services")
+    id("com.google.firebase.crashlytics")
 }
 
 android {
@@ -26,7 +28,8 @@ android {
         applicationId = "com.example.jnk_app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        // minSdk = flutter.minSdkVersion
+        minSdk = 23
         targetSdk = flutter.targetSdkVersion
         // targetSdk = 36
         versionCode = flutter.versionCode
@@ -35,9 +38,51 @@ android {
 
     buildTypes {
         release {
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
             // TODO: Add your own signing config for the release build.
             // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
+        }
+        debug {
+            isMinifyEnabled = false
+        }
+    }
+
+    dependencies {
+        // --- Firebase BoM ---
+        implementation(platform("com.google.firebase:firebase-bom:34.4.0"))
+        implementation("com.google.firebase:firebase-crashlytics")
+        implementation("com.google.firebase:firebase-analytics")
+
+        // --- Twilio + coroutine compatibility fixes ---
+        // Force Twilio-compatible coroutine version
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
+        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2")
+
+        // Force compatible Ktor versions used internally by Twilio
+        implementation("io.ktor:ktor-client-core:1.6.8")
+        implementation("io.ktor:ktor-client-android:1.6.8")
+
+        // Safety net: ensure logging + JSON features (sometimes required)
+        implementation("io.ktor:ktor-client-logging:1.6.8")
+        implementation("io.ktor:ktor-client-json:1.6.8")
+        implementation("io.ktor:ktor-client-serialization:1.6.8")
+
+        implementation("org.slf4j:slf4j-api:1.7.36")
+        implementation("org.slf4j:slf4j-simple:1.7.36")
+    }
+
+    configurations.all {
+        resolutionStrategy.eachDependency {
+            if (requested.group == "org.jetbrains.kotlinx" && requested.name.startsWith("kotlinx-coroutines")) {
+                useVersion("1.5.2")
+                because("Twilio SDK requires ExperimentalCoroutineDispatcher from coroutines 1.5.x")
+            }
         }
     }
 

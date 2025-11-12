@@ -204,7 +204,10 @@ class DashboardController extends GetxController {
   }
 
   Future<void> initChatWithRetry(ConversationsController controller) async {
-    if (BaseController.isChatInitialized.value == true) return;
+    if (BaseController.isChatInitialized.value == true ||
+        BaseController.isUserLoggedOut.value == true) {
+      return;
+    }
 
     final initializationFuture = initializeChat(controller);
     final timeoutFuture = waitForInitialization(timeout: 13);
@@ -213,12 +216,37 @@ class DashboardController extends GetxController {
       timeoutFuture,
     ]);
     if (!success) {
+      BaseController.chatInitRetryCount += 1;
+      if (BaseController.chatInitRetryCount >=
+          BaseController.maxChatInitRetries) {
+        Get.dialog(
+          AlertDialog(
+            title: const Text("Chat Initialization Failed"),
+            content: const Text(
+              "Chat could not be initialized after multiple attempts. Please check your connection or try again later.",
+            ),
+            actions: [
+              ElevatedButton(
+                onPressed: () {
+                  Get.back();
+                },
+                child: const Text("OK", style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
+          barrierDismissible: false,
+        );
+        return;
+      }
       showRetryDialog(controller);
+    } else {
+      BaseController.chatInitRetryCount = 0;
     }
   }
 
   Future<void> initializeChat(ConversationsController controller) async {
     try {
+      if (BaseController.isUserLoggedOut.value == true) return;
       final token = await controller.fetchAccessToken();
       if (token == null) {
         throw Exception("Failed to get Twilio token");
@@ -228,10 +256,11 @@ class DashboardController extends GetxController {
         BaseController.user.value!.twilioConversationSid,
       );
 
-      BaseController.isChatInitialized.value = true;
-      // print("✅ Chat initialized successfully.");
+      if (BaseController.isUserLoggedOut.value == false) {
+        BaseController.isChatInitialized.value = true;
+      }
     } catch (e) {
-      // print("❌ Chat initialization failed: $e");
+      // print("Chat initialization failed: $e");
     }
   }
 
@@ -240,7 +269,9 @@ class DashboardController extends GetxController {
     final maxWaitTime = Duration(seconds: timeout);
     final stopwatch = Stopwatch()..start();
     while (stopwatch.elapsed < maxWaitTime) {
-      if (BaseController.isChatInitialized.value == true) {
+      if (BaseController.isChatInitialized.value == true ||
+          BaseController.isUserLoggedOut.value == true) {
+        stopwatch.stop();
         return true;
       }
       await Future.delayed(checkInterval);
@@ -249,6 +280,7 @@ class DashboardController extends GetxController {
   }
 
   void showRetryDialog(ConversationsController controller) {
+    if (BaseController.isUserLoggedOut.value == true) return;
     Get.dialog(
       AlertDialog(
         title: const Text("Chat Initialization Timeout"),
@@ -260,7 +292,9 @@ class DashboardController extends GetxController {
             onPressed: () {
               Get.back();
               BaseController.isChatInitialized.value = false;
-              initChatWithRetry(controller);
+              if (!BaseController.isUserLoggedOut.value) {
+                initChatWithRetry(controller);
+              }
             },
             child: const Text("Retry", style: TextStyle(color: Colors.white)),
           ),

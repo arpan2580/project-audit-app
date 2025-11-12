@@ -28,6 +28,19 @@ class LoginController extends GetxController {
   //   }
   // }
 
+  @override
+  void onInit() async {
+    super.onInit();
+    loadLastEmail();
+  }
+
+  Future<void> loadLastEmail() async {
+    String? lastEmail = BaseController.storeToken.read('lastEmail');
+    if (lastEmail != null && lastEmail.isNotEmpty) {
+      txtEmail.text = lastEmail;
+    }
+  }
+
   Future<void> login() async {
     var response = await BaseClient().dioPost(
       '/log-in/',
@@ -43,6 +56,7 @@ class LoginController extends GetxController {
       print("{LOGIN: $response}");
       if (response['status']) {
         BaseController.loginEmail = response['data']['email'];
+        BaseController.storeToken.write('lastEmail', response['data']['email']);
         DialogHelper.showSuccessToast(description: response['message']);
         Get.to(() => OtpScreen());
       } else {
