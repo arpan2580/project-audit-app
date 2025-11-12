@@ -44,8 +44,6 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
             signingConfig = signingConfigs.getByName("debug")
         }
         debug {
@@ -68,7 +66,7 @@ android {
         implementation("io.ktor:ktor-client-core:1.6.8")
         implementation("io.ktor:ktor-client-android:1.6.8")
 
-        // Safety net: ensure logging + JSON features (sometimes required)
+        // Ensure logging + JSON features
         implementation("io.ktor:ktor-client-logging:1.6.8")
         implementation("io.ktor:ktor-client-json:1.6.8")
         implementation("io.ktor:ktor-client-serialization:1.6.8")

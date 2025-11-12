@@ -26,7 +26,7 @@ subprojects {
 subprojects {
     configurations.all {
         resolutionStrategy {
-            // Force versions known to include ExperimentalCoroutineDispatcher
+            // Force versions to include ExperimentalCoroutineDispatcher
             force("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
             force("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2")
             // Force Ktor 1.6.x that Twilio expects
