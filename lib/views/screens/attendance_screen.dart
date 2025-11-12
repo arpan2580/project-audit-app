@@ -248,9 +248,18 @@ class AttendanceScreen extends StatelessWidget {
                         : Expanded(
                             child: RefreshIndicator(
                               onRefresh: () async {
-                                await attendanceController.fetchAgentAttendance(
-                                  attendanceController.chooseAgent[0]!.id,
-                                );
+                                if (BaseController.user.value?.role == 'mngr' &&
+                                    attendanceController
+                                        .chooseAgent
+                                        .isNotEmpty) {
+                                  await attendanceController
+                                      .fetchAgentAttendance(
+                                        attendanceController.chooseAgent[0]!.id,
+                                      );
+                                } else {
+                                  await attendanceController
+                                      .fetchAttendanceData();
+                                }
                               },
                               child: ListView.builder(
                                 shrinkWrap: true,
@@ -317,6 +326,7 @@ class AttendanceScreen extends StatelessWidget {
                                             : Icon(
                                                 Icons.event_busy,
                                                 size: 21.0,
+                                                color: Colors.grey[600],
                                               ),
                                       ),
                                     ),

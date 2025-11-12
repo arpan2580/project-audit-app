@@ -39,7 +39,7 @@ class DioExceptions implements Exception {
         errorMessage = 'Unexpected error occurred.';
         break;
       default:
-        errorMessage = 'Something went wrong.';
+        errorMessage = 'No response from server.';
         break;
     }
   }

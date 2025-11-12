@@ -25,7 +25,7 @@ class DashboardScreen extends StatelessWidget {
     final ImagePicker picker = ImagePicker();
     // final scrollController = ScrollController();
     return Obx(
-      () => dashboardController.isLoading.value
+      () => DashboardController.isLoading.value
           ? Scaffold(
               extendBodyBehindAppBar: true,
               extendBody: true,
@@ -195,18 +195,16 @@ class DashboardScreen extends StatelessWidget {
                                               Obx(
                                                 () => SizedBox(
                                                   width:
-                                                      BaseController.storeToken
-                                                              .read(
-                                                                "day_status",
-                                                              ) ==
+                                                      BaseController
+                                                              .dayStatus
+                                                              .value ==
                                                           "completed"
                                                       ? 0
                                                       : 50,
                                                   height:
-                                                      BaseController.storeToken
-                                                              .read(
-                                                                "day_status",
-                                                              ) ==
+                                                      BaseController
+                                                              .dayStatus
+                                                              .value ==
                                                           "completed"
                                                       ? 0
                                                       : 30,
@@ -491,16 +489,16 @@ class DashboardScreen extends StatelessWidget {
                                                       title: 'Emp ID',
                                                       value: BaseController
                                                           .user
-                                                          .value!
-                                                          .empCode,
+                                                          .value
+                                                          ?.empCode,
                                                       scroll: true,
                                                     ),
                                                     AuditorInfoWidget(
                                                       title: 'Emp Name',
                                                       value: BaseController
                                                           .user
-                                                          .value!
-                                                          .name,
+                                                          .value
+                                                          ?.name,
                                                       scroll: true,
                                                     ),
                                                     AuditorInfoWidget(
@@ -519,7 +517,7 @@ class DashboardScreen extends StatelessWidget {
                                                                       .checkInTime !=
                                                                   null
                                                           ? DateFormat(
-                                                                  'yyyy-MM-dd hh:mm:ss a',
+                                                                  "d, MMM hh:mm a",
                                                                 )
                                                                 .format(
                                                                   DashboardController
@@ -537,8 +535,8 @@ class DashboardScreen extends StatelessWidget {
                                                       value:
                                                           BaseController
                                                                   .user
-                                                                  .value!
-                                                                  .manager !=
+                                                                  .value
+                                                                  ?.manager !=
                                                               null
                                                           ? BaseController
                                                                 .user
@@ -549,15 +547,11 @@ class DashboardScreen extends StatelessWidget {
                                                       scroll: true,
                                                     ),
                                                     AuditorInfoWidget(
-                                                      title: 'Date Time',
-                                                      value:
-                                                          DateFormat(
-                                                                'yyyy-MM-dd hh:mm:ss a',
-                                                              )
-                                                              .format(
-                                                                DateTime.now(),
-                                                              )
-                                                              .toString(),
+                                                      title: 'Agency',
+                                                      value: BaseController
+                                                          .user
+                                                          .value
+                                                          ?.agency,
                                                       scroll: true,
                                                     ),
                                                   ],
@@ -667,7 +661,7 @@ class DashboardScreen extends StatelessWidget {
         if (pickedFile != null) {
           File croppedImage = await BaseController.compressImage(
             File(pickedFile.path),
-            10,
+            40,
           );
 
           final path = croppedImage.path;

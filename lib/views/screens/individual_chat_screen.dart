@@ -1,23 +1,55 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_twilio_chat_conversations/twilio_conversations.dart';
 import 'package:get/get.dart';
 import 'package:jnk_app/consts/app_constants.dart';
 import 'package:jnk_app/controllers/chat_controller.dart';
+import 'package:jnk_app/controllers/messages_controller.dart';
 import 'package:jnk_app/views/widgets/chat_input_widget.dart';
 
-class IndividualChatScreen extends StatelessWidget {
+class IndividualChatScreen extends StatefulWidget {
   final String name;
   final String profilePicUrl;
+  final Conversation conversation;
   const IndividualChatScreen({
     super.key,
     required this.name,
     required this.profilePicUrl,
+    required this.conversation,
   });
 
   @override
-  Widget build(BuildContext context) {
-    final ChatController chatController = Get.put(ChatController());
-    // chatController.buildChatWidgets();
+  State<IndividualChatScreen> createState() => _IndividualChatScreenState();
+}
 
+class _IndividualChatScreenState extends State<IndividualChatScreen> {
+  late final ChatController chatController;
+  late final MessagesController msgController;
+  @override
+  void initState() {
+    super.initState();
+    if (!Get.isRegistered<ChatController>()) {
+      chatController = Get.put(
+        ChatController(),
+        // permanent: true,
+        permanent: false,
+      );
+    } else {
+      chatController = Get.find<ChatController>();
+    }
+    msgController = Get.find<MessagesController>();
+    msgController.initConversation(widget.conversation);
+
+    ever(msgController.isLoaded, (loaded) async {
+      if (loaded == true) {
+        await chatController.getStarredMessages();
+        chatController.buildChatWidgets();
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTap: () {
@@ -43,6 +75,9 @@ class IndividualChatScreen extends StatelessWidget {
                     : 'Show Starred Only',
                 onPressed: () {
                   chatController.toggleShowOnlyStarred();
+                  if (chatController.showOnlyStarred.value) {
+                    // chatController.getStarredMessages();
+                  }
                   chatController.buildChatWidgets(
                     customMessages: chatController.filteredMessages,
                   );
@@ -54,11 +89,30 @@ class IndividualChatScreen extends StatelessWidget {
             children: [
               CircleAvatar(
                 radius: 20,
-                backgroundImage: AssetImage(AppConstants.profilePlaceholder),
+                // backgroundImage: AssetImage(AppConstants.profilePlaceholder),
                 backgroundColor: Colors.transparent,
+                child: ClipOval(
+                  child: (widget.profilePicUrl.toString().startsWith('http'))
+                      ? CachedNetworkImage(
+                          imageUrl: widget.profilePicUrl,
+                          fit: BoxFit.cover,
+                          width: 160, // 2 * radius
+                          height: 160,
+                          placeholder: (context, url) =>
+                              const Center(child: CircularProgressIndicator()),
+                          errorWidget: (context, url, error) =>
+                              const Icon(Icons.error, size: 40),
+                        )
+                      : Image.asset(
+                          AppConstants.profilePlaceholder,
+                          width: 40,
+                          height: 40,
+                          fit: BoxFit.cover,
+                        ),
+                ),
               ),
               SizedBox(width: 10.0),
-              Text(name),
+              Text(widget.name),
             ],
           ),
           titleSpacing: 0,
@@ -92,10 +146,17 @@ class IndividualChatScreen extends StatelessWidget {
                 children: [
                   // Chat messages list
                   Obx(
-                    () => ListView(
-                      padding: const EdgeInsets.only(bottom: 70),
-                      children: chatController.chatWidgets,
-                    ),
+                    () => MessagesController.isLoading.value
+                        ? Center(child: CircularProgressIndicator.adaptive())
+                        : Obx(
+                            () => ListView(
+                              controller: msgController.listScrollController,
+                              reverse: true,
+                              padding: const EdgeInsets.only(bottom: 70),
+                              children: chatController.chatWidgets.reversed
+                                  .toList(),
+                            ),
+                          ),
                   ),
                   Align(
                     alignment: Alignment.bottomCenter,

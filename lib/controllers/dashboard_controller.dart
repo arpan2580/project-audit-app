@@ -1,54 +1,59 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart' as dio;
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jnk_app/controllers/base_controller.dart';
+import 'package:jnk_app/controllers/conversations_controller.dart';
 import 'package:jnk_app/models/dashboard_model.dart';
 import 'package:jnk_app/models/user_model.dart';
 import 'package:jnk_app/services/base_client.dart';
 import 'package:jnk_app/views/dialogs/dialog_helper.dart';
-import 'package:jnk_app/views/screens/login_screen.dart';
 
 class DashboardController extends GetxController {
   static Rxn<DashboardModel> dashboard = Rxn<DashboardModel>();
-  RxBool isLoading = false.obs;
+  // static late final ConversationsController controller;
+  final ConversationsController controller = Get.put(ConversationsController());
+  static RxBool isLoading = true.obs;
+  String? jwtToken;
 
   @override
   void onInit() async {
     super.onInit();
     isLoading.value = true;
-
-    // BaseController.user.value = UserModel.fromJson(
-    //   BaseController.storeToken.read("user_data"),
-    // );
     // Future.delayed(const Duration(seconds: 3), () {
-    fetchDashboardData().then((value) {
-      isLoading.value = false;
-    });
+    // fetchUserData().then((value) {
+    //   fetchDashboardData(fetchUser: false);
+    // isLoading.value = false;
+    // });
+    fetchUserData();
     // });
   }
 
   static Future<void> fetchUserData() async {
     var response1 = await BaseClient().dioPost('/user/fetch-account/', null);
     if (response1 != null && response1['status']) {
-      print("{USER DATA: ${response1['data']}}");
+      // print("{USER DATA: ${response1['data']}}");
       BaseController.storeToken.write("user_data", response1['data']);
-      BaseController.user.value = UserModel.fromJson(
-        BaseController.storeToken.read("user_data"),
-      );
+      BaseController.user.value = UserModel.fromJson(response1['data']);
+      BaseController.chatUsers.value = [
+        if (BaseController.user.value?.manager != null)
+          BaseController.user.value?.manager,
+        ...(BaseController.user.value?.managersUsers ?? []),
+        ...(BaseController.user.value?.adminUsers ?? []),
+      ];
     } else {
       DialogHelper.showErrorToast(
         description: "Your session has expired. Please log in again.",
       );
-      Get.offAll(() => LoginScreen());
+      // Get.offAll(() => LoginScreen());
     }
   }
 
-  static Future<void> fetchDashboardData({bool fetchUser = false}) async {
-    if (BaseController.storeToken.read("user_data") != null) {
-      BaseController.user.value = UserModel.fromJson(
-        BaseController.storeToken.read("user_data"),
-      );
+  Future<void> fetchDashboardData({bool fetchUser = false}) async {
+    final userJson = BaseController.storeToken.read("user_data");
+    if (userJson != null) {
+      BaseController.user.value = UserModel.fromJson(userJson);
     }
     if (BaseController.user.value == null || fetchUser) {
       fetchUserData();
@@ -56,7 +61,7 @@ class DashboardController extends GetxController {
     var response = await BaseClient().dioPost('/dashboard/', null);
     if (response != null) {
       if (response['status']) {
-        print("{DASH DATA: ${response['data']}}");
+        // print("{DASH DATA: ${response['data']}}");
         dashboard.value = DashboardModel.fromJson(response['data']);
         final attendanceInfo = dashboard.value?.attendanceInfo;
         final lunchBreakInfo = dashboard.value?.lunchBreakInfo;
@@ -65,6 +70,7 @@ class DashboardController extends GetxController {
             lunchBreakInfo?.startTime == null &&
             lunchBreakInfo?.endTime == null) {
           BaseController.storeToken.remove("day_status");
+          BaseController.dayStatus.value = "";
         }
         BaseController.isPresent.value =
             attendanceInfo?.status != 'absent' &&
@@ -75,6 +81,22 @@ class DashboardController extends GetxController {
             lunchBreakInfo?.startTime != null && lunchBreakInfo?.endTime == null
             ? true
             : false;
+        isLoading.value = false;
+        await initChatWithRetry(controller);
+        // if (BaseController.isChatInitialized.value == false) {
+        //   await controller.fetchAccessToken().then((value) async {
+        //     // print("{TWILIO TOKEN: $value}");
+        //     await controller.create(jwtToken: value!).then((onValue) {
+        //       controller
+        //           .getOrJoinConversation(
+        //             BaseController.user.value!.twilioConversationSid,
+        //           )
+        //           .then((val) {
+        //             BaseController.isChatInitialized.value = true;
+        //           });
+        //     });
+        //   });
+        // }
       } else {
         DialogHelper.showErrorToast(description: response['message']);
       }
@@ -90,7 +112,7 @@ class DashboardController extends GetxController {
     );
     if (response != null) {
       if (response['status']) {
-        print("{LUNCH DATA: ${response.toString()}}");
+        // print("{LUNCH DATA: ${response.toString()}}");
         if (status == "start") {
           BaseController.isLunchBreak.value = true;
         } else {
@@ -119,14 +141,15 @@ class DashboardController extends GetxController {
         "longitude": long,
       });
       response = await BaseClient().dioPost('/mark-attendance/', formData);
-      BaseController.hideLoading();
       if (response != null) {
-        print("{ATTENDANCE DATA: ${response.toString()}}");
+        // print("{ATTENDANCE DATA: ${response.toString()}}");
         if (response['status']) {
           // BaseController.isPresent.value = true;
           fetchDashboardData();
+          BaseController.hideLoading();
           DialogHelper.showSuccessToast(description: response['message']);
         } else {
+          BaseController.hideLoading();
           DialogHelper.showErrorToast(description: response['messages']);
         }
       }
@@ -144,6 +167,7 @@ class DashboardController extends GetxController {
         BaseController.hideLoading();
         BaseController.isPresent.value = false;
         BaseController.storeToken.write("day_status", "completed");
+        BaseController.dayStatus.value = "completed";
         DialogHelper.showSuccessToast(description: response['message']);
       } else {
         BaseController.hideLoading();
@@ -177,5 +201,72 @@ class DashboardController extends GetxController {
     } else {
       DialogHelper.showErrorToast(description: 'Image not recognized');
     }
+  }
+
+  Future<void> initChatWithRetry(ConversationsController controller) async {
+    if (BaseController.isChatInitialized.value == true) return;
+
+    final initializationFuture = initializeChat(controller);
+    final timeoutFuture = waitForInitialization(timeout: 13);
+    final success = await Future.any([
+      initializationFuture.then((_) => true),
+      timeoutFuture,
+    ]);
+    if (!success) {
+      showRetryDialog(controller);
+    }
+  }
+
+  Future<void> initializeChat(ConversationsController controller) async {
+    try {
+      final token = await controller.fetchAccessToken();
+      if (token == null) {
+        throw Exception("Failed to get Twilio token");
+      }
+      await controller.create(jwtToken: token);
+      await controller.getOrJoinConversation(
+        BaseController.user.value!.twilioConversationSid,
+      );
+
+      BaseController.isChatInitialized.value = true;
+      // print("✅ Chat initialized successfully.");
+    } catch (e) {
+      // print("❌ Chat initialization failed: $e");
+    }
+  }
+
+  Future<bool> waitForInitialization({int timeout = 13}) async {
+    const checkInterval = Duration(seconds: 1);
+    final maxWaitTime = Duration(seconds: timeout);
+    final stopwatch = Stopwatch()..start();
+    while (stopwatch.elapsed < maxWaitTime) {
+      if (BaseController.isChatInitialized.value == true) {
+        return true;
+      }
+      await Future.delayed(checkInterval);
+    }
+    return false;
+  }
+
+  void showRetryDialog(ConversationsController controller) {
+    Get.dialog(
+      AlertDialog(
+        title: const Text("Chat Initialization Timeout"),
+        content: const Text(
+          "Chat could not be initialized. Please click on retry button to try again.",
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              Get.back();
+              BaseController.isChatInitialized.value = false;
+              initChatWithRetry(controller);
+            },
+            child: const Text("Retry", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+      barrierDismissible: false,
+    );
   }
 }

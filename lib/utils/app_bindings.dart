@@ -1,4 +1,3 @@
-// app_bindings.dart
 import 'package:get/get.dart';
 import 'package:jnk_app/controllers/attendance_controller.dart';
 import 'package:jnk_app/controllers/bit_plan_controller.dart';

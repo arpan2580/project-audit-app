@@ -1,17 +1,17 @@
 import 'package:dio/dio.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:jnk_app/services/dio_exceptions.dart';
 
 import '../controllers/base_controller.dart';
 import '../views/dialogs/dialog_helper.dart';
 
 class AuthorizationInterceptor extends Interceptor {
-  final isLoggedIn = GetStorage();
-
   @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    var token = isLoggedIn.read('token');
-    var refreshToken = isLoggedIn.read('refreshToken');
+  void onRequest(
+    RequestOptions options,
+    RequestInterceptorHandler handler,
+  ) async {
+    var token = BaseController.storeToken.read('token');
+    var refreshToken = BaseController.storeToken.read('refreshToken');
 
     if (_needAuthorizationHeader(options) == 1) {
       options.headers['Authorization'] = 'Bearer $token';
@@ -66,7 +66,7 @@ class AuthorizationInterceptor extends Interceptor {
         try {
           await BaseController.tokenGeneration().then((value) async {
             if (value) {
-              token = isLoggedIn.read('token');
+              token = BaseController.storeToken.read('token');
 
               err.requestOptions.headers["Authorization"] = 'Bearer $token';
 
@@ -89,8 +89,13 @@ class AuthorizationInterceptor extends Interceptor {
           //   print('test: ' + e.toString());
           // }
         } on DioException catch (e) {
-          final errorMessage = DioExceptions.fromDioError(e).toString();
-          print(errorMessage.toString());
+          DioExceptions.fromDioError(e).toString();
+          // print(errorMessage.toString());
+          DialogHelper.showErrorToast(
+            description: "Your session has expired. Please log in again.",
+          );
+          BaseController.sessionExpired();
+          return;
         }
       } else {
         BaseController.hideLoading();

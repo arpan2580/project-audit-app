@@ -28,12 +28,12 @@ class OutletController extends GetxController {
       });
       response = await BaseClient().dioPost('/visit/start/', formData);
       if (response != null) {
-        print("{START AUDIT DATA: ${response.toString()}}");
         if (response['status']) {
           BaseController.storeToken.write(
             'currentAudit',
             json.encode({
               "outletId": id,
+              "startVisitUserId": BaseController.user.value?.id,
               "startTime": response['data']['start_time'],
               "latitude": lat,
               "longitude": long,
@@ -42,9 +42,6 @@ class OutletController extends GetxController {
               // "visitCode": response['data']['visit_code'],
             }),
           );
-          print(
-            "{CURRENT AUDIT: ${BaseController.storeToken.read('currentAudit')}}",
-          );
           BaseController.endTime.value = '';
           BaseController.isAuditStarted.value = true;
           BaseController.currAuditOutletId.value = id;
@@ -52,6 +49,7 @@ class OutletController extends GetxController {
           BaseController.longitude.value = long;
           BaseController.startTime.value = response['data']['start_time']
               .toString();
+          BaseController.auditorName.value = BaseController.user.value!.name;
           bitPlanController.initData();
           GpsLoggerService.startLogging();
           BaseController.hideLoading();
@@ -79,7 +77,6 @@ class OutletController extends GetxController {
       "gps_log": gpsLogs,
     });
     if (response != null) {
-      print("{END AUDIT DATA: ${response.toString()}}");
       if (response['status']) {
         BaseController.storeToken.remove('currentAudit');
         BaseController.isAuditStarted.value = false;
@@ -88,7 +85,8 @@ class OutletController extends GetxController {
         BaseController.longitude.value = '';
         BaseController.startTime.value = '';
         // BaseController.endTime.value = DateTime.now().toString();
-
+        BitPlanController.txtSearchOutlet.clear();
+        BitPlanController.isSearch.value = false;
         bitPlanController.initData();
         BaseController.hideLoading();
         Get.back();

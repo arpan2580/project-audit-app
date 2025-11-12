@@ -4,14 +4,10 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:dio/dio.dart' as dio show LogInterceptor;
 import 'package:jnk_app/controllers/base_controller.dart';
-import 'package:get_storage/get_storage.dart';
-
 import '../utils/authorization_interceptor.dart';
 import '../views/dialogs/dialog_helper.dart';
 
 class BaseClient {
-  final isLoggedIn = GetStorage();
-
   final Dio _dio;
   BaseClient()
     : _dio = Dio(
@@ -25,7 +21,7 @@ class BaseClient {
       ) {
     _dio.interceptors.add(AuthorizationInterceptor());
 
-    // 📝 Logging Interceptor
+    // Logging Interceptor
     _dio.interceptors.add(
       dio.LogInterceptor(
         request: true,
@@ -38,23 +34,6 @@ class BaseClient {
       ),
     );
   }
-
-  //GET
-  // Future<dynamic> get(String api) async {
-  //   try {
-  //     final response = await _dio.get(api);
-  //     if (response.statusCode == 200 || response.statusCode == 201) {
-  //       var responseJson = json.decode(response.data);
-  //       return responseJson;
-  //     }
-  //   } on DioError catch (err) {
-  //     final errorMessage = DioException.fromDioError(err).toString();
-  //     throw errorMessage;
-  //   } catch (e) {
-  //     print(e);
-  //     throw e.toString();
-  //   }
-  // }
 
   //POST
   Future<dynamic> dioPost(

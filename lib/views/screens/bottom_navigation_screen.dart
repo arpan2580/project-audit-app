@@ -3,6 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:get/get.dart';
 import 'package:jnk_app/consts/app_constants.dart';
 import 'package:jnk_app/controllers/base_controller.dart';
+import 'package:jnk_app/controllers/conversations_controller.dart';
 import 'package:jnk_app/controllers/dashboard_controller.dart';
 import 'package:jnk_app/views/dialogs/dialog_helper.dart';
 import 'package:jnk_app/views/screens/agents_chat_screen.dart';
@@ -22,6 +23,14 @@ class BottomNavigationScreen extends StatefulWidget {
 class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
   final PageController pageController = PageController(initialPage: 0);
   late int selectedIndex = 0;
+  final ConversationsController controller = Get.put(ConversationsController());
+
+  @override
+  void initState() {
+    super.initState();
+    DashboardController.isLoading.value = true;
+    DashboardController().fetchDashboardData();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,15 +98,76 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
                         children: [
                           FloatingActionButton(
                             heroTag: 'individual_chat',
-                            onPressed: () {
+                            onPressed: () async {
                               BaseController.showOptions.value =
                                   !BaseController.showOptions.value;
-                              Get.to(
-                                () => IndividualChatScreen(
-                                  name: 'Rahul Sharma',
-                                  profilePicUrl: 'profile_pic_url',
-                                ),
-                              );
+                              // final controller = ConversationsController();
+                              // controller.getMyConversations().then((onValue) {
+                              //   print(
+                              //     "{CONVER: ${controller.conversations[0]}}",
+                              //   );
+                              //   print("{CLIENT: ${controller.client}}");
+                              //   if (controller.conversations.isNotEmpty &&
+                              //       controller.client != null) {
+                              //     print(
+                              //       "{CONVER: ${controller.conversations}}",
+                              //     );
+                              //     final MessagesController msgController =
+                              //         Get.put(
+                              //           MessagesController(
+                              //             controller.conversations[0],
+                              //             controller.client!,
+                              //           ),
+                              //         );
+                              //     msgController.loadConversation();
+                              //     print(
+                              //       "{MESSAGES: ${msgController.messages}}",
+                              //     );
+                              //   } else {
+                              //     Get.back();
+                              //     DialogHelper.showErrorToast(
+                              //       description: "No conversations found.",
+                              //     );
+                              //   }
+
+                              //   // controller.conversations[0].getMessages().then((messages) {
+                              //   //   print("{MESSAGES: ${messages.items}}");
+                              //   //   // Assuming messages.items is a List<Map<String, dynamic>>
+                              //   //   this.messages.clear();
+                              //   //   this.messages.addAll(List<Map<String, dynamic>>.from(messages.items));
+                              //   //   buildChatWidgets();
+                              //   //   isLoading.value = false;
+                              //   // });
+                              // });
+                              // final ConversationsController controller =
+                              //     Get.put(ConversationsController());
+                              BaseController.showLoading();
+                              final conversation = await controller
+                                  .getOrJoinConversation(
+                                    BaseController
+                                        .user
+                                        .value!
+                                        .twilioConversationSid,
+                                  );
+                              if (conversation != null) {
+                                Get.to(
+                                  () => IndividualChatScreen(
+                                    name:
+                                        BaseController.user.value?.agency !=
+                                                '' ||
+                                            BaseController.user.value?.agency !=
+                                                null
+                                        ? '${BaseController.user.value!.agency} Admin'
+                                        : 'Admin',
+                                    profilePicUrl: 'profile_pic_url',
+                                    conversation: conversation,
+                                  ),
+                                );
+                              } else {
+                                DialogHelper.showErrorToast(
+                                  description: "Unable to open chat.",
+                                );
+                              }
                             },
                             tooltip: 'Chat with Admin',
                             backgroundColor: AppConstants.logoBlueColor,
@@ -138,14 +208,86 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
 
       // Only FAB here (no Column)
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // BaseController.showOptions.value = !BaseController.showOptions.value;
-          DialogHelper.showInfoToast(description: "Feature coming soon!");
-        },
-        backgroundColor: AppConstants.logoBlueColor,
-        shape: const CircleBorder(),
-        child: SvgPicture.asset('assets/icons/Chat-icon.svg', height: 28.0),
+      floatingActionButton: Stack(
+        alignment: Alignment(1.4, -1.4),
+        children: [
+          FloatingActionButton(
+            onPressed: () async {
+              if (BaseController.isChatInitialized.value) {
+                if (BaseController.user.value?.role == 'agnt') {
+                  BaseController.showLoading();
+                  final conversation = await controller.getOrJoinConversation(
+                    BaseController.user.value!.twilioConversationSid,
+                  );
+                  if (conversation != null) {
+                    Get.to(
+                      () => IndividualChatScreen(
+                        name:
+                            BaseController.user.value?.agency != '' ||
+                                BaseController.user.value?.agency != null
+                            ? '${BaseController.user.value!.agency} Admin'
+                            : 'Admin',
+                        profilePicUrl: 'profile_pic_url',
+                        conversation: conversation,
+                      ),
+                    );
+                  } else {
+                    DialogHelper.showErrorToast(
+                      description: "Unable to open chat.",
+                    );
+                  }
+
+                  // Get.to(
+                  //   () => IndividualChatScreen(
+                  //     name:
+                  //         BaseController.user.value?.agency != '' ||
+                  //             BaseController.user.value?.agency != null
+                  //         ? '${BaseController.user.value!.agency} Admin'
+                  //         : 'Admin',
+                  //     profilePicUrl: 'profile_pic_url',
+                  //     conversation: ,
+                  //   ),
+                  // );
+                } else {
+                  BaseController.showOptions.value =
+                      !BaseController.showOptions.value;
+                  // DialogHelper.showInfoToast(
+                  //   description: "Feature coming soon!",
+                  // );
+                }
+              } else {
+                DialogHelper.showInfoToast(
+                  description: "Please wait while initializing!",
+                );
+              }
+              // DialogHelper.showInfoToast(description: "Feature coming soon!");
+            },
+            backgroundColor: AppConstants.logoBlueColor,
+            shape: const CircleBorder(),
+            child: Obx(
+              () => (BaseController.isChatInitialized.value)
+                  ? SvgPicture.asset('assets/icons/Chat-icon.svg', height: 28.0)
+                  : Center(
+                      child: CircularProgressIndicator.adaptive(
+                        strokeWidth: 2.0,
+                        padding: EdgeInsets.all(15.0),
+                      ),
+                    ),
+            ),
+          ),
+
+          Obx(() {
+            int unreadCount = BaseController.unreadMessages.value;
+            return CircleAvatar(
+              radius: (BaseController.unreadMessages.value > 0) ? 14 : 0,
+              backgroundColor: AppConstants.primaryColor,
+              child: Text(
+                unreadCount > 99 ? '99+' : unreadCount.toString(),
+                style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+              ),
+            );
+          }),
+        ],
       ),
 
       bottomNavigationBar: SafeArea(
@@ -170,7 +312,7 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
                 ),
                 onPressed: () {
                   BaseController.showOptions.value = false;
-                  DashboardController.fetchDashboardData(fetchUser: true);
+                  DashboardController().fetchDashboardData(fetchUser: true);
                   selectedIndex = 0;
                   pageController.jumpToPage(0);
                 },

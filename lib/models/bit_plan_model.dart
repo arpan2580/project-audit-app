@@ -1,3 +1,6 @@
+import 'package:intl/intl.dart';
+import 'package:jnk_app/controllers/base_controller.dart';
+
 class BitPlanModel {
   final int id;
   final String olName;
@@ -11,6 +14,8 @@ class BitPlanModel {
   final int currentMonthVisitCount;
   final LastVisit? lastVisit;
   final String? lastVisitDate;
+  final List<Visit> todaysVisitList;
+  final Visit? myVisit;
 
   BitPlanModel({
     required this.id,
@@ -25,9 +30,45 @@ class BitPlanModel {
     required this.currentMonthVisitCount,
     this.lastVisit,
     this.lastVisitDate,
+    required this.todaysVisitList,
+    this.myVisit,
   });
 
-  factory BitPlanModel.fromJson(Map<String, dynamic> json) {
+  factory BitPlanModel.fromJson(
+    Map<String, dynamic> json, {
+    required int loggedInUserId,
+  }) {
+    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+
+    final todaysVisits =
+        (json['todays_visit_list'] as List?)
+            ?.map((e) => Visit.fromJson(e))
+            .toList() ??
+        [];
+
+    Visit? ownVisit;
+    try {
+      ownVisit = todaysVisits.firstWhere(
+        (v) =>
+            v.userId == loggedInUserId &&
+            v.date == today &&
+            v.endTime == null &&
+            v.status.toLowerCase() == 'started',
+      );
+
+      BaseController.storeToken.write('currentAudit', ownVisit);
+      BaseController.isAuditStarted.value = true;
+      BaseController.currAuditOutletId.value = json['id'] ?? 0;
+      BaseController.currAuditOutletName.value = json['ol_name'];
+      BaseController.startTime.value = ownVisit.startTime ?? '';
+      BaseController.latitude.value = ownVisit.startLatitude?.toString() ?? '';
+      BaseController.longitude.value =
+          ownVisit.startLongitude?.toString() ?? '';
+      BaseController.auditorName.value = ownVisit.userName;
+    } catch (e) {
+      ownVisit = null;
+    }
+
     return BitPlanModel(
       id: json['id'] ?? 0,
       olName: json['ol_name'] ?? '',
@@ -43,6 +84,8 @@ class BitPlanModel {
           ? LastVisit.fromJson(json['last_visit'])
           : null,
       lastVisitDate: json['last_visit_date'],
+      todaysVisitList: todaysVisits,
+      myVisit: ownVisit,
     );
   }
 
@@ -60,17 +103,27 @@ class BitPlanModel {
       "current_month_visit_count": currentMonthVisitCount,
       "last_visit": lastVisit?.toJson(),
       "last_visit_date": lastVisitDate,
+      'todays_visit_list': todaysVisitList.map((e) => e.toJson()).toList(),
     };
   }
 
-  /// Helper method to parse a list of outlets from JSON
-  static List<BitPlanModel> fromJsonList(List<dynamic> jsonList) {
-    return jsonList.map((json) => BitPlanModel.fromJson(json)).toList();
+  // Helper method to parse a list of outlets from JSON
+  static List<BitPlanModel> fromJsonList(
+    List<dynamic> jsonList, {
+    required int loggedInUserId,
+  }) {
+    return jsonList
+        .map(
+          (json) => BitPlanModel.fromJson(json, loggedInUserId: loggedInUserId),
+        )
+        .toList();
   }
 }
 
 class LastVisit {
   final int id;
+  final int visitUserId;
+  final String userName;
   final String date;
   final String? startTime;
   final String? endTime;
@@ -83,6 +136,8 @@ class LastVisit {
 
   LastVisit({
     required this.id,
+    required this.visitUserId,
+    required this.userName,
     required this.date,
     this.startTime,
     this.endTime,
@@ -97,6 +152,8 @@ class LastVisit {
   factory LastVisit.fromJson(Map<String, dynamic> json) {
     return LastVisit(
       id: json['id'] ?? 0,
+      visitUserId: json['user_id'] ?? 0,
+      userName: json['user_name'],
       date: json['date'] ?? '',
       startTime: json['start_time'],
       endTime: json['end_time'],
@@ -112,6 +169,8 @@ class LastVisit {
   Map<String, dynamic> toJson() {
     return {
       "id": id,
+      "user_id": visitUserId,
+      "user_name": userName,
       "date": date,
       "start_time": startTime,
       "end_time": endTime,
@@ -121,6 +180,70 @@ class LastVisit {
       "start_longitude": long,
       "status": status,
       "outlet_agency": outletAgency,
+    };
+  }
+}
+
+class Visit {
+  final int id;
+  final int userId;
+  final String userName;
+  final String date;
+  final String? startTime;
+  final String? endTime;
+  final double? startLatitude;
+  final double? startLongitude;
+  final String? duration;
+  final String? photo;
+  final String status;
+  final String outletAgency;
+
+  Visit({
+    required this.id,
+    required this.userId,
+    required this.userName,
+    required this.date,
+    this.startTime,
+    this.endTime,
+    this.startLatitude,
+    this.startLongitude,
+    this.duration,
+    this.photo,
+    required this.status,
+    required this.outletAgency,
+  });
+
+  factory Visit.fromJson(Map<String, dynamic> json) {
+    return Visit(
+      id: json['id'],
+      userId: json['user_id'] ?? 0,
+      userName: json['user_name'],
+      date: json['date'],
+      startTime: json['start_time'],
+      endTime: json['end_time'],
+      startLatitude: (json['start_latitude'] as num?)?.toDouble(),
+      startLongitude: (json['start_longitude'] as num?)?.toDouble(),
+      duration: json['duration'],
+      photo: json['photo'],
+      status: json['status'],
+      outletAgency: json['outlet_agency'],
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'user_id': userId,
+      'user_name': userName,
+      'date': date,
+      'start_time': startTime,
+      'end_time': endTime,
+      'start_latitude': startLatitude,
+      'start_longitude': startLongitude,
+      'duration': duration,
+      'photo': photo,
+      'status': status,
+      'outlet_agency': outletAgency,
     };
   }
 }

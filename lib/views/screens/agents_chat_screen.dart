@@ -1,66 +1,147 @@
 import 'package:flutter/material.dart';
-import 'package:get/route_manager.dart';
+import 'package:get/get.dart';
 import 'package:jnk_app/consts/app_constants.dart';
+import 'package:jnk_app/controllers/agents_chat_controller.dart';
+import 'package:jnk_app/controllers/base_controller.dart';
+import 'package:jnk_app/controllers/chat_controller.dart';
+import 'package:jnk_app/controllers/conversations_controller.dart';
+import 'package:jnk_app/controllers/messages_controller.dart';
+import 'package:jnk_app/views/dialogs/dialog_helper.dart';
 import 'package:jnk_app/views/screens/individual_chat_screen.dart';
 import 'package:jnk_app/views/widgets/agents_chat_widget.dart';
+import 'package:jnk_app/views/widgets/search_agent_widget.dart';
 
 class AgentsChatScreen extends StatelessWidget {
   const AgentsChatScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      extendBody: true,
-      appBar: AppBar(title: const Text('Agents Chat'), centerTitle: true),
-      body: Container(
-        height: MediaQuery.of(context).size.height,
-        width: MediaQuery.of(context).size.width,
-        decoration: BoxDecoration(
-          image: DecorationImage(
-            image: AssetImage(AppConstants.dashboardCardBg),
-            fit: BoxFit.cover,
-          ),
-        ),
-        child: Container(
+    final controller = Get.find<ConversationsController>();
+    final AgentsChatController agentsChatController = Get.put(
+      AgentsChatController(),
+    );
+    return Obx(
+      () => Scaffold(
+        extendBodyBehindAppBar: true,
+        extendBody: true,
+        appBar: AppBar(title: const Text('Agents Chat'), centerTitle: true),
+        body: Container(
+          height: MediaQuery.of(context).size.height,
+          width: MediaQuery.of(context).size.width,
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.center,
-              colors: [
-                AppConstants.primaryColor.withValues(alpha: 0.5),
-                AppConstants.backgroundColor.withValues(alpha: 0.5),
-                AppConstants.backgroundColor.withValues(alpha: 0.7),
-                AppConstants.backgroundColor.withValues(alpha: 0.7),
-                AppConstants.backgroundColor.withValues(alpha: 0.7),
-              ],
+            image: DecorationImage(
+              image: AssetImage(AppConstants.dashboardCardBg),
+              fit: BoxFit.cover,
             ),
           ),
-          child: SafeArea(
-            child: SizedBox(
-              child: ListView.builder(
-                shrinkWrap: true,
-                padding: EdgeInsets.only(bottom: 50.0),
-                physics: BouncingScrollPhysics(),
-                itemCount: 5,
-                itemBuilder: (BuildContext context, int index) {
-                  return GestureDetector(
-                    onTap: () {
-                      Get.to(
-                        () => IndividualChatScreen(
-                          name: 'Agent $index',
-                          profilePicUrl: 'profile_pic_url',
-                        ),
-                      );
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.center,
+                colors: [
+                  AppConstants.primaryColor.withValues(alpha: 0.5),
+                  AppConstants.backgroundColor.withValues(alpha: 0.5),
+                  AppConstants.backgroundColor.withValues(alpha: 0.7),
+                  AppConstants.backgroundColor.withValues(alpha: 0.7),
+                  AppConstants.backgroundColor.withValues(alpha: 0.7),
+                ],
+              ),
+            ),
+            child: SafeArea(
+              child: Column(
+                children: [
+                  SearchAgentWidget(controller: agentsChatController),
+                  SizedBox(height: 10.0),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    padding: EdgeInsets.only(bottom: 50.0),
+                    physics: BouncingScrollPhysics(),
+                    itemCount: agentsChatController.filteredAgents.length,
+                    itemBuilder: (BuildContext context, int index) {
+                      final agnt = agentsChatController.filteredAgents[index];
+                      if (agnt.empCode != BaseController.user.value!.empCode) {
+                        return Obx(() {
+                          final sid = agnt.twilioConversationSid;
+                          final unread =
+                              controller.unreadMessageCounts[sid] ?? 0;
+                          return GestureDetector(
+                            onTap: () async {
+                              final conversationSid =
+                                  agnt.twilioConversationSid;
+                              // final controller =
+                              //     Get.find<ConversationsController>();
+                              BaseController.showLoading();
+                              // Ensure client is initialized
+                              if (!controller.isClientInitialized.value) {
+                                await controller.fetchAccessToken().then((
+                                  token,
+                                ) async {
+                                  if (token != null) {
+                                    await controller.create(jwtToken: token);
+                                  }
+                                });
+                              }
+
+                              // Fetch or join the conversation
+                              final conversation = await controller
+                                  .getOrJoinConversation(conversationSid);
+
+                              // if (conversation != null) {
+                              //   Get.to(() => ChatScreen(conversation: conversation));
+                              // } else {
+                              //   DialogHelper.showErrorToast(description: "Unable to open chat.");
+                              // }
+                              if (conversation != null) {
+                                // Always dispose old controllers!
+                                if (Get.isRegistered<MessagesController>()) {
+                                  Get.delete<MessagesController>();
+                                }
+                                if (Get.isRegistered<ChatController>()) {
+                                  Get.delete<ChatController>();
+                                }
+
+                                // Create NEW controllers for the selected conversation/agent
+                                final chatController = Get.put(
+                                  ChatController(), // create fresh instance
+                                  permanent: false,
+                                );
+                                Get.put(
+                                  MessagesController(
+                                    conversation,
+                                    controller.client!,
+                                    chatController,
+                                  ),
+                                  permanent: false,
+                                );
+                                Get.to(
+                                  () => IndividualChatScreen(
+                                    name: agnt.name,
+                                    profilePicUrl: agnt.avatar,
+                                    conversation: conversation,
+                                  ),
+                                );
+                              } else {
+                                DialogHelper.showErrorToast(
+                                  description: "Unable to open chat.",
+                                );
+                              }
+                            },
+                            child: AgentsChatWidget(
+                              agentName: agnt.name,
+                              agentProfilePic: agnt.avatar,
+                              lastMessage: agnt.empCode,
+                              lastActive: '',
+                              unreadCount: unread,
+                            ),
+                          );
+                        });
+                      } else {
+                        return SizedBox.shrink();
+                      }
                     },
-                    child: AgentsChatWidget(
-                      agentName: 'Agent $index',
-                      agentProfilePic: 'profile_pic_url',
-                      lastMessage: 'Last message snippet',
-                      lastActive: 'Yesterday',
-                    ),
-                  );
-                },
+                  ),
+                ],
               ),
             ),
           ),

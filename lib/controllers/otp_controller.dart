@@ -20,7 +20,6 @@ class OtpController extends GetxController {
       true,
     );
     if (response != null) {
-      print("{OTP DATA: ${response.toString()}}");
       if (response['status']) {
         if (response['data']['access'] != null ||
             response['data']['refresh'] != null ||
@@ -38,14 +37,16 @@ class OtpController extends GetxController {
             null,
           );
           if (response1 != null && response1['status']) {
-            // print("{USER DATA: ${response1['data']}}");
             BaseController.user.value = UserModel.fromJson(response1['data']);
             BaseController.storeToken.write(
               "forcePasswordReset",
               response1['data']['pass_force_reset'],
             );
           } else {}
-          if (BaseController.storeToken.read('forcePasswordReset') == true) {
+          final forcePassReset = BaseController.storeToken.read(
+            'forcePasswordReset',
+          );
+          if (forcePassReset == 'true') {
             Get.to(() => ChangePassScreen());
           } else {
             Get.offAll(() => BottomNavigationScreen());
