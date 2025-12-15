@@ -65,16 +65,18 @@ class NonDismissibleWidget extends StatelessWidget {
                         ),
                       ),
                       if (onRefresh != null) SizedBox(width: 20),
-                      ElevatedButton(
-                        onPressed: onRefresh,
-                        child: Text(
-                          retryText ?? "Retry",
-                          style: TextStyle(
-                            color: AppConstants.backgroundColor,
-                            fontSize: AppConstants.fontRegular,
-                          ),
-                        ),
-                      ),
+                      (onRefresh != null)
+                          ? ElevatedButton(
+                              onPressed: onRefresh,
+                              child: Text(
+                                retryText ?? "Retry",
+                                style: TextStyle(
+                                  color: AppConstants.backgroundColor,
+                                  fontSize: AppConstants.fontRegular,
+                                ),
+                              ),
+                            )
+                          : SizedBox.shrink(),
                     ],
                   ),
 

@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:dio/dio.dart';
-import 'package:dio/dio.dart' as dio show LogInterceptor;
+// import 'package:dio/dio.dart' as dio show LogInterceptor;
 import 'package:jnk_app/controllers/base_controller.dart';
 import '../utils/authorization_interceptor.dart';
 import '../views/dialogs/dialog_helper.dart';
@@ -22,17 +22,17 @@ class BaseClient {
     _dio.interceptors.add(AuthorizationInterceptor());
 
     // Logging Interceptor
-    _dio.interceptors.add(
-      dio.LogInterceptor(
-        request: true,
-        requestHeader: true,
-        requestBody: true,
-        responseHeader: true,
-        responseBody: true,
-        error: true,
-        logPrint: (obj) => print("🔍 DIO LOG: $obj"),
-      ),
-    );
+    // _dio.interceptors.add(
+    //   dio.LogInterceptor(
+    //     request: true,
+    //     requestHeader: true,
+    //     requestBody: true,
+    //     responseHeader: true,
+    //     responseBody: true,
+    //     error: true,
+    //     logPrint: (obj) => print("🔍 DIO LOG: $obj"),
+    //   ),
+    // );
   }
 
   //POST

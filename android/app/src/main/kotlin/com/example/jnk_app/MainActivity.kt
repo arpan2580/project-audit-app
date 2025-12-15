@@ -1,4 +1,4 @@
-package com.example.jnk_app
+package com.jnkundu.jnk_app
 
 import android.content.Intent
 import android.os.Bundle
@@ -7,7 +7,7 @@ import io.flutter.embedding.android.FlutterActivity
 import io.flutter.plugin.common.MethodChannel
 
 class MainActivity: FlutterActivity() {
-    private val CHANNEL = "com.yourdomain.time/settings"
+    private val CHANNEL = "com.jnkundu.time/settings"
 
     override fun configureFlutterEngine(flutterEngine: io.flutter.embedding.engine.FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
