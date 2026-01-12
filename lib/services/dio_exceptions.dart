@@ -45,7 +45,7 @@ class DioExceptions implements Exception {
   }
 
   String _handleStatusCode(int? statusCode) {
-    print("Status Code: $statusCode");
+    // print("Status Code: $statusCode");
     switch (statusCode) {
       case 400:
         return 'Bad request.';

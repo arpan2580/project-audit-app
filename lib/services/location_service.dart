@@ -67,7 +67,7 @@ class LocationService {
       } else {
         BaseController.locationMocked.value = false;
         BaseController.currentLocation.value = position;
-        print("Real location: ${position.latitude}, ${position.longitude}");
+        // print("Real location: ${position.latitude}, ${position.longitude}");
       }
     } catch (e) {
       BaseController.locationMocked.value = false;

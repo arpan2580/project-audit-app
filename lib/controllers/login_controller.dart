@@ -53,7 +53,6 @@ class LoginController extends GetxController {
     );
     BaseController.hideLoading();
     if (response != null) {
-      print("{LOGIN: $response}");
       if (response['status']) {
         BaseController.loginEmail = response['data']['email'];
         BaseController.storeToken.write('lastEmail', response['data']['email']);

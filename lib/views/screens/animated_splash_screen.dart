@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:jnk_app/controllers/base_controller.dart';
+import 'package:jnk_app/services/location_service.dart';
 import 'package:jnk_app/views/screens/bottom_navigation_screen.dart';
+import 'package:jnk_app/views/screens/location_disclosure_screen.dart';
 import 'package:jnk_app/views/screens/login_screen.dart';
 
 class AnimatedSplashScreen extends StatefulWidget {
@@ -14,6 +17,7 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen> {
   GetStorage storage = GetStorage();
   dynamic token;
   dynamic refreshToken;
+  String? locationDisclosureAccepted = 'false';
   dynamic page;
 
   @override
@@ -22,14 +26,26 @@ class _AnimatedSplashScreenState extends State<AnimatedSplashScreen> {
     Future.delayed(const Duration(seconds: 1), () {
       token = storage.read('token');
       refreshToken = storage.read('refreshToken');
-      // print(token);
-      // print(refreshToken);
+      locationDisclosureAccepted = storage.read('locationDisclosureAccepted');
     });
+    // Future.delayed(const Duration(seconds: 2), () {
+    //
+    // });
     Future.delayed(const Duration(seconds: 2), () {
-      if ((token != null) && (refreshToken != null)) {
-        page = BottomNavigationScreen();
+      if (locationDisclosureAccepted == 'true') {
+        LocationService.checkLocation();
+        if ((token != null) && (refreshToken != null)) {
+          page = BottomNavigationScreen();
+        } else {
+          page = LoginScreen();
+        }
+        BaseController.locationDisclosureAccepted.value = true;
       } else {
-        page = LoginScreen();
+        page = LocationDisclosureScreen(
+          token: token,
+          refreshToken: refreshToken,
+        );
+        BaseController.locationDisclosureAccepted.value = false;
       }
       if (mounted) {
         Navigator.of(context).pushReplacement(createRoute(page));

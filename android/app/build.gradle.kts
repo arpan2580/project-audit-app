@@ -18,8 +18,8 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "com.jnkundu.jnk_app"
-    compileSdk = flutter.compileSdkVersion
-    // compileSdk = 36
+    // compileSdk = flutter.compileSdkVersion
+    compileSdk = 36
     // ndkVersion = flutter.ndkVersion
     ndkVersion = "27.0.12077973"
 
@@ -99,6 +99,12 @@ android {
                 useVersion("1.5.2")
                 because("Twilio SDK requires ExperimentalCoroutineDispatcher from coroutines 1.5.x")
             }
+        }
+    }
+
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging = false
         }
     }
 

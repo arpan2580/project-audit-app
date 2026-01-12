@@ -66,6 +66,7 @@ class BaseController {
   static RxBool isUserLoggedOut = false.obs;
   static int chatInitRetryCount = 0;
   static int maxChatInitRetries = 3;
+  static RxBool locationDisclosureAccepted = false.obs;
   // static final FlutterSecureStorage storeToken = FlutterSecureStorage();
   static final storeToken = GetStorage();
 
@@ -231,10 +232,10 @@ class BaseController {
   ) async {
     isDownloading.value = true;
     try {
-      if (await requestGalleryPermission(context) == false) {
-        DialogHelper.showErrorToast(description: 'Permission denied');
-        return;
-      }
+      // if (await requestGalleryPermission(context) == false) {
+      //   DialogHelper.showErrorToast(description: 'Permission denied');
+      //   return;
+      // }
 
       // final response = await http.get(Uri.parse(imagePath));
       // if (response.statusCode != 200) {

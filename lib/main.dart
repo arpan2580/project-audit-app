@@ -50,7 +50,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     // Check time settings when the app starts
     checkTimeSettings();
-    LocationService.checkLocation();
+    // LocationService.checkLocation();
   }
 
   @override
@@ -98,7 +98,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.light,
       initialBinding: AppBindings(),
-      // home: const OtpScreen(),
       home: const AnimatedSplashScreen(),
       builder: (context, child) {
         return Stack(
@@ -117,8 +116,10 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                     TimeSettingsService.openTimeSettings();
                   },
                 );
-              } else if (BaseController.gpsEnabled.value == false ||
-                  BaseController.locationPermission.value == false) {
+              } else if (BaseController.locationDisclosureAccepted.value ==
+                      true &&
+                  (BaseController.gpsEnabled.value == false ||
+                      BaseController.locationPermission.value == false)) {
                 return NonDismissibleWidget(
                   icon: Icons.location_off,
                   title: "Location Services Required",
@@ -137,7 +138,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                   retryText: "Retry",
                   onRefresh: () => LocationService.checkLocation(),
                 );
-              } else if (BaseController.locationMocked.value) {
+              } else if (BaseController.locationDisclosureAccepted.value ==
+                      true &&
+                  BaseController.locationMocked.value) {
                 return NonDismissibleWidget(
                   icon: Icons.warning,
                   title: "Mock Location Detected",

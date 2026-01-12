@@ -252,7 +252,7 @@ Widget buildReactChatWidget(
                     onPressed: () {
                       chatController.hideChatReactions();
                       chatController.msgController.deleteMessageBySid(sid);
-                      print('Deleted message $messageId - $sid');
+                      // print('Deleted message $messageId - $sid');
                     },
                   )
                 : SizedBox(),

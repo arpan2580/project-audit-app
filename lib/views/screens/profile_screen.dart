@@ -769,11 +769,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           imageFile = File(path);
         });
         DashboardController().uploadProfilePic(imageFile!);
-        int? sizeInBytes = await imageFile?.length();
-        double sizeInKb = sizeInBytes! / 1024;
-        double sizeInMb = sizeInKb / 1024;
-        print('File size in KB: ${sizeInKb.toStringAsFixed(2)} KB');
-        print('File size in MB: ${sizeInMb.toStringAsFixed(2)} MB');
+        // int? sizeInBytes = await imageFile?.length();
+        // double sizeInKb = sizeInBytes! / 1024;
+        // double sizeInMb = sizeInKb / 1024;
+        // print('File size in KB: ${sizeInKb.toStringAsFixed(2)} KB');
+        // print('File size in MB: ${sizeInMb.toStringAsFixed(2)} MB');
         // print("Cropped File =========> ${_imageFile!.path}");
 
         // widget.controller.updateProfileImage(imageFile);
