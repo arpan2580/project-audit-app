@@ -292,9 +292,10 @@ class MessagesController extends GetxController {
   }
 
   Future<void> onSendMediaMessagePressed() async {
-    final picker = ImagePicker();
     try {
-      final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+      final pickedFile = await BaseController.pickImageSafely(
+        source: ImageSource.gallery,
+      );
       if (pickedFile != null) {
         DialogHelper.showLoadingDialog('Uploading image...');
         File croppedImage = await BaseController.compressImage(

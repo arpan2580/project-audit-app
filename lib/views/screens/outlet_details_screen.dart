@@ -20,7 +20,6 @@ class OutletDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ImagePicker picker = ImagePicker();
     Rx<File?> imageFile = Rx<File?>(null);
     final OutletController outletController = Get.find();
     Rx<String> startTime = ''.obs;
@@ -695,15 +694,11 @@ class OutletDetailsScreen extends StatelessWidget {
                                                             //     ).format(
                                                             //       DateTime.now(),
                                                             //     );
-                                                            final Visit?
-                                                            storedAudit =
-                                                                BaseController
-                                                                    .storeToken
-                                                                    .read(
-                                                                      'currentAudit',
-                                                                    );
+                                                            final int?
+                                                            storedVisitId =
+                                                                BaseController.currentAuditVisitId();
 
-                                                            if (storedAudit !=
+                                                            if (storedVisitId !=
                                                                 null) {
                                                               outletController.endAudit(
                                                                 BaseController
@@ -720,7 +715,12 @@ class OutletDetailsScreen extends StatelessWidget {
                                                                     .toStringAsFixed(
                                                                       6,
                                                                     ),
-                                                                storedAudit.id,
+                                                                storedVisitId,
+                                                              );
+                                                            } else {
+                                                              DialogHelper.showErrorToast(
+                                                                description:
+                                                                    'Could not find the running audit. Please try again.',
                                                               );
                                                             }
                                                           }
@@ -807,7 +807,7 @@ class OutletDetailsScreen extends StatelessWidget {
                                                                       .value !=
                                                                   true) {
                                                             final pickedFile =
-                                                                await picker.pickImage(
+                                                                await BaseController.pickImageSafely(
                                                                   source:
                                                                       ImageSource
                                                                           .camera,

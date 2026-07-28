@@ -518,10 +518,9 @@ packages:
   flutter_twilio_chat_conversations:
     dependency: "direct main"
     description:
-      name: flutter_twilio_chat_conversations
-      sha256: bfc97a652485cbae474b6c32b6fabc8965474c3b8ee4b5ef2dcd8733f4ff004d
-      url: "https://pub.dev"
-    source: hosted
+      path: "packages/flutter_twilio_chat_conversations"
+      relative: true
+    source: path
     version: "0.1.4"
   flutter_web_plugins:
     dependency: transitive

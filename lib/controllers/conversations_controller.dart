@@ -20,6 +20,13 @@ class ConversationsController extends GetxController {
   final subscriptions = <StreamSubscription>[];
   final Map<String, StreamSubscription> _messageListeners = {};
 
+  // Refresh coalescing. Twilio fires onConversationAdded once per existing
+  // conversation while the client syncs, so an un-guarded refresh-per-event
+  // costs N refreshes x N unread lookups. These keep it to a single pass.
+  Timer? _refreshDebounce;
+  Future<void>? _activeRefresh;
+  bool _refreshAgain = false;
+
   // Initialize Twilio client
   Future<void> create({required String jwtToken}) async {
     await TwilioConversations.debug(dart: true, native: true, sdk: false);
@@ -32,47 +39,63 @@ class ConversationsController extends GetxController {
     isClientInitialized.value = true;
     await updateFriendlyName();
 
-    // Core event listeners for client-level updates
+    // Core event listeners for client-level updates. These use the debounced
+    // refresh: during initial sync the client emits one onConversationAdded per
+    // conversation, and refreshing on every one of them is quadratic.
     subscriptions.add(
-      uClient.onConversationAdded.listen((event) async {
-        await refreshConversationList();
-      }),
+      uClient.onConversationAdded.listen((event) => _scheduleRefresh()),
     );
 
     subscriptions.add(
-      uClient.onConversationUpdated.listen((event) async {
-        await refreshConversationList();
-      }),
+      uClient.onConversationUpdated.listen((event) => _scheduleRefresh()),
     );
 
     subscriptions.add(
-      uClient.onConversationDeleted.listen((event) async {
-        await refreshConversationList();
-      }),
+      uClient.onConversationDeleted.listen((event) => _scheduleRefresh()),
     );
 
+    // Token renewal runs on the SDK's schedule, often while the app is
+    // backgrounded and the socket has dropped. Any throw inside these async
+    // listener bodies is an unhandled async error, which Crashlytics records
+    // as a fatal, so both are fully guarded.
     subscriptions.add(
       uClient.onTokenAboutToExpire.listen((_) async {
-        final newToken = await fetchAccessToken();
-        if (newToken != null) await updateToken(jwtToken: newToken);
+        try {
+          final newToken = await fetchAccessToken();
+          if (newToken != null) await updateToken(jwtToken: newToken);
+        } catch (_) {
+          // Renewal will be retried when the SDK emits onTokenExpired.
+        }
       }),
     );
 
     subscriptions.add(
       uClient.onTokenExpired.listen((_) async {
-        final newToken = await fetchAccessToken();
-        if (newToken != null) {
-          await updateToken(jwtToken: newToken);
-          await refreshConversationList();
-        }
+        try {
+          final newToken = await fetchAccessToken();
+          if (newToken != null) {
+            await updateToken(jwtToken: newToken);
+            await refreshConversationList();
+          }
+        } catch (_) {}
       }),
     );
 
     await refreshConversationList();
   }
 
-  Future<void> updateToken({required String jwtToken}) async {
-    await client?.updateToken(jwtToken);
+  /// Returns whether the token was accepted.
+  ///
+  /// The native SDK throws (e.g. "Twilsock has disconnected") when the
+  /// transport is down at renewal time. That is recoverable — the client
+  /// reconnects and re-emits its token callbacks — so it must not propagate.
+  Future<bool> updateToken({required String jwtToken}) async {
+    try {
+      await client?.updateToken(jwtToken);
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 
   Future<void> shutdown() async {
@@ -83,7 +106,80 @@ class ConversationsController extends GetxController {
     }
   }
 
-  Future<void> refreshConversationList() async {
+  /// Tears down everything tied to the signed-in user so the next login starts
+  /// from a clean client. This controller is a Get singleton and outlives a
+  /// logout, so without it the previous user's listeners, cached conversations
+  /// and unread counts leak into the next session. It matters in particular
+  /// because a manager and an agent share conversation SIDs, which would make
+  /// attachMessageListeners() skip re-attaching for the new client.
+  Future<void> resetSession() async {
+    _refreshDebounce?.cancel();
+    _refreshDebounce = null;
+
+    for (final sub in subscriptions) {
+      try {
+        await sub.cancel();
+      } catch (_) {}
+    }
+    subscriptions.clear();
+
+    for (final sub in _messageListeners.values) {
+      try {
+        await sub.cancel();
+      } catch (_) {}
+    }
+    _messageListeners.clear();
+
+    conversations.clear();
+    unreadMessageCounts.clear();
+    friendlyName.value = '';
+
+    try {
+      await shutdown();
+    } catch (_) {}
+
+    client = null;
+    isClientInitialized.value = false;
+  }
+
+  /// Refreshes the conversation list, coalescing concurrent callers.
+  ///
+  /// If a refresh is already running, this does not start a second pass; it
+  /// flags the running one to repeat once at the end and awaits it. That keeps
+  /// a burst of client events from multiplying into N overlapping refreshes.
+  Future<void> refreshConversationList() {
+    final active = _activeRefresh;
+    if (active != null) {
+      _refreshAgain = true;
+      return active;
+    }
+    final future = _runRefreshLoop();
+    _activeRefresh = future;
+    return future;
+  }
+
+  /// Debounced refresh for high-frequency client events. Collapses the storm of
+  /// onConversationAdded callbacks emitted during initial sync into one pass.
+  void _scheduleRefresh() {
+    _refreshDebounce?.cancel();
+    _refreshDebounce = Timer(
+      const Duration(milliseconds: 400),
+      refreshConversationList,
+    );
+  }
+
+  Future<void> _runRefreshLoop() async {
+    try {
+      do {
+        _refreshAgain = false;
+        await _refreshConversationListOnce();
+      } while (_refreshAgain);
+    } finally {
+      _activeRefresh = null;
+    }
+  }
+
+  Future<void> _refreshConversationListOnce() async {
     try {
       final myConversations = await TwilioConversations.conversationClient
           ?.getMyConversations();
@@ -91,15 +187,22 @@ class ConversationsController extends GetxController {
       if (myConversations != null) {
         conversations.assignAll(myConversations);
 
-        for (var conversation in myConversations) {
-          int unreadMessages = 0;
-          try {
-            final unread = await conversation.getUnreadMessagesCount();
-            unreadMessages = unread;
-          } catch (_) {
-            unreadMessages = 0;
-          }
-          unreadMessageCounts[conversation.sid] = unreadMessages;
+        // Fetch unread counts concurrently. Doing this sequentially cost one
+        // round-trip per conversation, which is what pushed managers with many
+        // agents past the chat-initialization timeout.
+        final unreadCounts = await Future.wait(
+          myConversations.map((conversation) async {
+            try {
+              return await conversation.getUnreadMessagesCount();
+            } catch (_) {
+              return 0;
+            }
+          }),
+        );
+
+        for (var i = 0; i < myConversations.length; i++) {
+          final conversation = myConversations[i];
+          unreadMessageCounts[conversation.sid] = unreadCounts[i];
           attachMessageListeners(conversation);
         }
 
@@ -306,6 +409,7 @@ class ConversationsController extends GetxController {
 
   @override
   void onClose() {
+    _refreshDebounce?.cancel();
     for (var sub in subscriptions) {
       sub.cancel();
     }

@@ -75,31 +75,11 @@ android {
         implementation("com.google.firebase:firebase-crashlytics")
         implementation("com.google.firebase:firebase-analytics")
 
-        // --- Twilio + coroutine compatibility fixes ---
-        // Force Twilio-compatible coroutine version
-        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
-        implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.5.2")
-
-        // Force compatible Ktor versions used internally by Twilio
-        implementation("io.ktor:ktor-client-core:1.6.8")
-        implementation("io.ktor:ktor-client-android:1.6.8")
-
-        // Ensure logging + JSON features
-        implementation("io.ktor:ktor-client-logging:1.6.8")
-        implementation("io.ktor:ktor-client-json:1.6.8")
-        implementation("io.ktor:ktor-client-serialization:1.6.8")
-
-        implementation("org.slf4j:slf4j-api:1.7.36")
-        implementation("org.slf4j:slf4j-simple:1.7.36")
-    }
-
-    configurations.all {
-        resolutionStrategy.eachDependency {
-            if (requested.group == "org.jetbrains.kotlinx" && requested.name.startsWith("kotlinx-coroutines")) {
-                useVersion("1.5.2")
-                because("Twilio SDK requires ExperimentalCoroutineDispatcher from coroutines 1.5.x")
-            }
-        }
+        // NOTE: the Twilio Conversations 1.6.0 compatibility pins that used to
+        // live here (kotlinx-coroutines 1.5.2, ktor 1.6.8, slf4j) have been
+        // removed. The vendored plugin now uses conversations-android 6.2.1,
+        // which brings its own ktor 3.1.2 / coroutines 1.8.1 and breaks against
+        // those older versions. Do not reintroduce them.
     }
 
     packagingOptions {

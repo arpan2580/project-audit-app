@@ -653,7 +653,7 @@ class DashboardScreen extends StatelessWidget {
       if (BaseController.gpsEnabled.value != false &&
           BaseController.locationPermission.value != false &&
           BaseController.locationMocked.value != true) {
-        final pickedFile = await picker.pickImage(
+        final pickedFile = await BaseController.pickImageSafely(
           source: source,
           preferredCameraDevice: CameraDevice.front,
         );

@@ -746,7 +746,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void takePhoto(ImageSource source) async {
-    final pickedFile = await picker.pickImage(source: source);
+    final pickedFile = await BaseController.pickImageSafely(source: source);
 
     if (pickedFile != null) {
       CroppedFile? croppedImage = await ImageCropper().cropImage(

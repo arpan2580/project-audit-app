@@ -55,8 +55,10 @@ class DashboardController extends GetxController {
     if (userJson != null) {
       BaseController.user.value = UserModel.fromJson(userJson);
     }
+    // Must be awaited: chat initialization below needs the account loaded, and
+    // on a first login there is no cached user_data to fall back on.
     if (BaseController.user.value == null || fetchUser) {
-      fetchUserData();
+      await fetchUserData();
     }
     var response = await BaseClient().dioPost('/dashboard/', null);
     if (response != null) {
@@ -211,10 +213,9 @@ class DashboardController extends GetxController {
 
     final initializationFuture = initializeChat(controller);
     final timeoutFuture = waitForInitialization(timeout: 13);
-    final success = await Future.any([
-      initializationFuture.then((_) => true),
-      timeoutFuture,
-    ]);
+    // initializeChat now reports its own outcome, so a failure surfaces the
+    // retry dialog immediately instead of being mistaken for success.
+    final success = await Future.any([initializationFuture, timeoutFuture]);
     if (!success) {
       BaseController.chatInitRetryCount += 1;
       if (BaseController.chatInitRetryCount >=
@@ -244,23 +245,38 @@ class DashboardController extends GetxController {
     }
   }
 
-  Future<void> initializeChat(ConversationsController controller) async {
+  /// Returns whether chat became usable. Reporting failure matters: callers use
+  /// it to decide whether to offer a retry, so swallowing an error here leaves
+  /// the chat button spinning forever with no way back.
+  Future<bool> initializeChat(ConversationsController controller) async {
     try {
-      if (BaseController.isUserLoggedOut.value == true) return;
+      if (BaseController.isUserLoggedOut.value == true) return true;
+
+      // The client is keyed on the user's conversation SID, so the account has
+      // to be loaded first. Guard rather than assert with `!`: on a first login
+      // this can still be null if the account fetch is slow.
+      if (BaseController.user.value == null) {
+        await fetchUserData();
+      }
+      final conversationSid = BaseController.user.value?.twilioConversationSid;
+      if (conversationSid == null) {
+        throw Exception("User account not loaded; cannot initialize chat");
+      }
+
       final token = await controller.fetchAccessToken();
       if (token == null) {
         throw Exception("Failed to get Twilio token");
       }
       await controller.create(jwtToken: token);
-      await controller.getOrJoinConversation(
-        BaseController.user.value!.twilioConversationSid,
-      );
+      await controller.getOrJoinConversation(conversationSid);
 
       if (BaseController.isUserLoggedOut.value == false) {
         BaseController.isChatInitialized.value = true;
       }
+      return true;
     } catch (e) {
       // print("Chat initialization failed: $e");
+      return false;
     }
   }
 

@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:image_picker/image_picker.dart';
 // import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
@@ -200,6 +201,72 @@ class BaseController {
 
   static void timerStop() {
     _timer.cancel();
+  }
+
+  static bool _isPickerActive = false;
+
+  /// Serializes access to the platform image picker.
+  ///
+  /// Android allows only one picker activity at a time and throws
+  /// PlatformException('already_active') on a second concurrent call. That is
+  /// easy to hit here because several screens open the picker from a delayed
+  /// callback behind a "Capturing GPS" dialog, so a double tap queues two
+  /// launches. Callers get null instead of a fatal error.
+  static Future<XFile?> pickImageSafely({
+    required ImageSource source,
+    int? imageQuality,
+    CameraDevice preferredCameraDevice = CameraDevice.rear,
+  }) async {
+    if (_isPickerActive) return null;
+    _isPickerActive = true;
+    try {
+      return await ImagePicker().pickImage(
+        source: source,
+        imageQuality: imageQuality,
+        preferredCameraDevice: preferredCameraDevice,
+      );
+    } on PlatformException catch (e) {
+      // A duplicate launch is a no-op; anything else is worth telling the user
+      // about, but never worth crashing over.
+      if (e.code != 'already_active') {
+        DialogHelper.showErrorToast(
+          description: 'Could not open the image picker. Please try again.',
+        );
+      }
+      return null;
+    } catch (e) {
+      return null;
+    } finally {
+      _isPickerActive = false;
+    }
+  }
+
+  /// Reads the in-progress audit's visit id.
+  ///
+  /// The 'currentAudit' key has been written in more than one shape: a Visit
+  /// object, and a json-encoded String. GetStorage persists as JSON, so after
+  /// any restart the value comes back as a decoded Map regardless. Reading it
+  /// as one fixed type therefore crashes, so normalize every shape here.
+  static int? currentAuditVisitId() {
+    dynamic data = storeToken.read('currentAudit');
+    if (data == null) return null;
+
+    if (data is String) {
+      if (data.isEmpty) return null;
+      try {
+        data = json.decode(data);
+      } catch (_) {
+        return null;
+      }
+    }
+
+    if (data is Map) {
+      final dynamic id = data['visitId'] ?? data['id'];
+      if (id is int) return id;
+      if (id is num) return id.toInt();
+      if (id is String) return int.tryParse(id);
+    }
+    return null;
   }
 
   // Helper function to compress image manually (when not cropping)

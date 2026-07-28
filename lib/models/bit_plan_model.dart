@@ -56,7 +56,10 @@ class BitPlanModel {
             v.status.toLowerCase() == 'started',
       );
 
-      BaseController.storeToken.write('currentAudit', ownVisit);
+      // Store a plain map, not the Visit object: GetStorage persists as JSON,
+      // so an object round-trips back as a Map and any read that assumed a
+      // Visit would throw. See BaseController.currentAuditVisitId().
+      BaseController.storeToken.write('currentAudit', ownVisit.toJson());
       BaseController.isAuditStarted.value = true;
       BaseController.currAuditOutletId.value = json['id'] ?? 0;
       BaseController.currAuditOutletName.value = json['ol_name'];
