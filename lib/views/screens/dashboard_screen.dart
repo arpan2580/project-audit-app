@@ -653,7 +653,7 @@ class DashboardScreen extends StatelessWidget {
       if (BaseController.gpsEnabled.value != false &&
           BaseController.locationPermission.value != false &&
           BaseController.locationMocked.value != true) {
-        final pickedFile = await picker.pickImage(
+        final pickedFile = await BaseController.pickImageSafely(
           source: source,
           preferredCameraDevice: CameraDevice.front,
         );
@@ -721,11 +721,11 @@ class DashboardScreen extends StatelessWidget {
           );
           // print("Cropped File =========> ${BaseController.imageFile.value.path}");
           // Get the file size in bytes using length() (asynchronously)
-          int sizeInBytes = await BaseController.imageFile.value.length();
-          double sizeInKb = sizeInBytes / 1024;
-          double sizeInMb = sizeInKb / 1024;
-          print('File size in KB: ${sizeInKb.toStringAsFixed(2)} KB');
-          print('File size in MB: ${sizeInMb.toStringAsFixed(2)} MB');
+          // int sizeInBytes = await BaseController.imageFile.value.length();
+          // double sizeInKb = sizeInBytes / 1024;
+          // double sizeInMb = sizeInKb / 1024;
+          // print('File size in KB: ${sizeInKb.toStringAsFixed(2)} KB');
+          // print('File size in MB: ${sizeInMb.toStringAsFixed(2)} MB');
           // widget.controller.updateProfileImage(imageFile);
           // BaseController.showReload.value = false;
           // widget.controller.updateProfileImage(File(pickedFile.path));

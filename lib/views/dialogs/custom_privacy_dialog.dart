@@ -32,11 +32,7 @@ class CustomPrivacyDialog extends StatelessWidget {
           },
         ),
       )
-      ..loadRequest(
-        Uri.parse(
-          'https://www.termsfeed.com/live/3a11ed72-3a10-4ba6-8638-c389522ac10c',
-        ),
-      );
+      ..loadRequest(Uri.parse('https://jnkundu.com/privacy-policy/'));
   }
 
   @override

@@ -1,4 +1,7 @@
 import 'package:app_settings/app_settings.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_crashlytics/firebase_crashlytics.dart';
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
 import 'package:jnk_app/consts/app_constants.dart';
@@ -13,12 +16,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:jnk_app/views/widgets/non_dismissible_widget.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
   ]);
+  await Firebase.initializeApp();
+  FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterError;
+  PlatformDispatcher.instance.onError = (error, stack) {
+    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+    return true;
+  };
+  await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(
+    kReleaseMode,
+  );
   // checkTimeSettings();
   runApp(const MyApp());
 }
@@ -38,7 +50,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     // Check time settings when the app starts
     checkTimeSettings();
-    LocationService.checkLocation();
+    // LocationService.checkLocation();
   }
 
   @override
@@ -86,7 +98,6 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.light,
       initialBinding: AppBindings(),
-      // home: const OtpScreen(),
       home: const AnimatedSplashScreen(),
       builder: (context, child) {
         return Stack(
@@ -105,8 +116,10 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                     TimeSettingsService.openTimeSettings();
                   },
                 );
-              } else if (BaseController.gpsEnabled.value == false ||
-                  BaseController.locationPermission.value == false) {
+              } else if (BaseController.locationDisclosureAccepted.value ==
+                      true &&
+                  (BaseController.gpsEnabled.value == false ||
+                      BaseController.locationPermission.value == false)) {
                 return NonDismissibleWidget(
                   icon: Icons.location_off,
                   title: "Location Services Required",
@@ -125,7 +138,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
                   retryText: "Retry",
                   onRefresh: () => LocationService.checkLocation(),
                 );
-              } else if (BaseController.locationMocked.value) {
+              } else if (BaseController.locationDisclosureAccepted.value ==
+                      true &&
+                  BaseController.locationMocked.value) {
                 return NonDismissibleWidget(
                   icon: Icons.warning,
                   title: "Mock Location Detected",

@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:image_picker/image_picker.dart';
 // import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:get/get.dart';
@@ -63,6 +64,10 @@ class BaseController {
   static RxList chatUsers = [].obs;
   static Rx<String> dayStatus = ''.obs;
   static RxBool isDownloading = false.obs;
+  static RxBool isUserLoggedOut = false.obs;
+  static int chatInitRetryCount = 0;
+  static int maxChatInitRetries = 3;
+  static RxBool locationDisclosureAccepted = false.obs;
   // static final FlutterSecureStorage storeToken = FlutterSecureStorage();
   static final storeToken = GetStorage();
 
@@ -101,7 +106,7 @@ class BaseController {
         return false;
       }
     } else {
-      BaseController.dayStatus.value = '';
+      dayStatus.value = '';
       storeToken.remove("token");
       storeToken.remove("refreshToken");
       storeToken.remove("forcePasswordReset");
@@ -115,13 +120,13 @@ class BaseController {
 
   static void logout() async {
     String? refreshToken = storeToken.read('refreshToken');
-    BaseController.showLoading('Logging out...');
+    showLoading('Logging out...');
     var response = await BaseClient().dioPost(
       '/log-out/',
       json.encode({"refresh": refreshToken}),
     );
     if (response != null) {
-      BaseController.dayStatus.value = '';
+      dayStatus.value = '';
       storeToken.remove("token");
       storeToken.remove("refreshToken");
       storeToken.remove("forcePasswordReset");
@@ -129,7 +134,9 @@ class BaseController {
       storeToken.remove("day_status");
       storeToken.remove("currentAudit");
       storeToken.erase();
-      BaseController.isChatInitialized.value = false;
+      isChatInitialized.value = false;
+      isUserLoggedOut.value = true;
+      chatInitRetryCount = 0;
       ChatController().msgControllerDispose();
       ChatController().dispose();
       Get.delete<ChatController>();
@@ -143,7 +150,7 @@ class BaseController {
   }
 
   static void sessionExpired() {
-    BaseController.dayStatus.value = '';
+    dayStatus.value = '';
     storeToken.remove("token");
     storeToken.remove("refreshToken");
     storeToken.remove("forcePasswordReset");
@@ -151,7 +158,7 @@ class BaseController {
     storeToken.remove("day_status");
     storeToken.remove("currentAudit");
     storeToken.erase();
-    BaseController.isChatInitialized.value = false;
+    isChatInitialized.value = false;
     ChatController().msgControllerDispose();
     ChatController().dispose();
     Get.delete<ChatController>();
@@ -196,6 +203,72 @@ class BaseController {
     _timer.cancel();
   }
 
+  static bool _isPickerActive = false;
+
+  /// Serializes access to the platform image picker.
+  ///
+  /// Android allows only one picker activity at a time and throws
+  /// PlatformException('already_active') on a second concurrent call. That is
+  /// easy to hit here because several screens open the picker from a delayed
+  /// callback behind a "Capturing GPS" dialog, so a double tap queues two
+  /// launches. Callers get null instead of a fatal error.
+  static Future<XFile?> pickImageSafely({
+    required ImageSource source,
+    int? imageQuality,
+    CameraDevice preferredCameraDevice = CameraDevice.rear,
+  }) async {
+    if (_isPickerActive) return null;
+    _isPickerActive = true;
+    try {
+      return await ImagePicker().pickImage(
+        source: source,
+        imageQuality: imageQuality,
+        preferredCameraDevice: preferredCameraDevice,
+      );
+    } on PlatformException catch (e) {
+      // A duplicate launch is a no-op; anything else is worth telling the user
+      // about, but never worth crashing over.
+      if (e.code != 'already_active') {
+        DialogHelper.showErrorToast(
+          description: 'Could not open the image picker. Please try again.',
+        );
+      }
+      return null;
+    } catch (e) {
+      return null;
+    } finally {
+      _isPickerActive = false;
+    }
+  }
+
+  /// Reads the in-progress audit's visit id.
+  ///
+  /// The 'currentAudit' key has been written in more than one shape: a Visit
+  /// object, and a json-encoded String. GetStorage persists as JSON, so after
+  /// any restart the value comes back as a decoded Map regardless. Reading it
+  /// as one fixed type therefore crashes, so normalize every shape here.
+  static int? currentAuditVisitId() {
+    dynamic data = storeToken.read('currentAudit');
+    if (data == null) return null;
+
+    if (data is String) {
+      if (data.isEmpty) return null;
+      try {
+        data = json.decode(data);
+      } catch (_) {
+        return null;
+      }
+    }
+
+    if (data is Map) {
+      final dynamic id = data['visitId'] ?? data['id'];
+      if (id is int) return id;
+      if (id is num) return id.toInt();
+      if (id is String) return int.tryParse(id);
+    }
+    return null;
+  }
+
   // Helper function to compress image manually (when not cropping)
   static Future<File> compressImage(File file, int quality) async {
     try {
@@ -226,10 +299,10 @@ class BaseController {
   ) async {
     isDownloading.value = true;
     try {
-      if (await requestGalleryPermission(context) == false) {
-        DialogHelper.showErrorToast(description: 'Permission denied');
-        return;
-      }
+      // if (await requestGalleryPermission(context) == false) {
+      //   DialogHelper.showErrorToast(description: 'Permission denied');
+      //   return;
+      // }
 
       // final response = await http.get(Uri.parse(imagePath));
       // if (response.statusCode != 200) {

@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:get/get.dart';
@@ -29,19 +28,18 @@ class OutletController extends GetxController {
       response = await BaseClient().dioPost('/visit/start/', formData);
       if (response != null) {
         if (response['status']) {
-          BaseController.storeToken.write(
-            'currentAudit',
-            json.encode({
-              "outletId": id,
-              "startVisitUserId": BaseController.user.value?.id,
-              "startTime": response['data']['start_time'],
-              "latitude": lat,
-              "longitude": long,
-              "isAuditStarted": true,
-              "visitId": response['data']['visit_id'],
-              // "visitCode": response['data']['visit_code'],
-            }),
-          );
+          // Written as a map rather than an encoded string so it matches the
+          // other writer of this key. See BaseController.currentAuditVisitId().
+          BaseController.storeToken.write('currentAudit', {
+            "outletId": id,
+            "startVisitUserId": BaseController.user.value?.id,
+            "startTime": response['data']['start_time'],
+            "latitude": lat,
+            "longitude": long,
+            "isAuditStarted": true,
+            "visitId": response['data']['visit_id'],
+            // "visitCode": response['data']['visit_code'],
+          });
           BaseController.endTime.value = '';
           BaseController.isAuditStarted.value = true;
           BaseController.currAuditOutletId.value = id;

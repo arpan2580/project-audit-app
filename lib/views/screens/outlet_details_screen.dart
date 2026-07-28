@@ -20,7 +20,6 @@ class OutletDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final ImagePicker picker = ImagePicker();
     Rx<File?> imageFile = Rx<File?>(null);
     final OutletController outletController = Get.find();
     Rx<String> startTime = ''.obs;
@@ -695,15 +694,11 @@ class OutletDetailsScreen extends StatelessWidget {
                                                             //     ).format(
                                                             //       DateTime.now(),
                                                             //     );
-                                                            final Visit?
-                                                            storedAudit =
-                                                                BaseController
-                                                                    .storeToken
-                                                                    .read(
-                                                                      'currentAudit',
-                                                                    );
+                                                            final int?
+                                                            storedVisitId =
+                                                                BaseController.currentAuditVisitId();
 
-                                                            if (storedAudit !=
+                                                            if (storedVisitId !=
                                                                 null) {
                                                               outletController.endAudit(
                                                                 BaseController
@@ -720,7 +715,12 @@ class OutletDetailsScreen extends StatelessWidget {
                                                                     .toStringAsFixed(
                                                                       6,
                                                                     ),
-                                                                storedAudit.id,
+                                                                storedVisitId,
+                                                              );
+                                                            } else {
+                                                              DialogHelper.showErrorToast(
+                                                                description:
+                                                                    'Could not find the running audit. Please try again.',
                                                               );
                                                             }
                                                           }
@@ -807,7 +807,7 @@ class OutletDetailsScreen extends StatelessWidget {
                                                                       .value !=
                                                                   true) {
                                                             final pickedFile =
-                                                                await picker.pickImage(
+                                                                await BaseController.pickImageSafely(
                                                                   source:
                                                                       ImageSource
                                                                           .camera,
@@ -855,22 +855,22 @@ class OutletDetailsScreen extends StatelessWidget {
 
                                                               // print("Cropped File =========> ${OutletController.imageFile.value.path}");
                                                               // Get the file size in bytes using length() (asynchronously)
-                                                              int sizeInBytes =
-                                                                  await imageFile
-                                                                      .value!
-                                                                      .length();
-                                                              double sizeInKb =
-                                                                  sizeInBytes /
-                                                                  1024;
-                                                              double sizeInMb =
-                                                                  sizeInKb /
-                                                                  1024;
-                                                              print(
-                                                                'File size in KB: ${sizeInKb.toStringAsFixed(2)} KB',
-                                                              );
-                                                              print(
-                                                                'File size in MB: ${sizeInMb.toStringAsFixed(2)} MB',
-                                                              );
+                                                              // int sizeInBytes =
+                                                              //     await imageFile
+                                                              //         .value!
+                                                              //         .length();
+                                                              // double sizeInKb =
+                                                              //     sizeInBytes /
+                                                              //     1024;
+                                                              // double sizeInMb =
+                                                              //     sizeInKb /
+                                                              //     1024;
+                                                              // print(
+                                                              //   'File size in KB: ${sizeInKb.toStringAsFixed(2)} KB',
+                                                              // );
+                                                              // print(
+                                                              //   'File size in MB: ${sizeInMb.toStringAsFixed(2)} MB',
+                                                              // );
                                                               // widget.controller.updateProfileImage(imageFile);
                                                               // BaseController.showReload.value = false;
                                                               // widget.controller.updateProfileImage(File(pickedFile.path));

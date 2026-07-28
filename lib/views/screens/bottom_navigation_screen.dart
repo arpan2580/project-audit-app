@@ -325,8 +325,14 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
                 ),
                 onPressed: () {
                   BaseController.showOptions.value = false;
-                  selectedIndex = 1;
-                  pageController.jumpToPage(1);
+                  if (BaseController.user.value != null) {
+                    selectedIndex = 1;
+                    pageController.jumpToPage(1);
+                  } else {
+                    DialogHelper.showInfoToast(
+                      description: "Plese wait while user data is loading!",
+                    );
+                  }
                 },
               ),
               const SizedBox(width: 40), // space for FAB
@@ -338,8 +344,14 @@ class _BottomNavigationScreenState extends State<BottomNavigationScreen> {
                 ),
                 onPressed: () {
                   BaseController.showOptions.value = false;
-                  selectedIndex = 2;
-                  pageController.jumpToPage(2);
+                  if (BaseController.user.value != null) {
+                    selectedIndex = 2;
+                    pageController.jumpToPage(2);
+                  } else {
+                    DialogHelper.showInfoToast(
+                      description: "Plese wait while user data is loading!",
+                    );
+                  }
                 },
               ),
               IconButton(

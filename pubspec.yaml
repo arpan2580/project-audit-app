@@ -16,7 +16,7 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.0+1
+version: 1.0.5+5
 
 environment:
   sdk: ^3.8.1
@@ -40,7 +40,7 @@ dependencies:
   image_picker: ^1.1.2
   image_cropper: ^9.1.0
   flutter_hooks: ^0.21.2
-  fl_chart: ^1.0.0
+  fl_chart: ^0.66.2
   intl: ^0.20.2
   # intl: ^0.19.0
   flutter_native_splash: ^2.4.6
@@ -58,7 +58,12 @@ dependencies:
   flutter_cache_manager: ^3.4.1
   flutter_slidable: ^4.0.1
   url_launcher: ^6.3.2
-  flutter_twilio_chat_conversations: ^0.1.4
+  # Local fork of flutter_twilio_chat_conversations 0.1.4, migrated from
+  # com.twilio:conversations-android 1.6.0 to 6.2.1. 6.x is the first line whose
+  # native library is 16 KB page-size aligned, which Google Play requires for
+  # apps targeting Android 15+. The Dart API is unchanged from the pub version.
+  flutter_twilio_chat_conversations:
+    path: packages/flutter_twilio_chat_conversations
   mime_type: ^1.0.1
   http: ^1.5.0
   path_provider: ^2.1.5
@@ -67,6 +72,12 @@ dependencies:
   permission_handler: ^12.0.1
   # flutter_twilio_conversations: ^2.0.9+19
   # twilio_conversation_sdk: ^0.3.7
+  # Firebase core (required for all Firebase features)
+  firebase_core: ^3.8.0
+  # Firebase Analytics
+  firebase_analytics: ^11.3.3
+  # Firebase Crashlytics
+  firebase_crashlytics: ^4.2.0
 
 dev_dependencies:
   flutter_test:

@@ -1,7 +1,7 @@
 import 'package:flutter/services.dart';
 
 class TimeSettingsService {
-  static const platform = MethodChannel('com.yourdomain.time/settings');
+  static const platform = MethodChannel('com.jnkundu.time/settings');
 
   static Future<bool> isTimeAuto() async {
     try {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:jnk_app/controllers/base_controller.dart';
+import 'package:jnk_app/controllers/conversations_controller.dart';
 import 'package:jnk_app/models/user_model.dart';
 import 'package:jnk_app/services/base_client.dart';
 import 'package:jnk_app/views/dialogs/dialog_helper.dart';
@@ -32,6 +33,18 @@ class OtpController extends GetxController {
             "refreshToken",
             response['data']['refresh'],
           );
+          // A new session has started. logout() sets this flag to abort any
+          // in-flight chat initialization, and it is static, so without
+          // clearing it here a logout -> login in the same process leaves chat
+          // permanently uninitialized.
+          BaseController.isUserLoggedOut.value = false;
+          BaseController.isChatInitialized.value = false;
+          BaseController.chatInitRetryCount = 0;
+          // Drop the previous user's Twilio client and listeners before the new
+          // session builds its own.
+          if (Get.isRegistered<ConversationsController>()) {
+            await Get.find<ConversationsController>().resetSession();
+          }
           var response1 = await BaseClient().dioPost(
             '/user/fetch-account/',
             null,

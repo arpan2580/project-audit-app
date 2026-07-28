@@ -55,8 +55,10 @@ class DashboardController extends GetxController {
     if (userJson != null) {
       BaseController.user.value = UserModel.fromJson(userJson);
     }
+    // Must be awaited: chat initialization below needs the account loaded, and
+    // on a first login there is no cached user_data to fall back on.
     if (BaseController.user.value == null || fetchUser) {
-      fetchUserData();
+      await fetchUserData();
     }
     var response = await BaseClient().dioPost('/dashboard/', null);
     if (response != null) {
@@ -204,34 +206,77 @@ class DashboardController extends GetxController {
   }
 
   Future<void> initChatWithRetry(ConversationsController controller) async {
-    if (BaseController.isChatInitialized.value == true) return;
+    if (BaseController.isChatInitialized.value == true ||
+        BaseController.isUserLoggedOut.value == true) {
+      return;
+    }
 
     final initializationFuture = initializeChat(controller);
     final timeoutFuture = waitForInitialization(timeout: 13);
-    final success = await Future.any([
-      initializationFuture.then((_) => true),
-      timeoutFuture,
-    ]);
+    // initializeChat now reports its own outcome, so a failure surfaces the
+    // retry dialog immediately instead of being mistaken for success.
+    final success = await Future.any([initializationFuture, timeoutFuture]);
     if (!success) {
+      BaseController.chatInitRetryCount += 1;
+      if (BaseController.chatInitRetryCount >=
+          BaseController.maxChatInitRetries) {
+        Get.dialog(
+          AlertDialog(
+            title: const Text("Chat Initialization Failed"),
+            content: const Text(
+              "Chat could not be initialized after multiple attempts. Please check your connection or try again later.",
+            ),
+            actions: [
+              ElevatedButton(
+                onPressed: () {
+                  Get.back();
+                },
+                child: const Text("OK", style: TextStyle(color: Colors.white)),
+              ),
+            ],
+          ),
+          barrierDismissible: false,
+        );
+        return;
+      }
       showRetryDialog(controller);
+    } else {
+      BaseController.chatInitRetryCount = 0;
     }
   }
 
-  Future<void> initializeChat(ConversationsController controller) async {
+  /// Returns whether chat became usable. Reporting failure matters: callers use
+  /// it to decide whether to offer a retry, so swallowing an error here leaves
+  /// the chat button spinning forever with no way back.
+  Future<bool> initializeChat(ConversationsController controller) async {
     try {
+      if (BaseController.isUserLoggedOut.value == true) return true;
+
+      // The client is keyed on the user's conversation SID, so the account has
+      // to be loaded first. Guard rather than assert with `!`: on a first login
+      // this can still be null if the account fetch is slow.
+      if (BaseController.user.value == null) {
+        await fetchUserData();
+      }
+      final conversationSid = BaseController.user.value?.twilioConversationSid;
+      if (conversationSid == null) {
+        throw Exception("User account not loaded; cannot initialize chat");
+      }
+
       final token = await controller.fetchAccessToken();
       if (token == null) {
         throw Exception("Failed to get Twilio token");
       }
       await controller.create(jwtToken: token);
-      await controller.getOrJoinConversation(
-        BaseController.user.value!.twilioConversationSid,
-      );
+      await controller.getOrJoinConversation(conversationSid);
 
-      BaseController.isChatInitialized.value = true;
-      // print("✅ Chat initialized successfully.");
+      if (BaseController.isUserLoggedOut.value == false) {
+        BaseController.isChatInitialized.value = true;
+      }
+      return true;
     } catch (e) {
-      // print("❌ Chat initialization failed: $e");
+      // print("Chat initialization failed: $e");
+      return false;
     }
   }
 
@@ -240,7 +285,9 @@ class DashboardController extends GetxController {
     final maxWaitTime = Duration(seconds: timeout);
     final stopwatch = Stopwatch()..start();
     while (stopwatch.elapsed < maxWaitTime) {
-      if (BaseController.isChatInitialized.value == true) {
+      if (BaseController.isChatInitialized.value == true ||
+          BaseController.isUserLoggedOut.value == true) {
+        stopwatch.stop();
         return true;
       }
       await Future.delayed(checkInterval);
@@ -249,6 +296,7 @@ class DashboardController extends GetxController {
   }
 
   void showRetryDialog(ConversationsController controller) {
+    if (BaseController.isUserLoggedOut.value == true) return;
     Get.dialog(
       AlertDialog(
         title: const Text("Chat Initialization Timeout"),
@@ -260,7 +308,9 @@ class DashboardController extends GetxController {
             onPressed: () {
               Get.back();
               BaseController.isChatInitialized.value = false;
-              initChatWithRetry(controller);
+              if (!BaseController.isUserLoggedOut.value) {
+                initChatWithRetry(controller);
+              }
             },
             child: const Text("Retry", style: TextStyle(color: Colors.white)),
           ),

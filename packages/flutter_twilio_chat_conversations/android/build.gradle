@@ -1,0 +1,61 @@
+group 'twilio.flutter.twilio_conversations'
+version '1.0-SNAPSHOT'
+
+buildscript {
+    ext.kotlin_version = '2.1.0'
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.7.3'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+    }
+}
+
+rootProject.allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+
+android {
+    namespace "com.twilio.chat_conversations"
+    compileSdkVersion 35
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
+    defaultConfig {
+        minSdkVersion 21
+    }
+    lintOptions {
+        disable 'InvalidPackage'
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+    // Twilio Conversations 6.x is the first line with 16 KB page-size aligned
+    // native libraries (libtwilio-convo-native.so), required by Google Play for
+    // apps targeting Android 15+. Do not downgrade below 6.1.1.
+    implementation 'com.twilio:conversations-android:6.2.1'
+    // Carries com.twilio.util.ErrorInfo, which moved out of the conversations
+    // artifact in 6.x.
+    implementation 'com.twilio:shared-public:1.2.1'
+
+    implementation "androidx.multidex:multidex:2.0.1"
+}

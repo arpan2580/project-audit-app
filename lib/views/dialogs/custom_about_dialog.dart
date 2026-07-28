@@ -14,7 +14,7 @@ class CustomAboutDialog extends StatelessWidget {
           children: [
             Image.asset(AppConstants.logo),
             Text(
-              "Version: 1.0.0",
+              "Version: 1.0.3",
               style: TextStyle(
                 fontSize: 18.0,
                 color: Theme.of(context).primaryColor,
